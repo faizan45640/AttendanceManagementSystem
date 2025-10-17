@@ -1,0 +1,28 @@
+﻿@model IEnumerable<AMS.Models.Entities.User>
+
+<h2>All Users</h2>
+<a href="/Admin/AddUser" class="btn btn-success">Add New User</a>
+
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.Email</td>
+                <td>@user.Role</td>
+                <td>@(user.IsActive ? "Active" : "Inactive")</td>
+                <td>@user.CreatedAt</td>
+            </tr>
+        }
+    </tbody>
+</table>
