@@ -1,0 +1,491 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\admins.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\admins.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\shared\\_sidebar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\shared\\_sidebar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\users.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\users.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\addadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\addadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\webapplication1\\views\\home\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\home\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\wwwroot\\js\\tailadmin.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\wwwroot\\js\\tailadmin.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\adduser.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\adduser.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\shared\\_validationscriptspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\shared\\_validationscriptspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\adduser.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\adduser.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\shared\\_header.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\shared\\_header.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\shared\\_layoutadminlte.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\shared\\_layoutadminlte.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\addteacher.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\addteacher.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\addstudent.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\addstudent.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\models\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\models\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\models\\viewmodels\\adduserviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\models\\viewmodels\\adduserviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\models\\entities\\admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\models\\entities\\admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\models\\viewmodels\\loginviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\models\\viewmodels\\loginviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\home\\privacy.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\home\\privacy.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\views\\admin\\adduser.html||{C76D83F8-A489-11D0-8195-00A0C91BBEE3}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\views\\admin\\adduser.html||{C76D83F8-A489-11D0-8195-00A0C91BBEE3}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\webapplication1\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B983B351-6016-422B-943F-024A4F4DAECC}|WebApplication1\\AMS.csproj|solutionrelative:webapplication1\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Admins.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\Admins.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\Admins.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\Admins.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\Admins.cshtml",
+              "ViewState": "AQIAACoAAAAAAAAAAAAQwKAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T15:44:21.824Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AddAdmin.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddAdmin.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\AddAdmin.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddAdmin.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\AddAdmin.cshtml",
+              "ViewState": "AQIAAHUAAAAAAAAAAAAAAJAAAAASAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T12:26:18.131Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Users.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\Users.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\Users.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\Users.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\Users.cshtml",
+              "ViewState": "AQIAABIAAAAAAAAAAAAAACUAAAAGAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T11:55:22.949Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Dashboard.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\Dashboard.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\Dashboard.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\Dashboard.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\Dashboard.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAEAAAAwAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T11:54:58.683Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AdminController.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Controllers\\AdminController.cs",
+              "RelativeDocumentMoniker": "WebApplication1\\Controllers\\AdminController.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Controllers\\AdminController.cs",
+              "RelativeToolTip": "WebApplication1\\Controllers\\AdminController.cs",
+              "ViewState": "AQIAABQAAAAAAAAAAAAAADMAAAAgAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:33:45.773Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "_Sidebar.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_Sidebar.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Shared\\_Sidebar.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_Sidebar.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Shared\\_Sidebar.cshtml",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAAACwAAABEAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T14:43:15.866Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Auth\\Login.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Auth\\Login.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Auth\\Login.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Auth\\Login.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAGMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T12:37:12.648Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Dashboard.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Home\\Dashboard.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Home\\Dashboard.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Home\\Dashboard.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Home\\Dashboard.cshtml",
+              "ViewState": "AQIAABgAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T11:43:28.502Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "tailadmin.js",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\js\\tailadmin.js",
+              "RelativeDocumentMoniker": "WebApplication1\\wwwroot\\js\\tailadmin.js",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\js\\tailadmin.js",
+              "RelativeToolTip": "WebApplication1\\wwwroot\\js\\tailadmin.js",
+              "ViewState": "AQIAAIQAAAAAAAAAAAAAAJwAAAA8AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-10-24T15:50:29.283Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AddUser.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddUser.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\AddUser.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddUser.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\AddUser.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABYAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T11:56:40.958Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAADMAAAA5AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T14:57:33.161Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "_LayoutAdmin.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAADMAAAA5AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T14:57:07.032Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "_ViewStart.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\_ViewStart.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\_ViewStart.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\_ViewStart.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\_ViewStart.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T15:28:18.984Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "_ValidationScriptsPartial.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T15:27:49.871Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "AddUser.html",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddUser.html",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\AddUser.html",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddUser.html",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\AddUser.html",
+              "ViewState": "AQIAABUAAAAAAAAAAAAAAAUAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2025-10-24T11:55:19.732Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "_Header.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_Header.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Shared\\_Header.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_Header.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Shared\\_Header.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABAAAAAWAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T14:58:09.018Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "_LayoutAdminLTE.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_LayoutAdminLTE.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Shared\\_LayoutAdminLTE.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Shared\\_LayoutAdminLTE.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Shared\\_LayoutAdminLTE.cshtml",
+              "ViewState": "AQIAACcAAAAAAAAAAAAAAEwAAAAYAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T14:43:08.663Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "AddUserViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ViewModels\\AddUserViewModel.cs",
+              "RelativeDocumentMoniker": "WebApplication1\\Models\\ViewModels\\AddUserViewModel.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ViewModels\\AddUserViewModel.cs",
+              "RelativeToolTip": "WebApplication1\\Models\\ViewModels\\AddUserViewModel.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABcAAAA2AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:26:29.882Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "AddStudent.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddStudent.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\AddStudent.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddStudent.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\AddStudent.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T12:25:27.943Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "AddTeacher.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddTeacher.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\AddTeacher.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddTeacher.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\AddTeacher.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T12:26:02.949Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "Admin.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\Entities\\Admin.cs",
+              "RelativeDocumentMoniker": "WebApplication1\\Models\\Entities\\Admin.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\Entities\\Admin.cs",
+              "RelativeToolTip": "WebApplication1\\Models\\Entities\\Admin.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:31:49.144Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "WebApplication1\\Models\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\Entities\\User.cs",
+              "RelativeToolTip": "WebApplication1\\Models\\Entities\\User.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAABoAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:31:58.643Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "LoginViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ViewModels\\LoginViewModel.cs",
+              "RelativeDocumentMoniker": "WebApplication1\\Models\\ViewModels\\LoginViewModel.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ViewModels\\LoginViewModel.cs",
+              "RelativeToolTip": "WebApplication1\\Models\\ViewModels\\LoginViewModel.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:41:02.261Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "Privacy.cshtml",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Home\\Privacy.cshtml",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Home\\Privacy.cshtml",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Home\\Privacy.cshtml",
+              "RelativeToolTip": "WebApplication1\\Views\\Home\\Privacy.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-24T11:55:27.791Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "AddUser.html",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddUser.html",
+              "RelativeDocumentMoniker": "WebApplication1\\Views\\Admin\\AddUser.html",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Views\\Admin\\AddUser.html",
+              "RelativeToolTip": "WebApplication1\\Views\\Admin\\AddUser.html",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2025-10-24T11:46:57.943Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "WebApplication1\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "WebApplication1\\Controllers\\AuthController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAAIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T11:43:31.495Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 201,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

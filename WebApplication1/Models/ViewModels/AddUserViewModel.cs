@@ -16,5 +16,11 @@ namespace AMS.Models.ViewModels
 
 		[Required]
 		public string Role { get; set; } = "Student"; // Default role
-	}
+
+		public string RollNumber { get; set; } = string.Empty;
+
+		public string FirstName { get; set; } = string.Empty;
+
+		public string LastName { get; set; } = string.Empty;
+    }
 }

@@ -1,4 +1,10 @@
-﻿<h2>Admin Dashboard</h2>
+﻿@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1 class="text-2xl font-bold">Welcome, Admin!</h1>
+
 <p>Welcome, @ViewBag.User!</p>
 <a href="/Admin/Users" class="btn btn-primary">Manage Users</a>
 <a href="/Auth/Logout">Logout</a>

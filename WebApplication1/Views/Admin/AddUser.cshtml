@@ -1,45 +1,23 @@
-﻿@model AMS.Models.ViewModels.AddUserViewModel
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+@model AMS.Models.ViewModels.AddUserViewModel
 
 <h2>Add New User</h2>
 
-<form method="post">
-    <div class="form-group">
-        <label>Username</label>
-        <input asp-for="Username" class="form-control" />
-        <span asp-validation-for="Username" class="text-danger"></span>
+<div class="card card-primary card-outline mb-4 " >
+    <div class="card-header">
+        <div class="card-title"></div>
     </div>
+</div>
 
-    <div class="form-group">
-        <label>Email</label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
 
-    <div class="form-group">
-        <label>Password</label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
 
-    <div class="form-group">
-        <label>Role</label>
-        <select asp-for="Role" class="form-control" id="roleSelect">
-            <option value="">-- Select Role --</option>
-            <option value="Admin">Admin</option>
-            <option value="Teacher">Teacher</option>
-            <option value="Student">Student</option>
-        </select>
-    </div>
 
-    <!-- 👇 Shown only if Role = Student -->
-    <div class="form-group" id="rollNumberField" style="display:none;">
-        <label>Roll Number</label>
-        <input asp-for="RollNumber" class="form-control" />
-        <span asp-validation-for="RollNumber" class="text-danger"></span>
-    </div>
 
-    <button type="submit" class="btn btn-primary mt-2">Add User</button>
-</form>
 
 @section Scripts {
     <script>
@@ -49,5 +27,4 @@
         roleSelect.addEventListener("change", () => {
             rollField.style.display = roleSelect.value === "Student" ? "block" : "none";
         });
-    </script>
-}
+    </script> }

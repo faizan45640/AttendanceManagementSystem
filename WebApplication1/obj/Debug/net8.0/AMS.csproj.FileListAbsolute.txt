@@ -166,3 +166,4 @@ C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\W
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\obj\Debug\net8.0\AMS.pdb
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\obj\Debug\net8.0\AMS.genruntimeconfig.cache
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\obj\Debug\net8.0\ref\AMS.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\obj\Debug\net8.0\AMS.sourcelink.json
