@@ -2,6 +2,9 @@
 using AMS.Models;
 using AMS.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 
 namespace AMS.Controllers
@@ -34,9 +37,18 @@ namespace AMS.Controllers
                 ViewBag.Error = "Invalid Email or Password";
                 return View(model);
             }
-            HttpContext.Session.SetString("Role", user.Role);
-            HttpContext.Session.SetString("Username", user.Username);
-
+           var claims = new List<System.Security.Claims.Claim>
+           {
+                new System.Security.Claims.Claim("UserId", user.UserId.ToString()),
+                new System.Security.Claims.Claim(ClaimTypes.Name, user.Username),
+                new System.Security.Claims.Claim(ClaimTypes.Role, user.Role)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+          CookieAuthenticationDefaults.AuthenticationScheme,
+          new ClaimsPrincipal(identity)
+      );
+            
             return user.Role switch
             {
                 "Admin" => RedirectToAction("Dashboard", "Admin"),
@@ -47,9 +59,10 @@ namespace AMS.Controllers
         }
             public IActionResult Logout()
             {
-                HttpContext.Session.Clear();
-                return RedirectToAction("Login");
-            }
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "Auth");
+
+        }
 
         }
     }

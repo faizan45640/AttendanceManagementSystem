@@ -4,6 +4,7 @@ using AMS.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026150657_AddBatchesTable")]
+    partial class AddBatchesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,35 +52,6 @@ namespace AMS.Migrations
                     b.ToTable("Admins");
                 });
 
-            modelBuilder.Entity("AMS.Models.Entities.Batch", b =>
-                {
-                    b.Property<int>("BatchId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BatchId"));
-
-                    b.Property<string>("BatchName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<int>("StudentCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.HasKey("BatchId");
-
-                    b.ToTable("Batches");
-                });
-
             modelBuilder.Entity("AMS.Models.Entities.Student", b =>
                 {
                     b.Property<int>("StudentId")
@@ -102,17 +76,12 @@ namespace AMS.Migrations
 
                     b.Property<string>("RollNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("StudentId");
-
-                    b.HasIndex("BatchId");
-
-                    b.HasIndex("RollNumber")
-                        .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -159,9 +128,7 @@ namespace AMS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -169,9 +136,7 @@ namespace AMS.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -187,9 +152,6 @@ namespace AMS.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("UserId");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -207,18 +169,11 @@ namespace AMS.Migrations
 
             modelBuilder.Entity("AMS.Models.Entities.Student", b =>
                 {
-                    b.HasOne("AMS.Models.Entities.Batch", "Batch")
-                        .WithMany("Students")
-                        .HasForeignKey("BatchId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("AMS.Models.Entities.User", "User")
                         .WithOne("Student")
                         .HasForeignKey("AMS.Models.Entities.Student", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Batch");
 
                     b.Navigation("User");
                 });
@@ -232,11 +187,6 @@ namespace AMS.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AMS.Models.Entities.Batch", b =>
-                {
-                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("AMS.Models.Entities.User", b =>

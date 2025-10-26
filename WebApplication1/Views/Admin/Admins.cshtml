@@ -1,13 +1,11 @@
-﻿@model IEnumerable<AMS.Models.Entities.Admin>
+﻿@model AMS.Models.ViewModels.AdminFilterViewModel
 
+<a href="/Admin/AddAdmin" class="btn btn-success">
+    <button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 mb-3">
+        Add New Admin
+    </button>
+</a>
 
-    
-
-    <a href="/Admin/AddUser" class="btn btn-success">
-        <button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 mb-3">
-            Add New User
-        </button>
-    </a>
 @if (TempData["success"] != null)
 {
     <div class="rounded-xl border border-success-500 bg-success-50 p-4 dark:border-success-500/30 dark:bg-success-500/15">
@@ -17,12 +15,10 @@
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M3.70186 12.0001C3.70186 7.41711 7.41711 3.70186 12.0001 3.70186C16.5831 3.70186 20.2984 7.41711 20.2984 12.0001C20.2984 16.5831 16.5831 20.2984 12.0001 20.2984C7.41711 20.2984 3.70186 16.5831 3.70186 12.0001ZM12.0001 1.90186C6.423 1.90186 1.90186 6.423 1.90186 12.0001C1.90186 17.5772 6.423 22.0984 12.0001 22.0984C17.5772 22.0984 22.0984 17.5772 22.0984 12.0001C22.0984 6.423 17.5772 1.90186 12.0001 1.90186ZM15.6197 10.7395C15.9712 10.388 15.9712 9.81819 15.6197 9.46672C15.2683 9.11525 14.6984 9.11525 14.347 9.46672L11.1894 12.6243L9.6533 11.0883C9.30183 10.7368 8.73198 10.7368 8.38051 11.0883C8.02904 11.4397 8.02904 12.0096 8.38051 12.3611L10.553 14.5335C10.7217 14.7023 10.9507 14.7971 11.1894 14.7971C11.428 14.7971 11.657 14.7023 11.8257 14.5335L15.6197 10.7395Z" fill=""></path>
                 </svg>
             </div>
-
             <div>
                 <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">
                     Success Message
                 </h4>
-
                 <p class="text-sm text-gray-500 dark:text-gray-400">
                     @TempData["Success"]
                 </p>
@@ -32,7 +28,7 @@
 }
 
 <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
-    <div class="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
                 Admins
@@ -40,122 +36,446 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+            <button type="button" onclick="toggleFilter()" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
                 <svg class="stroke-current fill-white dark:fill-gray-800" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M2.29004 5.90393H17.7067" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
                     <path d="M17.7075 14.0961H2.29085" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
                     <path d="M12.0826 3.33331C13.5024 3.33331 14.6534 4.48431 14.6534 5.90414C14.6534 7.32398 13.5024 8.47498 12.0826 8.47498C10.6627 8.47498 9.51172 7.32398 9.51172 5.90415C9.51172 4.48432 10.6627 3.33331 12.0826 3.33331Z" fill="" stroke="" stroke-width="1.5"></path>
                     <path d="M7.91745 11.525C6.49762 11.525 5.34662 12.676 5.34662 14.0959C5.34661 15.5157 6.49762 16.6667 7.91745 16.6667C9.33728 16.6667 10.4883 15.5157 10.4883 14.0959C10.4883 12.676 9.33728 11.525 7.91745 11.525Z" fill="" stroke="" stroke-width="1.5"></path>
                 </svg>
-
                 Filter
+                <svg id="filterIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
             </button>
 
-            <button class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+            <a asp-action="Admins" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
                 See all
-            </button>
+            </a>
+
+            @{
+                var activeFilters = 0;
+                if (Model.FromDate.HasValue) activeFilters++;
+                if (Model.ToDate.HasValue) activeFilters++;
+                if (!string.IsNullOrEmpty(Model.Status)) activeFilters++;
+            }
+
+            @if (activeFilters > 0)
+            {
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-500/20 dark:text-primary-400">
+                    @activeFilters filter@(activeFilters > 1 ? "s" : "") active
+                </span>
+            }
         </div>
     </div>
 
-    
+    <!-- Collapsible Filter Panel -->
+    <div id="filterPanel" class="hidden bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-4">
+        <form asp-action="Admins" method="get" id="filterForm">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Filter Options</h4>
+                <button type="button" onclick="clearFilters()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    Clear All
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- From Date -->
+                <div>
+                    <label asp-for="FromDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        From Date
+                    </label>
+                    <input asp-for="FromDate" type="date"
+                           class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500" />
+                </div>
+
+                <!-- To Date -->
+                <div>
+                    <label asp-for="ToDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        To Date
+                    </label>
+                    <input asp-for="ToDate" type="date"
+                           class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500" />
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label asp-for="Status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Status
+                    </label>
+                    <select asp-for="Status"
+                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 mt-4">
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600 focus:ring-4 focus:ring-brand-300 dark:bg-brand-600 dark:hover:bg-brand-700 dark:focus:ring-brand-800 shadow-sm transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Apply Filter
+                </button>
+                <button type="button" onclick="clearFilters()" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors">
+                    Reset
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
         <table class="min-w-full">
-            <!-- table header start -->
             <thead>
                 <tr class="border-gray-100 border-y dark:border-gray-800">
-                    <th class="py-3">
-                        <div class="flex items-center">
+                    <th class="py-3 text-left">
+                        <div class="flex items-center px-2">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 Username
                             </p>
                         </div>
                     </th>
-                    <th class="py-3">
+                    <th class="py-3 text-left">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 Email
                             </p>
                         </div>
                     </th>
-
-                    <th class="py-3">
+                    <th class="py-3 text-left">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                               Created At
+                                Created At
                             </p>
                         </div>
                     </th>
-
-
-                    <th class="py-3">
-                        <div class="flex items-center col-span-2">
+                    <th class="py-3 text-left">
+                        <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 Status
                             </p>
                         </div>
                     </th>
+                    <th class="py-3 text-center">
+                        <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                            Actions
+                        </p>
+                    </th>
                 </tr>
             </thead>
-            <!-- table header end -->
 
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-               
+                @if (Model.Admins != null && Model.Admins.Any())
+                {
+                    @foreach (var admin in Model.Admins)
+                    {
+                        if (admin == null || admin.User == null) continue;
 
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                            <td class="py-3 px-2">
+                                <div class="flex items-center">
+                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                                        @admin.User.Username
+                                    </p>
+                                </div>
+                            </td>
 
-                @foreach(var admin in Model)
-            {
-               <tr>
-                   <td class="py-3">
-                       <div class="flex items-center">
-                           <div class="flex items-center gap-3">
-                              
-                               <div>
-                                   <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                       @admin.User.Username
-                                   </p>
+                            <td class="py-3">
+                                <div class="flex items-center">
+                                    <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                        @admin.User.Email
+                                    </p>
+                                </div>
+                            </td>
 
-                               </div>
-                           </div>
-                       </div>
-                   </td>
+                            <td class="py-3">
+                                <div class="flex items-center">
+                                    <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                        @admin.User.CreatedAt.ToString("MMM dd, yyyy")
+                                    </p>
+                                </div>
+                            </td>
 
-                   <td class="py-3">
-                       <div class="flex items-center">
-                           <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                               @admin.User.Email
-                           </p>
-                       </div>
-                   </td>
+                            <td class="py-3">
+                                <div class="flex items-center">
+                                    @if (admin.User.IsActive == true)
+                                    {
+                                        <span class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                                            Inactive
+                                        </span>
+                                    }
+                                </div>
+                            </td>
 
-                   <td class="py-3">
-                       <div class="flex items-center">
-                           <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                               @admin.User.CreatedAt
-                           </p>
-                       </div>
-                   </td>
+                            <td class="py-3 text-center">
+                                <div class="inline-flex items-center gap-2">
+                                    <!-- Edit Button -->
+                                    <a asp-action="EditAdmin"
+                                       asp-route-UserId="@admin.UserId"
+                                       class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand-600 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-500 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
+                                       title="Edit Admin">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
 
+                                    <!-- Delete Button -->
+                                    <button type="button"
+                                            onclick="confirmDelete(@admin.UserId, '@admin.User.Username')"
+                                            class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-error-600 hover:bg-error-50 dark:text-gray-400 dark:hover:text-error-500 dark:hover:bg-error-500/10 rounded-lg transition-colors"
+                                            title="Delete Admin">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
 
-                   <td class="py-3">
-                       <div class="flex items-center">
-                           <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                               @admin.User.IsActive
-                           </p>
-                       </div>
-                   </td>
-
-
-
-
-
-               </tr>
-            }
-
-                <!-- table body end -->
+                                    <!-- View Button -->
+                                    <button type="button"
+                                            onclick="openViewModal('@admin.AdminId', '@admin.User.Username', '@admin.User.Email', '@admin.User.CreatedAt.ToString("MMM dd, yyyy")', '@(admin.User.IsActive ? "Active" : "Inactive")', '@admin.FirstName', '@admin.LastName')"
+                                            class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand-600 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-500 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
+                                            title="View Details">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="py-8 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                </svg>
+                                <p class="text-gray-500 dark:text-gray-400">No admins found</p>
+                                @if (activeFilters > 0)
+                                {
+                                    <button type="button" onclick="clearFilters()" class="mt-2 text-brand-600 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-400">
+                                        Clear filters
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
-  
+    </div>
 </div>
+
+<!-- View Admin Modal -->
+<div id="viewModal" class="hidden fixed inset-0 z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+    <div onclick="closeViewModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
+        <!-- Close Button -->
+        <button onclick="closeViewModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
+            </svg>
+        </button>
+
+        <div class="text-center">
+            <!-- Icon -->
+            <div class="relative flex items-center justify-center z-1 mb-4">
+                <svg class="fill-brand-50 dark:fill-brand-500/15" width="70" height="70" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z" fill=""></path>
+                </svg>
+
+                <span class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                    <svg class="fill-brand-600 dark:fill-brand-500" width="30" height="30" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M18.9998 7.91699C13.0188 7.91699 8.1665 12.7693 8.1665 18.7503C8.1665 24.7313 13.0188 29.5837 18.9998 29.5837C24.9808 29.5837 29.8332 24.7313 29.8332 18.7503C29.8332 12.7693 24.9808 7.91699 18.9998 7.91699ZM18.9998 12.667C19.8743 12.667 20.5832 13.3759 20.5832 14.2503V18.7503C20.5832 19.6248 19.8743 20.3337 18.9998 20.3337C18.1254 20.3337 17.4165 19.6248 17.4165 18.7503V14.2503C17.4165 13.3759 18.1254 12.667 18.9998 12.667ZM18.9998 25.0837C19.8743 25.0837 20.5832 24.3748 20.5832 23.5003C20.5832 22.6259 19.8743 21.917 18.9998 21.917C18.1254 21.917 17.4165 22.6259 17.4165 23.5003C17.4165 24.3748 18.1254 25.0837 18.9998 25.0837Z" fill=""></path>
+                    </svg>
+                </span>
+            </div>
+
+            <h4 class="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Admin Details
+            </h4>
+
+            <div class="mt-4 space-y-3 text-left">
+                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Full Name</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewFullName">-</p>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Username</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewUsername">-</p>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewEmail">-</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Created At</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewCreatedAt">-</p>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</p>
+                        <span id="viewStatus" class="inline-block text-sm font-semibold">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center w-full gap-2 mt-5">
+                <button type="button" onclick="closeViewModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 sm:w-auto">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 z-[99999] flex items-center justify-center pr-[256px] p-4 overflow-y-auto" >
+    <div onclick="closeDeleteModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
+        <!-- Close Button -->
+        <button onclick="closeDeleteModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
+            </svg>
+        </button>
+
+        <div class="text-center">
+            <!-- Icon -->
+            <div class="relative flex items-center justify-center z-1 mb-4">
+                <svg class="fill-error-50 dark:fill-error-500/15" width="70" height="70" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z" fill=""></path>
+                </svg>
+
+                <span class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                    <svg class="fill-error-600 dark:fill-error-500" width="30" height="30" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62684 11.7496C9.04105 11.1638 9.04105 10.2141 9.62684 9.6283C10.2126 9.04252 11.1624 9.04252 11.7482 9.6283L18.9985 16.8786L26.2485 9.62851C26.8343 9.04273 27.7841 9.04273 28.3699 9.62851C28.9556 10.2143 28.9556 11.164 28.3699 11.7498L21.1198 18.9999L28.3699 26.25C28.9556 26.8358 28.9556 27.7855 28.3699 28.3713C27.7841 28.9571 26.8343 28.9571 26.2485 28.3713L18.9985 21.1212L11.7482 28.3715C11.1624 28.9573 10.2126 28.9573 9.62684 28.3715C9.04105 27.7857 9.04105 26.836 9.62684 26.2502L16.8771 18.9999L9.62684 11.7496Z" fill=""></path>
+                    </svg>
+                </span>
+            </div>
+
+            <h4 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Delete Admin?
+            </h4>
+            <p class="text-sm leading-6 text-gray-500 dark:text-gray-400">
+                Are you sure you want to delete <strong id="deleteUsername" class="text-gray-900 dark:text-white font-semibold"></strong>? This action cannot be undone.
+            </p>
+
+            <form id="deleteForm" method="post" asp-action="DeleteAdmin">
+                
+                <input type="hidden" name="UserId" id="deleteUserId" />
+
+                <div class="flex items-center justify-center w-full gap-2 mt-5">
+                    <button type="button" onclick="closeDeleteModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-error-500 shadow-theme-xs hover:bg-error-600 sm:w-auto">
+                        Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
 
+    <script>
+        // Toggle filter panel
+        function toggleFilter() {
+            const panel = document.getElementById('filterPanel');
+            const icon = document.getElementById('filterIcon');
+
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                panel.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            window.location.href = '@Url.Action("Admins")';
+        }
+
+        // View Modal Functions
+        function openViewModal(adminId, username, email, createdAt, status, firstName, lastName) {
+            const fullName = (firstName && lastName && firstName !== 'null' && lastName !== 'null')
+                ? `${firstName} ${lastName}`
+                : (firstName && firstName !== 'null' ? firstName : (lastName && lastName !== 'null' ? lastName : 'N/A'));
+
+            document.getElementById('viewFullName').textContent = fullName;
+            document.getElementById('viewUsername').textContent = username;
+            document.getElementById('viewEmail').textContent = email;
+            document.getElementById('viewCreatedAt').textContent = createdAt;
+
+            const statusElement = document.getElementById('viewStatus');
+            if (status === 'Active') {
+                statusElement.className = 'inline-block text-sm font-semibold text-success-600 dark:text-success-500';
+                statusElement.textContent = '● Active';
+            } else {
+                statusElement.className = 'inline-block text-sm font-semibold text-error-600 dark:text-error-500';
+                statusElement.textContent = '● Inactive';
+            }
+
+            document.getElementById('viewModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Delete Modal Functions
+        function confirmDelete(userId, username) {
+            document.getElementById('deleteUserId').value = userId;
+            document.getElementById('deleteUsername').textContent = username;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modals on escape key
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeViewModal();
+                closeDeleteModal();
+            }
+        });
+
+        // Auto-open filter if filters are active
+        @if (activeFilters > 0)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                toggleFilter();
+            });
+            </text>
+        }
+    </script>
+}

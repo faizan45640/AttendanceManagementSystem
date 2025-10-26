@@ -4,7 +4,9 @@ namespace AMS.Models.ViewModels
 {
 	public class AddUserViewModel
 	{
-		[Required]
+
+		public int? UserId { get; set; } //only for editing existing users or deleting
+        [Required]
 		public string Username { get; set; } = string.Empty;
 
 		[Required, EmailAddress]
@@ -22,5 +24,9 @@ namespace AMS.Models.ViewModels
 		public string FirstName { get; set; } = string.Empty;
 
 		public string LastName { get; set; } = string.Empty;
+
+		
+
+       
     }
 }

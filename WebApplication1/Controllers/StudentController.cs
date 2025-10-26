@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AMS.Controllers
 {
@@ -9,6 +11,8 @@ namespace AMS.Controllers
             return View();
         }
 
+
+        [Authorize(Roles = "Student")]
         public IActionResult Dashboard()
         {
             if(HttpContext.Session.GetString("Role") != "Student")
@@ -17,6 +21,26 @@ namespace AMS.Controllers
 			}
             ViewBag.User = HttpContext.Session.GetString("Username");
             return View();
+        }
+
+
+
+        [Authorize(Roles =  "Admin") ]
+        [HttpGet]
+        //filters
+        public IActionResult Students(string? username,string? rollNumber, int? userId , int? batchId , int? courseId)
+        {
+
+
+            return View();
+        }
+
+        [Authorize(Roles = "Admin   ")]
+        [HttpGet]
+        public IActionResult AddStudent()
+        {
+            return View();
+
         }
     }
 }
