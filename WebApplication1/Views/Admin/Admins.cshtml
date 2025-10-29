@@ -194,7 +194,7 @@
                             <td class="py-3">
                                 <div class="flex items-center">
                                     <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                        @admin.User.CreatedAt.ToString("MMM dd, yyyy")
+                                        @admin.User.CreatedAt.ToString()
                                     </p>
                                 </div>
                             </td>
@@ -240,7 +240,7 @@
 
                                     <!-- View Button -->
                                     <button type="button"
-                                            onclick="openViewModal('@admin.AdminId', '@admin.User.Username', '@admin.User.Email', '@admin.User.CreatedAt.ToString("MMM dd, yyyy")', '@(admin.User.IsActive ? "Active" : "Inactive")', '@admin.FirstName', '@admin.LastName')"
+                                            onclick="openViewModal('@admin.AdminId', '@admin.User.Username', '@admin.User.Email', '@admin.User.CreatedAt.ToString()', '@(Convert.ToBoolean(admin.User.IsActive) ? "Active" : "Inactive")', '@admin.FirstName', '@admin.LastName')"
                                             class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand-600 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-500 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
                                             title="View Details">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

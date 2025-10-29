@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-//using AMS.TempScaffold.Entities;
+using AMS.TempScaffold.Entities;
 using Microsoft.EntityFrameworkCore;
-using AMS.Models.Entities;
 
+namespace AMS.TempScaffold.Context;
 
-namespace AMS.Models;
-
-public partial class ApplicationDbContext : DbContext
+public partial class TempDbContext : DbContext
 {
-    public ApplicationDbContext()
+    public TempDbContext()
     {
     }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    public TempDbContext(DbContextOptions<TempDbContext> options)
         : base(options)
     {
     }
@@ -25,7 +23,6 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Batch> Batches { get; set; }
 
     public virtual DbSet<Course> Courses { get; set; }
-    
 
     public virtual DbSet<CourseAssignment> CourseAssignments { get; set; }
 
@@ -46,7 +43,7 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=desktop-mdfvllc\\sqlexpress;Initial Catalog=AMS;Integrated Security=True;Encrypt=False");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

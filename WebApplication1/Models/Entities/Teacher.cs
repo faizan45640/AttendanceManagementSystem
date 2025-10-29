@@ -5,21 +5,18 @@ namespace AMS.Models.Entities
 {
 	public class Teacher
 	{
-		[Key]
-		public int TeacherId { get; set; }
+        public int TeacherId { get; set; }
 
-		[Required]
-		public int UserId { get; set; }
+        public int? UserId { get; set; }
 
-		[ForeignKey("UserId")]
-		public User User { get; set; }
+        public string? FirstName { get; set; }
 
-		[Required]
-		public string FirstName { get; set; }
+        public string? LastName { get; set; }
 
-		[Required]
-		public string LastName { get; set; }
+        public bool? IsActive { get; set; }
 
-		public bool IsActive { get; set; } = true;
-	}
+        public virtual ICollection<CourseAssignment> CourseAssignments { get; set; } = new List<CourseAssignment>();
+
+        public virtual User? User { get; set; }
+    }
 }
