@@ -1,0 +1,160 @@
+﻿@model AMS.Models.ViewModels.AddBatchViewModel
+@{
+    ViewData["Title"] = "Edit Batch";
+}
+
+<!-- Breadcrumb -->
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-title-md2 font-bold text-gray-900 dark:text-white">
+        Edit Batch
+    </h2>
+    <nav>
+        <ol class="flex items-center gap-2">
+            <li>
+                <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Home</a>
+            </li>
+            <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
+            <li>
+                <a asp-controller="Batch" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Batches</a>
+            </li>
+            <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
+            <li class="text-sm font-medium text-brand-500">Edit</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Alerts -->
+@if (TempData["Success"] != null)
+{
+    <div class="mb-4 flex w-full rounded-lg border border-success-500 bg-success-500/10 p-4" x-data="{ show: true }" x-show="show">
+        <div class="flex w-full items-center justify-between">
+            <div class="flex items-center">
+                <svg class="mr-3 h-5 w-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <p class="text-sm font-medium text-success-500">@TempData["Success"]</p>
+            </div>
+            <button @@click="show = false" class="text-success-500 hover:text-success-600">
+                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="mb-4 flex w-full rounded-lg border border-error-500 bg-error-500/10 p-4" x-data="{ show: true }" x-show="show">
+        <div class="flex w-full items-center justify-between">
+            <div class="flex items-center">
+                <svg class="mr-3 h-5 w-5 text-error-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <p class="text-sm font-medium text-error-500">@TempData["Error"]</p>
+            </div>
+            <button @@click="show = false" class="text-error-500 hover:text-error-600">
+                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
+@if (Model == null)
+{
+    <div class="rounded-lg border border-error-500 bg-error-50 p-6 text-center dark:bg-error-500/10">
+        <svg class="mx-auto h-12 w-12 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">Batch Not Found</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The batch you're trying to edit could not be found.</p>
+        <div class="mt-6">
+            <a asp-controller="Batch" asp-action="Index" class="inline-flex items-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
+                Back to Batches
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Form Card -->
+    <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <!-- Card Header -->
+        <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Batch Information</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update the batch details</p>
+        </div>
+
+        <!-- Form -->
+        <form method="post" asp-action="EditBatch">
+            @Html.AntiForgeryToken()
+
+            <div class="space-y-6 p-6">
+                <!-- Batch Name -->
+                <div>
+                    <label asp-for="BatchName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Batch Name<span class="text-error-500">*</span>
+                    </label>
+                    <input asp-for="BatchName"
+                           type="text"
+                           placeholder="e.g., Batch A, Morning Batch, CS-2024"
+                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                    <span asp-validation-for="BatchName" class="mt-1 block text-sm text-error-500"></span>
+                </div>
+
+                <!-- Year -->
+                <div>
+                    <label asp-for="Year" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Year<span class="text-error-500">*</span>
+                    </label>
+                    <input asp-for="Year"
+                           type="number"
+                           placeholder="2024"
+                           min="2000"
+                           max="2100"
+                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                    <span asp-validation-for="Year" class="mt-1 block text-sm text-error-500"></span>
+                </div>
+
+                <!-- Active Status -->
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        Status
+                    </label>
+                    <div class="flex items-center">
+                        <input asp-for="IsActive"
+                               type="checkbox"
+                               class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900" />
+                        <label asp-for="IsActive" class="ml-2 text-sm text-gray-700 dark:text-gray-400">
+                            Active
+                        </label>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Only active batches will be available for student enrollment
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+                <a asp-controller="Batch" asp-action="Index"
+                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Update Batch
+                </button>
+            </div>
+        </form>
+    </div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

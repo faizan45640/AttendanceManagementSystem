@@ -6,15 +6,15 @@ namespace AMS.Models.Entities
     {
         public int SemesterId { get; set; }
 
-        public string? SemesterName { get; set; }
+        public string SemesterName { get; set; }
 
-        public int? Year { get; set; }
+        public int Year { get; set; }
 
-        public DateOnly? StartDate { get; set; }
+        public DateOnly StartDate { get; set; }
 
-        public DateOnly? EndDate { get; set; }
+        public DateOnly EndDate { get; set; }
 
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         public virtual ICollection<CourseAssignment> CourseAssignments { get; set; } = new List<CourseAssignment>();
 

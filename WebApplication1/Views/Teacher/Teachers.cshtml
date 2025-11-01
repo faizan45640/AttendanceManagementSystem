@@ -1,14 +1,20 @@
-﻿@model AMS.Models.ViewModels.StudentFilterViewModel
+﻿@model AMS.Models.ViewModels.TeacherFilterViewModel
+@{
+    ViewData["Title"] = "Teachers";
+}
 
-<a href="/Student/AddStudent" class="btn btn-success">
+<a asp-action="AddTeacher" class="btn btn-success">
     <button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 mb-3">
-        Add New Student
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add New Teacher
     </button>
 </a>
 
 @if (TempData["success"] != null)
 {
-    <div class="rounded-xl border border-success-500 bg-success-50 p-4 dark:border-success-500/30 dark:bg-success-500/15">
+    <div class="rounded-xl border border-success-500 bg-success-50 p-4 dark:border-success-500/30 dark:bg-success-500/15 mb-4">
         <div class="flex items-start gap-3">
             <div class="-mt-0.5 text-success-500">
                 <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,19 +33,124 @@
     </div>
 }
 
+@if (TempData["error"] != null)
+{
+    <div class="rounded-xl border border-error-500 bg-error-50 p-4 dark:border-error-500/30 dark:bg-error-500/15 mb-4">
+        <div class="flex items-start gap-3">
+            <div class="-mt-0.5 text-error-500">
+                <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill=""></path>
+                </svg>
+            </div>
+            <div>
+                <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+                    Error Message
+                </h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    @TempData["error"]
+                </p>
+            </div>
+        </div>
+    </div>
+}
+
 <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
     <div class="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                Students
+                Teachers
             </h3>
         </div>
 
         <div class="flex items-center gap-3">
-            <a asp-action="Students" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+            <button type="button" onclick="toggleFilter()" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+                <svg class="stroke-current fill-white dark:fill-gray-800" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.29004 5.90393H17.7067" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M17.7075 14.0961H2.29085" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M12.0826 3.33331C13.5024 3.33331 14.6534 4.48431 14.6534 5.90414C14.6534 7.32398 13.5024 8.47498 12.0826 8.47498C10.6627 8.47498 9.51172 7.32398 9.51172 5.90415C9.51172 4.48432 10.6627 3.33331 12.0826 3.33331Z" fill="" stroke="" stroke-width="1.5"></path>
+                    <path d="M7.91745 11.525C6.49762 11.525 5.34662 12.676 5.34662 14.0959C5.34661 15.5157 6.49762 16.6667 7.91745 16.6667C9.33728 16.6667 10.4883 15.5157 10.4883 14.0959C10.4883 12.676 9.33728 11.525 7.91745 11.525Z" fill="" stroke="" stroke-width="1.5"></path>
+                </svg>
+                Filter
+                <svg id="filterIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+
+            <a asp-action="Teachers" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
                 See all
             </a>
+
+            @{
+                var activeFilters = 0;
+                if (Model.FromDate.HasValue) activeFilters++;
+                if (Model.ToDate.HasValue) activeFilters++;
+                if (!string.IsNullOrEmpty(Model.Status)) activeFilters++;
+            }
+
+            @if (activeFilters > 0)
+            {
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-400">
+                    @activeFilters filter@(activeFilters > 1 ? "s" : "") active
+                </span>
+            }
         </div>
+    </div>
+
+    <!-- Collapsible Filter Panel -->
+    <div id="filterPanel" class="hidden bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-4">
+        <form asp-action="Teachers" method="get" id="filterForm">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Filter Options</h4>
+                <button type="button" onclick="clearFilters()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    Clear All
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- From Date -->
+                <div>
+                    <label asp-for="FromDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        From Date
+                    </label>
+                    <input asp-for="FromDate" type="date"
+                           class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500" />
+                </div>
+
+                <!-- To Date -->
+                <div>
+                    <label asp-for="ToDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        To Date
+                    </label>
+                    <input asp-for="ToDate" type="date"
+                           class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500" />
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label asp-for="Status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Status
+                    </label>
+                    <select asp-for="Status"
+                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 mt-4">
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600 focus:ring-4 focus:ring-brand-300 dark:bg-brand-600 dark:hover:bg-brand-700 dark:focus:ring-brand-800 shadow-sm transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Apply Filter
+                </button>
+                <button type="button" onclick="clearFilters()" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors">
+                    Reset
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- Table -->
@@ -50,14 +161,14 @@
                     <th class="py-3 text-left">
                         <div class="flex items-center px-2">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                Roll Number
+                                Name
                             </p>
                         </div>
                     </th>
                     <th class="py-3 text-left">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                Name
+                                Username
                             </p>
                         </div>
                     </th>
@@ -71,7 +182,7 @@
                     <th class="py-3 text-left">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                Batch
+                                Courses
                             </p>
                         </div>
                     </th>
@@ -91,29 +202,17 @@
             </thead>
 
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                @if (Model.Students != null && Model.Students.Any())
+                @if (Model.Teachers != null && Model.Teachers.Any())
                 {
-                    @foreach (var student in Model.Students)
+                    @foreach (var teacher in Model.Teachers)
                     {
-                        if (student == null) continue;
-
-                        var fullName = !string.IsNullOrEmpty(student.FirstName) || !string.IsNullOrEmpty(student.LastName)
-                            ? $"{student.FirstName} {student.LastName}".Trim()
-                            : "N/A";
+                        if (teacher == null || teacher.User == null) continue;
 
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                             <td class="py-3 px-2">
                                 <div class="flex items-center">
                                     <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        @(student.RollNumber ?? "N/A")
-                                    </p>
-                                </div>
-                            </td>
-
-                            <td class="py-3">
-                                <div class="flex items-center">
-                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        @fullName
+                                        @teacher.FirstName @teacher.LastName
                                     </p>
                                 </div>
                             </td>
@@ -121,7 +220,7 @@
                             <td class="py-3">
                                 <div class="flex items-center">
                                     <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                        @(student.User?.Email ?? "N/A")
+                                        @teacher.User.Username
                                     </p>
                                 </div>
                             </td>
@@ -129,14 +228,22 @@
                             <td class="py-3">
                                 <div class="flex items-center">
                                     <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                        @(student.Batch?.BatchName) - @(student.Batch?.Year)
+                                        @teacher.User.Email
                                     </p>
                                 </div>
                             </td>
 
                             <td class="py-3">
                                 <div class="flex items-center">
-                                    @if (student.IsActive == true)
+                                    <span class="rounded-full bg-brand-50 px-2 py-0.5 text-theme-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-400">
+                                        @teacher.CourseAssignments.Count
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td class="py-3">
+                                <div class="flex items-center">
+                                    @if (teacher.IsActive == true)
                                     {
                                         <span class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
                                             Active
@@ -154,10 +261,10 @@
                             <td class="py-3 text-center">
                                 <div class="inline-flex items-center gap-2">
                                     <!-- Edit Button -->
-                                    <a asp-action="EditStudent"
-                                       asp-route-StudentId="@student.StudentId"
+                                    <a asp-action="EditTeacher"
+                                       asp-route-TeacherId="@teacher.TeacherId"
                                        class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand-600 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-500 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
-                                       title="Edit Student">
+                                       title="Edit Teacher">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
@@ -165,9 +272,9 @@
 
                                     <!-- Delete Button -->
                                     <button type="button"
-                                            onclick="confirmDelete(@student.StudentId, '@fullName')"
+                                            onclick="confirmDelete(@teacher.TeacherId, '@teacher.User.Username', @teacher.CourseAssignments.Count)"
                                             class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-error-600 hover:bg-error-50 dark:text-gray-400 dark:hover:text-error-500 dark:hover:bg-error-500/10 rounded-lg transition-colors"
-                                            title="Delete Student">
+                                            title="Delete Teacher">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -175,7 +282,7 @@
 
                                     <!-- View Button -->
                                     <button type="button"
-                                            onclick="openViewModal('@student.StudentId', '@student.RollNumber', '@fullName', '@(student.User?.Email ?? "N/A")', '@(student.Batch?.BatchName ?? "N/A")', '@(student.IsActive == true ? "Active" : "Inactive")', '@(student.User?.CreatedAt.ToString() ?? "N/A")')"
+                                            onclick="openViewModal('@teacher.TeacherId', '@teacher.User.Username', '@teacher.User.Email', '@teacher.FirstName', '@teacher.LastName', '@teacher.CourseAssignments.Count', '@(Convert.ToBoolean(teacher.IsActive) ? "Active" : "Inactive")')"
                                             class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand-600 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-500 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
                                             title="View Details">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,9 +301,15 @@
                         <td colspan="6" class="py-8 text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
-                                <p class="text-gray-500 dark:text-gray-400">No students found</p>
+                                <p class="text-gray-500 dark:text-gray-400">No teachers found</p>
+                                @if (activeFilters > 0)
+                                {
+                                    <button type="button" onclick="clearFilters()" class="mt-2 text-brand-600 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-400">
+                                        Clear filters
+                                    </button>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -206,12 +319,11 @@
     </div>
 </div>
 
-<!-- View Student Modal -->
+<!-- View Teacher Modal -->
 <div id="viewModal" class="hidden fixed inset-0 z-[99999] flex items-center justify-center p-4 overflow-y-auto">
     <div onclick="closeViewModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
 
     <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
-        <!-- Close Button -->
         <button onclick="closeViewModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
             <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
@@ -219,7 +331,6 @@
         </button>
 
         <div class="text-center">
-            <!-- Icon -->
             <div class="relative flex items-center justify-center z-1 mb-4">
                 <svg class="fill-brand-50 dark:fill-brand-500/15" width="70" height="70" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z" fill=""></path>
@@ -233,18 +344,18 @@
             </div>
 
             <h4 class="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
-                Student Details
+                Teacher Details
             </h4>
 
             <div class="mt-4 space-y-3 text-left">
                 <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Roll Number</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewRollNumber">-</p>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Full Name</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewFullName">-</p>
                 </div>
 
                 <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Full Name</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewFullName">-</p>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Username</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewUsername">-</p>
                 </div>
 
                 <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
@@ -252,16 +363,10 @@
                     <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewEmail">-</p>
                 </div>
 
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Batch</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="view
-                       ">-</p>
-                </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Created At</p>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewCreatedAt">-</p>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Courses</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewCourses">-</p>
                     </div>
 
                     <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
@@ -305,15 +410,16 @@
             </div>
 
             <h4 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-                Delete Student?
+                Delete Teacher?
             </h4>
             <p class="text-sm leading-6 text-gray-500 dark:text-gray-400">
-                Are you sure you want to delete <strong id="deleteStudentName" class="text-gray-900 dark:text-white font-semibold"></strong>?
+                Are you sure you want to delete <strong id="deleteUsername" class="text-gray-900 dark:text-white font-semibold"></strong>?
                 <span id="warningMessage" class="hidden block mt-2 text-error-600 dark:text-error-500 font-medium"></span>
             </p>
-            <form id="deleteForm" method="post" asp-action="DeleteStudent">
+
+            <form id="deleteForm" method="post" asp-action="DeleteTeacher">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="StudentId" id="deleteStudentId" />
+                <input type="hidden" name="TeacherId" id="deleteTeacherId" />
 
                 <div class="flex items-center justify-center w-full gap-2 mt-5">
                     <button type="button" onclick="closeDeleteModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
@@ -332,13 +438,30 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // View Modal Functions
-        function openViewModal(studentId, rollNumber, fullName, email, batch, status, createdAt) {
-            document.getElementById('viewRollNumber').textContent = rollNumber || 'N/A';
-            document.getElementById('viewFullName').textContent = fullName || 'N/A';
-            document.getElementById('viewEmail').textContent = email || 'N/A';
-            document.getElementById('viewBatch').textContent = batch || 'N/A';
-            document.getElementById('viewCreatedAt').textContent = createdAt || 'N/A';
+        function toggleFilter() {
+            const panel = document.getElementById('filterPanel');
+            const icon = document.getElementById('filterIcon');
+
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                panel.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function clearFilters() {
+            window.location.href = '@Url.Action("Teachers")';
+        }
+
+        function openViewModal(teacherId, username, email, firstName, lastName, courses, status) {
+            const fullName = `${firstName} ${lastName}`;
+
+            document.getElementById('viewFullName').textContent = fullName;
+            document.getElementById('viewUsername').textContent = username;
+            document.getElementById('viewEmail').textContent = email;
+            document.getElementById('viewCourses').textContent = courses;
 
             const statusElement = document.getElementById('viewStatus');
             if (status === 'Active') {
@@ -358,17 +481,13 @@
             document.body.style.overflow = 'auto';
         }
 
-        // Delete Modal Functions
-        function confirmDelete(studentId, studentName, attendanceCount, enrollmentCount) {
-            document.getElementById('deleteStudentId').value = studentId;
-            document.getElementById('deleteStudentName').textContent = studentName;
+        function confirmDelete(teacherId, username, courseCount) {
+            document.getElementById('deleteTeacherId').value = teacherId;
+            document.getElementById('deleteUsername').textContent = username;
 
             const warningMessage = document.getElementById('warningMessage');
-            if (attendanceCount > 0 || enrollmentCount > 0) {
-                let warnings = [];
-                if (attendanceCount > 0) warnings.push(`${attendanceCount} attendance record(s)`);
-                if (enrollmentCount > 0) warnings.push(`${enrollmentCount} enrollment(s)`);
-                warningMessage.textContent = `This student has ${warnings.join(' and ')}.`;
+            if (courseCount > 0) {
+                warningMessage.textContent = `This teacher is assigned to ${courseCount} course(s).`;
                 warningMessage.classList.remove('hidden');
             } else {
                 warningMessage.classList.add('hidden');
@@ -382,12 +501,21 @@
             document.getElementById('deleteModal').classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
-        // Close modals on escape key
+
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 closeViewModal();
                 closeDeleteModal();
             }
         });
+
+        @if (activeFilters > 0)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                toggleFilter();
+            });
+            </text>
+        }
     </script>
 }

@@ -1,0 +1,365 @@
+﻿@model AMS.Models.ViewModels.SemesterFilterViewModel
+@{
+    ViewData["Title"] = "Semesters";
+}
+
+<!-- Page Header -->
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-title-md2 font-bold text-gray-900 dark:text-white">
+        Semesters
+    </h2>
+    <nav>
+        <ol class="flex items-center gap-2">
+            <li>
+                <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Home</a>
+            </li>
+            <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
+            <li class="text-sm font-medium text-brand-500">Semesters</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Filter Card -->
+<div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <form method="get" asp-action="Semesters" class="space-y-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Year Filter -->
+            <div>
+                <label for="Year" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Year</label>
+                <input type="number"
+                       id="Year"
+                       name="Year"
+                       value="@Model.Year"
+                       placeholder="All years"
+                       min="2000"
+                       max="2100"
+                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label for="Status" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Status</label>
+                <select id="Status"
+                        name="Status"
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    <option value="">All Status</option>
+                    <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                    <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex items-center gap-3">
+            <button type="submit"
+                    class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Apply Filter
+            </button>
+            <a asp-action="Semesters"
+               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+                <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Semesters Table Card -->
+<div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <!-- Card Header -->
+    <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Semesters</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Total: @Model.Semesters.Count() semester(s)
+            </p>
+        </div>
+        <a asp-controller="Semester" asp-action="AddSemester"
+           class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+            <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Semester
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Semester Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Year</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Start Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">End Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Courses</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Enrollments</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                @if (Model.Semesters.Any())
+                {
+                    @foreach (var semester in Model.Semesters)
+                    {
+                        <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">@semester.SemesterName</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.Year</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.StartDate.ToString()</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.EndDate.ToString()</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                @if (semester.IsActive)
+                                {
+                                    <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-400">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800 dark:bg-red-900/30 dark:text-red-400">Inactive</span>
+                                }
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.CourseAssignments?.Count</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.Enrollments?.Count</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button type="button"
+                                            onclick="viewSemester(@semester.SemesterId)"
+                                            class="text-brand-600 transition-colors hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
+                                            title="View Details">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                    <a asp-controller="Semester" asp-action="EditSemester" asp-route-id="@semester.SemesterId"
+                                       class="text-yellow-600 transition-colors hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
+                                       title="Edit">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
+                                    <button type="button"
+                                            onclick="confirmDelete(@semester.SemesterId)"
+                                            class="text-red-600 transition-colors hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                            title="Delete">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No semesters found</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new semester.</p>
+                            <div class="mt-6">
+                                <a asp-controller="Semester" asp-action="AddSemester"
+                                   class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Add Semester
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- View Semester Modal -->
+<div id="viewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" x-data="{ show: false }" x-show="show" x-cloak>
+    <div class="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-900" @@click.away="show = false">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Semester Details</h3>
+            <button type="button" @@click="show = false" class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+            <div id="viewModalContent" class="space-y-4">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+            <button type="button"
+                    @@click="show = false"
+                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" x-data="{ show: false }" x-show="show" x-cloak>
+    <div class="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-gray-900" @@click.away="show = false">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirm Delete</h3>
+            <button type="button" @@click="show = false" class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+            <div class="flex items-start">
+                <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                    <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Delete Semester</h3>
+                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <p id="deleteMessage">Are you sure you want to delete this semester? This action cannot be undone.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+            <button type="button"
+                    @@click="show = false"
+                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+                Cancel
+            </button>
+            <form id="deleteForm" method="post" asp-action="DeleteSemester" class="inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="deleteId" name="id" value="" />
+                <button type="submit"
+                        class="inline-flex items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50">
+                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewSemester(id) {
+            const semester = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Semesters));
+            const data = semester.find(s => s.SemesterId === id);
+
+            if (data) {
+                const startDate = new Date(data.StartDate);
+                const endDate = new Date(data.EndDate);
+                const formatDate = (date) => {
+                    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                };
+
+                document.getElementById('viewModalContent').innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Semester Name</label>
+                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.SemesterName}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Year</label>
+                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.Year}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date</label>
+                            <p class="mt-1 text-base text-gray-900 dark:text-white">${formatDate(startDate)}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">End Date</label>
+                            <p class="mt-1 text-base text-gray-900 dark:text-white">${formatDate(endDate)}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>
+                            <p class="mt-1">
+                                ${data.IsActive
+                                    ? '<span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-400">Active</span>'
+                                    : '<span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800 dark:bg-red-900/30 dark:text-red-400">Inactive</span>'}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Duration</label>
+                            <p class="mt-1 text-base text-gray-900 dark:text-white">${Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))} days</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Assignments</label>
+                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.CourseAssignments?.length || 0} courses</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Enrollments</label>
+                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.Enrollments?.length || 0} students</p>
+                        </div>
+                    </div>
+                `;
+
+                Alpine.store('viewModal', true);
+                document.getElementById('viewModal').classList.remove('hidden');
+                document.getElementById('viewModal').classList.add('flex');
+            }
+        }
+
+        function confirmDelete(id) {
+            const semester = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Semesters));
+            const data = semester.find(s => s.SemesterId === id);
+
+            if (data) {
+                const courseCount = data.CourseAssignments?.length || 0;
+                const enrollmentCount = data.Enrollments?.length || 0;
+                let message = `Are you sure you want to delete "${data.SemesterName}"?`;
+
+                if (courseCount > 0 || enrollmentCount > 0) {
+                    message = `<p class="font-semibold text-red-600 dark:text-red-400">Warning: This semester has ${courseCount} course(s) and ${enrollmentCount} enrollment(s).</p>
+                              <p class="mt-2">Deleting this semester will also delete all associated course assignments and enrollments. This action cannot be undone.</p>`;
+                } else {
+                    message = `<p>Are you sure you want to delete "${data.SemesterName}"? This action cannot be undone.</p>`;
+                }
+
+                document.getElementById('deleteMessage').innerHTML = message;
+                document.getElementById('deleteId').value = id;
+
+                Alpine.store('deleteModal', true);
+                document.getElementById('deleteModal').classList.remove('hidden');
+                document.getElementById('deleteModal').classList.add('flex');
+            }
+        }
+    </script>
+}

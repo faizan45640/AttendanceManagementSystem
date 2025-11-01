@@ -11,7 +11,7 @@ namespace AMS.Models.Entities
 
         public int? Year { get; set; }
 
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         public virtual ICollection<CourseAssignment> CourseAssignments { get; set; } = new List<CourseAssignment>();
 
