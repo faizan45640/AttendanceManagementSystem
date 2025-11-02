@@ -1,6 +1,6 @@
-﻿@model AMS.Models.ViewModels.SemesterFilterViewModel
+﻿@model AMS.Models.ViewModels.CourseFilterViewModel
 @{
-    ViewData["Title"] = "Semesters";
+    ViewData["Title"] = "Courses";
 }
 
 <!-- Success Message -->
@@ -50,7 +50,7 @@
 <!-- Page Header -->
 <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-title-md2 font-bold text-gray-900 dark:text-white">
-        Semesters
+        Courses
     </h2>
     <nav>
         <ol class="flex items-center gap-2">
@@ -58,25 +58,34 @@
                 <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Home</a>
             </li>
             <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
-            <li class="text-sm font-medium text-brand-500">Semesters</li>
+            <li class="text-sm font-medium text-brand-500">Courses</li>
         </ol>
     </nav>
 </div>
 
 <!-- Filter Card -->
 <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-    <form method="get" asp-action="Semesters" class="space-y-4">
+    <form method="get" asp-action="Courses" class="space-y-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <!-- Year Filter -->
+            <!-- Course Code Filter -->
             <div>
-                <label for="Year" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Year</label>
-                <input type="number"
-                       id="Year"
-                       name="Year"
-                       value="@Model.Year"
-                       placeholder="All years"
-                       min="2000"
-                       max="2100"
+                <label for="CourseCode" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Course Code</label>
+                <input type="text"
+                       id="CourseCode"
+                       name="CourseCode"
+                       value="@Model.CourseCode"
+                       placeholder="e.g., CS101"
+                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+            </div>
+
+            <!-- Course Name Filter -->
+            <div>
+                <label for="CourseName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Course Name</label>
+                <input type="text"
+                       id="CourseName"
+                       name="CourseName"
+                       value="@Model.CourseName"
+                       placeholder="e.g., Programming"
                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
             </div>
 
@@ -102,7 +111,7 @@
                 </svg>
                 Apply Filter
             </button>
-            <a asp-action="Semesters"
+            <a asp-action="Courses"
                class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
                 <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -113,22 +122,22 @@
     </form>
 </div>
 
-<!-- Semesters Table Card -->
+<!-- Courses Table Card -->
 <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
     <!-- Card Header -->
     <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Semesters</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Courses</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Total: @Model.Semesters.Count() semester(s)
+                Total: @Model.Courses.Count() course(s)
             </p>
         </div>
-        <a asp-controller="Semester" asp-action="AddSemester"
+        <a asp-controller="Course" asp-action="AddCourse"
            class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
             <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Add Semester
+            Add Course
         </a>
     </div>
 
@@ -137,56 +146,56 @@
         <table class="w-full">
             <thead class="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Semester Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Year</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Start Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">End Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Course Code</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Course Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Credit Hours</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Courses</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Assignments</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Enrollments</th>
                     <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                @if (Model.Semesters.Any())
+                @if (Model.Courses.Any())
                 {
-                    @foreach (var semester in Model.Semesters)
+                    @foreach (var course in Model.Courses)
                     {
                         <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">@semester.SemesterName</div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">@course.CourseCode</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.Year</div>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@course.CourseName</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.StartDate.ToString("MMM dd, yyyy")</div>
-                            </td>
-                            <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.EndDate.ToString("MMM dd, yyyy")</div>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@course.CreditHours</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
                                 <div class="flex items-center">
-                                    @if (semester.IsActive)
+                                    @if (course.IsActive ?? false)
                                     {
-                                        <span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Active</span>
+                                        <span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                            Active
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="rounded-full bg-error-50 px-2 py-0.5 text-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">Inactive</span>
+                                        <span class="rounded-full bg-error-50 px-2 py-0.5 text-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                                            Inactive
+                                        </span>
                                     }
                                 </div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.CourseAssignments?.Count ?? 0</div>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@(course.CourseAssignments?.Count ?? 0)</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@semester.Enrollments?.Count ?? 0</div>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@(course.Enrollments?.Count ?? 0)</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                 <div class="flex items-center justify-end gap-2">
                                     <button type="button"
-                                            onclick="viewSemester(@semester.SemesterId)"
+                                            onclick="viewCourse(@course.CourseId)"
                                             class="text-brand-600 transition-colors hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
                                             title="View Details">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,7 +203,14 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
-                                    <a asp-controller="Semester" asp-action="EditSemester" asp-route-id="@semester.SemesterId"
+                                    <a asp-controller="CourseAssignment" asp-action="CourseAssignments" asp-route-CourseId="@course.CourseId"
+                                       class="text-purple-600 transition-colors hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                                       title="View Assignments">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        </svg>
+                                    </a>
+                                    <a asp-controller="Course" asp-action="EditCourse" asp-route-id="@course.CourseId"
                                        class="text-yellow-600 transition-colors hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                                        title="Edit">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,7 +218,7 @@
                                         </svg>
                                     </a>
                                     <button type="button"
-                                            onclick="confirmDelete(@semester.SemesterId)"
+                                            onclick="confirmDelete(@course.CourseId)"
                                             class="text-red-600 transition-colors hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                             title="Delete">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,19 +233,19 @@
                 else
                 {
                     <tr>
-                        <td colspan="8" class="px-6 py-12 text-center">
+                        <td colspan="7" class="px-6 py-12 text-center">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No semesters found</h3>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new semester.</p>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No courses found</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new course.</p>
                             <div class="mt-6">
-                                <a asp-controller="Semester" asp-action="AddSemester"
+                                <a asp-controller="Course" asp-action="AddCourse"
                                    class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                                     <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                     </svg>
-                                    Add Semester
+                                    Add Course
                                 </a>
                             </div>
                         </td>
@@ -240,40 +256,52 @@
     </div>
 </div>
 
-<!-- View Semester Modal -->
-<div id="viewModal" onclick="closeViewModal()" class="fixed inset-0 z-[99999] hidden items-center bg-black/50 backdrop-blur-sm" style="justify-content: center; padding-left: calc(16px + 5%);">
-    <div onclick="event.stopPropagation()" class="relative w-full max-w-xl rounded-2xl border border-gray-300 bg-white p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-900">
+<!-- View Course Modal -->
+<div id="viewModal" class="hidden fixed inset-0 z-[99999] flex items-center p-4 overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
+    <div onclick="closeViewModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
         <button onclick="closeViewModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
             <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
             </svg>
         </button>
 
-        <div class="relative flex items-center justify-center z-1 mb-5">
-            <svg class="fill-brand-50 dark:fill-brand-500/15" width="70" height="70" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z" fill=""></path>
-            </svg>
-
-            <span class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
-                <svg class="fill-brand-600 dark:fill-brand-500" width="30" height="30" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M30.0833 6.33325H25.3333V4.74992C25.3333 3.42492 24.2583 2.34992 22.9333 2.34992C21.6083 2.34992 20.5333 3.42492 20.5333 4.74992V6.33325H17.4666V4.74992C17.4666 3.42492 16.3916 2.34992 15.0666 2.34992C13.7416 2.34992 12.6666 3.42492 12.6666 4.74992V6.33325H7.91659C5.26659 6.33325 3.16659 8.43325 3.16659 11.0833V30.0833C3.16659 32.7333 5.26659 34.8333 7.91659 34.8333H30.0833C32.7333 34.8333 34.8333 32.7333 34.8333 30.0833V11.0833C34.8333 8.43325 32.7333 6.33325 30.0833 6.33325ZM30.4749 30.0833C30.4749 30.5533 30.0833 30.9449 29.6133 30.9449H8.38659C7.91659 30.9449 7.52492 30.5533 7.52492 30.0833V15.8333H30.4749V30.0833Z" fill=""></path>
+        <div class="text-center">
+            <div class="relative flex items-center justify-center z-1 mb-4">
+                <svg class="fill-brand-50 dark:fill-brand-500/15" width="70" height="70" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z" fill=""></path>
                 </svg>
-            </span>
-        </div>
 
-        <h4 class="mb-4 text-center text-lg font-semibold text-gray-800 dark:text-white/90">
-            Semester Details
-        </h4>
+                <span class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                    <svg class="fill-brand-600 dark:fill-brand-500" width="30" height="30" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M18.9998 7.91699C13.0188 7.91699 8.1665 12.7693 8.1665 18.7503C8.1665 24.7313 13.0188 29.5837 18.9998 29.5837C24.9808 29.5837 29.8332 24.7313 29.8332 18.7503C29.8332 12.7693 24.9808 7.91699 18.9998 7.91699ZM18.9998 12.667C19.8743 12.667 20.5832 13.3759 20.5832 14.2503V18.7503C20.5832 19.6248 19.8743 20.3337 18.9998 20.3337C18.1254 20.3337 17.4165 19.6248 17.4165 18.7503V14.2503C17.4165 13.3759 18.1254 12.667 18.9998 12.667ZM18.9998 25.0837C19.8743 25.0837 20.5832 24.3748 20.5832 23.5003C20.5832 22.6259 19.8743 21.917 18.9998 21.917C18.1254 21.917 17.4165 22.6259 17.4165 23.5003C17.4165 24.3748 18.1254 25.0837 18.9998 25.0837Z" fill=""></path>
+                    </svg>
+                </span>
+            </div>
 
-        <div id="viewModalContent">
-            <!-- Content will be loaded here -->
+            <h4 class="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Course Details
+            </h4>
+
+            <div id="viewModalContent" class="mt-4 space-y-3 text-left">
+                <!-- Content will be loaded here -->
+            </div>
+
+            <div class="flex items-center justify-center w-full gap-2 mt-5">
+                <button type="button" onclick="closeViewModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 sm:w-auto">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteModal" onclick="closeDeleteModal()" class="fixed inset-0 z-[99999] hidden items-center bg-black/50 backdrop-blur-sm" style="justify-content: center; padding-left: calc(16px + 5%);">
-    <div onclick="event.stopPropagation()" class="relative w-full max-w-md rounded-2xl border border-gray-300 bg-white p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-900">
+<div id="deleteModal" class="hidden fixed inset-0 z-[99999] flex items-center p-4 overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
+    <div onclick="closeDeleteModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
         <button onclick="closeDeleteModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
             <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
@@ -294,13 +322,13 @@
             </div>
 
             <h4 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-                Delete Semester?
+                Delete Course?
             </h4>
             <p class="text-sm leading-6 text-gray-500 dark:text-gray-400">
-                <span id="deleteMessage">Are you sure you want to delete this semester? This action cannot be undone.</span>
+                <span id="deleteMessage">Are you sure you want to delete this course? This action cannot be undone.</span>
             </p>
 
-            <form id="deleteForm" method="post" asp-action="DeleteSemester">
+            <form id="deleteForm" method="post" asp-action="DeleteCourse">
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="deleteId" name="id" value="" />
 
@@ -319,90 +347,73 @@
 
 @section Scripts {
     <script>
-        function viewSemester(id) {
-            const semester = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Semesters));
-            const data = semester.find(s => s.SemesterId === id);
+        function viewCourse(id) {
+            const courses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Courses));
+            const data = courses.find(c => c.CourseId === id);
 
             if (data) {
-                const startDate = new Date(data.StartDate);
-                const endDate = new Date(data.EndDate);
-                const formatDate = (date) => {
-                    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                };
+                const statusHtml = data.IsActive
+                    ? '<span class="inline-block text-sm font-semibold text-success-600 dark:text-success-500">● Active</span>'
+                    : '<span class="inline-block text-sm font-semibold text-error-600 dark:text-error-500">● Inactive</span>';
 
                 document.getElementById('viewModalContent').innerHTML = `
-                    <div class="space-y-3">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Course Code</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white">${data.CourseCode || 'N/A'}</p>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Course Name</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white">${data.CourseName || 'N/A'}</p>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Credit Hours</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white">${data.CreditHours || 0}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Semester Name</p>
-                            <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">${data.SemesterName}</p>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Year</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">${data.Year}</p>
-                            </div>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Status</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                    ${data.IsActive ? '● Active' : '● Inactive'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Start Date</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">${formatDate(startDate)}</p>
-                            </div>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">End Date</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">${formatDate(endDate)}</p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Duration</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">${Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))} days</p>
-                            </div>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Course Assignments</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">${data.CourseAssignments?.length || 0} courses</p>
-                            </div>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Assignments</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">${data.CourseAssignments?.length || 0}</p>
                         </div>
 
                         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Total Enrollments</p>
-                            <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">${data.Enrollments?.length || 0} students</p>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Enrollments</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">${data.Enrollments?.length || 0}</p>
                         </div>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</p>
+                        ${statusHtml}
                     </div>
                 `;
 
                 document.getElementById('viewModal').classList.remove('hidden');
-                document.getElementById('viewModal').classList.add('flex');
+                document.body.style.overflow = 'hidden';
             }
         }
 
         function closeViewModal() {
             document.getElementById('viewModal').classList.add('hidden');
-            document.getElementById('viewModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
         }
 
         function confirmDelete(id) {
-            const semester = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Semesters));
-            const data = semester.find(s => s.SemesterId === id);
+            const courses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Courses));
+            const data = courses.find(c => c.CourseId === id);
 
             if (data) {
-                const courseCount = data.CourseAssignments?.length || 0;
+                const assignmentCount = data.CourseAssignments?.length || 0;
                 const enrollmentCount = data.Enrollments?.length || 0;
-                let message = `Are you sure you want to delete "${data.SemesterName}"?`;
+                let message = `Are you sure you want to delete "${data.CourseCode} - ${data.CourseName}"?`;
 
-                if (courseCount > 0 || enrollmentCount > 0) {
-                    message = `<p class="font-semibold text-red-600 dark:text-red-400">Warning: This semester has ${courseCount} course(s) and ${enrollmentCount} enrollment(s).</p>
-                              <p class="mt-2">Deleting this semester will also delete all associated course assignments and enrollments. This action cannot be undone.</p>`;
+                if (assignmentCount > 0 || enrollmentCount > 0) {
+                    message = `<p class="font-semibold text-red-600 dark:text-red-400">Warning: This course has ${assignmentCount} assignment(s) and ${enrollmentCount} enrollment(s).</p>
+                              <p class="mt-2">Deleting this course will also remove all associated data. This action cannot be undone.</p>`;
                 } else {
-                    message = `<p>Are you sure you want to delete "${data.SemesterName}"? This action cannot be undone.</p>`;
+                    message = `<p>Are you sure you want to delete "${data.CourseCode} - ${data.CourseName}"? This action cannot be undone.</p>`;
                 }
 
                 document.getElementById('deleteMessage').innerHTML = message;

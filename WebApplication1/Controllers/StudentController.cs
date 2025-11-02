@@ -39,21 +39,53 @@ namespace AMS.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet]
         //filters
-        public async Task<IActionResult> Students(string? username, string? rollNumber, int? userId, int? batchId, int? courseId)
+        public async Task<IActionResult> Students(StudentFilterViewModel filter)
         {
-            //RETURN a list of all students 
-            var students = await _context.Students
-        .Include(s => s.Batch)        // ← Load Batch
-        .Include(s => s.User)         // ← Load User
-        .Where(s => s.IsActive == true) // or your filter
-        .ToListAsync();
+            var query = _context.Students
+                .Include(s => s.Batch)
+                .Include(s => s.User)
+                .Include(s => s.Attendances)
+                .Include(s => s.Enrollments)
+                .AsQueryable();
 
-            var viewModel = new StudentFilterViewModel
+            // Apply filters
+            if (!string.IsNullOrEmpty(filter.Name))
             {
-                Students = students
-            };
+                query = query.Where(s =>
+                    (s.FirstName != null && s.FirstName.Contains(filter.Name)) ||
+                    (s.LastName != null && s.LastName.Contains(filter.Name)) ||
+                    (s.User != null && s.User.Username != null && s.User.Username.Contains(filter.Name)));
+            }
+            if (!string.IsNullOrEmpty(filter.RollNumber))
+            {
+                query = query.Where(s => s.RollNumber != null && s.RollNumber.Contains(filter.RollNumber));
+            }
 
-            return View(viewModel);
+            if (filter.BatchId.HasValue && filter.BatchId.Value > 0)
+            {
+                query = query.Where(s => s.BatchId == filter.BatchId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(filter.Status))
+            {
+                bool isActive = filter.Status == "Active";
+                query = query.Where(s => s.IsActive == isActive);
+            }
+
+            filter.Students = await query
+                .OrderBy(s => s.RollNumber)
+                .ToListAsync();
+
+            // Load batches for dropdown
+            filter.Batches = await _context.Batches
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BatchId.ToString(),
+                    Text = $"{b.BatchName} - {b.Year}"
+                })
+                .ToListAsync();
+
+            return View(filter);
         }
 
         [Authorize(Roles = "Admin   ")]

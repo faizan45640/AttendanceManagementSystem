@@ -80,6 +80,11 @@ namespace AMS.Models.ViewModels
         [Display(Name = "Name")]
         public string? Name { get; set; }
 
+        [Display(Name = "Roll Number")]
+        public string? RollNumber { get; set; }
+
+        
+
 
         [Display(Name = "From Date")]
         [DataType(DataType.Date)]

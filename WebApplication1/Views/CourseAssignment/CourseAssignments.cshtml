@@ -1,6 +1,6 @@
-﻿@model AMS.Models.ViewModels.StudentFilterViewModel
+﻿@model AMS.Models.ViewModels.CourseAssignmentFilterViewModel
 @{
-    ViewData["Title"] = "Students";
+    ViewData["Title"] = "Course Assignments";
 }
 
 <!-- Success Message -->
@@ -50,7 +50,7 @@
 <!-- Page Header -->
 <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-title-md2 font-bold text-gray-900 dark:text-white">
-        Students
+        Course Assignments
     </h2>
     <nav>
         <ol class="flex items-center gap-2">
@@ -58,35 +58,41 @@
                 <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Home</a>
             </li>
             <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
-            <li class="text-sm font-medium text-brand-500">Students</li>
+            <li class="text-sm font-medium text-brand-500">Course Assignments</li>
         </ol>
     </nav>
 </div>
 
 <!-- Filter Card -->
 <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-    <form method="get" asp-action="Students" class="space-y-4">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <!-- Name Filter -->
+    <form method="get" asp-action="CourseAssignments" class="space-y-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <!-- Teacher Filter -->
             <div>
-                <label for="Name" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Name</label>
-                <input type="text"
-                       id="Name"
-                       name="Name"
-                       value="@Model.Name"
-                       placeholder="Search by name"
-                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                <label for="TeacherId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Teacher</label>
+                <select id="TeacherId"
+                        name="TeacherId"
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    <option value="">All Teachers</option>
+                    @foreach (var teacher in Model.Teachers)
+                    {
+                        <option value="@teacher.Value" selected="@(Model.TeacherId?.ToString() == teacher.Value)">@teacher.Text</option>
+                    }
+                </select>
             </div>
 
-            <!-- Roll Number Filter -->
+            <!-- Course Filter -->
             <div>
-                <label for="RollNumber" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Roll Number</label>
-                <input type="text"
-                       id="RollNumber"
-                       name="RollNumber"
-                       value="@Model.RollNumber"
-                       placeholder="Search by roll number"
-                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                <label for="CourseId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Course</label>
+                <select id="CourseId"
+                        name="CourseId"
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    <option value="">All Courses</option>
+                    @foreach (var course in Model.Courses)
+                    {
+                        <option value="@course.Value" selected="@(Model.CourseId?.ToString() == course.Value)">@course.Text</option>
+                    }
+                </select>
             </div>
 
             <!-- Batch Filter -->
@@ -99,6 +105,20 @@
                     @foreach (var batch in Model.Batches)
                     {
                         <option value="@batch.Value" selected="@(Model.BatchId?.ToString() == batch.Value)">@batch.Text</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Semester Filter -->
+            <div>
+                <label for="SemesterId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Semester</label>
+                <select id="SemesterId"
+                        name="SemesterId"
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    <option value="">All Semesters</option>
+                    @foreach (var semester in Model.Semesters)
+                    {
+                        <option value="@semester.Value" selected="@(Model.SemesterId?.ToString() == semester.Value)">@semester.Text</option>
                     }
                 </select>
             </div>
@@ -125,7 +145,7 @@
                 </svg>
                 Apply Filter
             </button>
-            <a asp-action="Students"
+            <a asp-action="CourseAssignments"
                class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
                 <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -136,22 +156,22 @@
     </form>
 </div>
 
-<!-- Students Table Card -->
+<!-- Course Assignments Table Card -->
 <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
     <!-- Card Header -->
     <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Students</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Course Assignments</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Total: @Model.Students.Count() student(s)
+                Total: @Model.CourseAssignments.Count() assignment(s)
             </p>
         </div>
-        <a asp-controller="Student" asp-action="AddStudent"
+        <a asp-controller="CourseAssignment" asp-action="AddCourseAssignment"
            class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
             <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Add Student
+            Assign Course
         </a>
     </div>
 
@@ -160,54 +180,59 @@
         <table class="w-full">
             <thead class="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Roll Number</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Teacher</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Course</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Batch</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Semester</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Sessions</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Status</th>
                     <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                @if (Model.Students != null && Model.Students.Any())
+                @if (Model.CourseAssignments != null && Model.CourseAssignments.Any())
                 {
-                    @foreach (var student in Model.Students)
+                    @foreach (var assignment in Model.CourseAssignments)
                     {
-                        if (student == null) continue;
+                        if (assignment == null) continue;
 
-                        var fullName = !string.IsNullOrEmpty(student.FirstName) || !string.IsNullOrEmpty(student.LastName)
-                            ? $"{student.FirstName} {student.LastName}".Trim()
+                        var teacherName = assignment.Teacher?.User != null
+                            ? $"{assignment.Teacher.FirstName} {assignment.Teacher.LastName}".Trim()
                             : "N/A";
 
                         <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">@(student.RollNumber ?? "N/A")</div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">@teacherName</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">@(assignment.Teacher?.User?.Email ?? "N/A")</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">@fullName</div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">@(assignment.Course?.CourseName ?? "N/A")</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">@(assignment.Course?.CourseCode ?? "N/A")</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@(student.User?.Email ?? "N/A")</div>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@(assignment.Batch?.BatchName ?? "N/A")</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Year: @(assignment.Batch?.Year ?? 0)</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@(student.Batch?.BatchName) - @(student.Batch?.Year)</div>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@(assignment.Semester?.SemesterName ?? "N/A")</div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
-                                <div class="flex items-center">
-                                    @if (student.IsActive == true)
-                                    {
-                                        <span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Active</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="rounded-full bg-error-50 px-2 py-0.5 text-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">Inactive</span>
-                                    }
-                                </div>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">@(assignment.Sessions?.Count ?? 0) session(s)</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                @if (assignment.IsActive == true)
+                                {
+                                    <span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="rounded-full bg-error-50 px-2 py-0.5 text-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">Inactive</span>
+                                }
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                 <div class="flex items-center justify-end gap-2">
                                     <button type="button"
-                                            onclick="openViewModal('@student.StudentId', '@student.RollNumber', '@fullName.Replace("'", "\\'")','@(student.User?.Email ?? "N/A")', '@(student.Batch?.BatchName ?? "N/A") - @(student.Batch?.Year ?? 0)', '@(student.IsActive == true ? "Active" : "Inactive")', '@(student.User?.CreatedAt.ToString() ?? "N/A")')"
+                                            onclick="openViewModal('@assignment.AssignmentId', '@teacherName.Replace("'", "\\'")','@(assignment.Course?.CourseName?.Replace("'", "\\'") ?? "N/A")', '@(assignment.Course?.CourseCode ?? "N/A")', '@(assignment.Batch?.BatchName ?? "N/A") - @(assignment.Batch?.Year ?? 0)', '@(assignment.Semester?.SemesterName ?? "N/A")', '@(assignment.IsActive == true ? "Active" : "Inactive")', '@(assignment.Sessions?.Count ?? 0)', '@(assignment.TimetableSlots?.Count ?? 0)')"
                                             class="text-brand-600 transition-colors hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
                                             title="View Details">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +240,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
-                                    <a asp-controller="Student" asp-action="EditStudent" asp-route-StudentId="@student.StudentId"
+                                    <a asp-controller="CourseAssignment" asp-action="EditCourseAssignment" asp-route-AssignmentId="@assignment.AssignmentId"
                                        class="text-yellow-600 transition-colors hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                                        title="Edit">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +248,7 @@
                                         </svg>
                                     </a>
                                     <button type="button"
-                                            onclick="confirmDelete(@student.StudentId, '@fullName.Replace("'", "\\'")', @(student.Attendances?.Count ?? 0), @(student.Enrollments?.Count ?? 0))"
+                                            onclick="confirmDelete(@assignment.AssignmentId, '@teacherName.Replace("'", "\\'")','@(assignment.Course?.CourseName?.Replace("'", "\\'") ?? "N/A")', @(assignment.Sessions?.Count ?? 0), @(assignment.TimetableSlots?.Count ?? 0))"
                                             class="text-red-600 transition-colors hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                             title="Delete">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,19 +263,19 @@
                 else
                 {
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
+                        <td colspan="7" class="px-6 py-12 text-center">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No students found</h3>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new student.</p>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No assignments found</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by assigning a course to a teacher.</p>
                             <div class="mt-6">
-                                <a asp-controller="Student" asp-action="AddStudent"
+                                <a asp-controller="CourseAssignment" asp-action="AddCourseAssignment"
                                    class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                                     <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                     </svg>
-                                    Add Student
+                                    Assign Course
                                 </a>
                             </div>
                         </td>
@@ -261,9 +286,9 @@
     </div>
 </div>
 
-<!-- View Student Modal -->
+<!-- View Assignment Modal -->
 <div id="viewModal" onclick="closeViewModal()" class="hidden fixed inset-0 z-[99999] items-center bg-gray-900/50 backdrop-blur-sm overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
-    <div onclick="event.stopPropagation()" class="relative w-full max-w-md rounded-2xl border border-gray-300 bg-white p-5 dark:border-gray-700 dark:bg-gray-900 sm:p-8 shadow-2xl">
+    <div onclick="event.stopPropagation()" class="relative w-full max-w-lg rounded-2xl border border-gray-300 bg-white p-5 dark:border-gray-700 dark:bg-gray-900 sm:p-8 shadow-2xl">
         <button onclick="closeViewModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
             <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
@@ -284,34 +309,42 @@
             </div>
 
             <h4 class="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
-                Student Details
+                Assignment Details
             </h4>
 
             <div class="mt-4 space-y-3 text-left">
                 <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Roll Number</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewRollNumber">-</p>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Teacher</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewTeacher">-</p>
                 </div>
 
                 <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Full Name</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewFullName">-</p>
-                </div>
-
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewEmail">-</p>
-                </div>
-
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Batch</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewBatch">-</p>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Course</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewCourse">-</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="viewCourseCode">-</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Created At</p>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewCreatedAt">-</p>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Batch</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewBatch">-</p>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Semester</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewSemester">-</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sessions</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewSessions">-</p>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Timetable</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white" id="viewTimetable">-</p>
                     </div>
 
                     <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
@@ -353,15 +386,15 @@
             </div>
 
             <h4 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-                Delete Student?
+                Delete Assignment?
             </h4>
             <p class="text-sm leading-6 text-gray-500 dark:text-gray-400">
-                Are you sure you want to delete <strong id="deleteStudentName" class="text-gray-900 dark:text-white font-semibold"></strong>?
+                Are you sure you want to delete the assignment of <strong id="deleteCourseName" class="text-gray-900 dark:text-white font-semibold"></strong> to <strong id="deleteTeacherName" class="text-gray-900 dark:text-white font-semibold"></strong>?
                 <span id="warningMessage" class="hidden block mt-2 text-error-600 dark:text-error-500 font-medium"></span>
             </p>
-            <form id="deleteForm" method="post" asp-action="DeleteStudent">
+            <form id="deleteForm" method="post" asp-action="DeleteCourseAssignment">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="StudentId" id="deleteStudentId" />
+                <input type="hidden" name="AssignmentId" id="deleteAssignmentId" />
 
                 <div class="flex items-center justify-center w-full gap-2 mt-5">
                     <button type="button" onclick="closeDeleteModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
@@ -381,12 +414,14 @@
 
     <script>
         // View Modal Functions
-        function openViewModal(studentId, rollNumber, fullName, email, batch, status, createdAt) {
-            document.getElementById('viewRollNumber').textContent = rollNumber || 'N/A';
-            document.getElementById('viewFullName').textContent = fullName || 'N/A';
-            document.getElementById('viewEmail').textContent = email || 'N/A';
+        function openViewModal(assignmentId, teacher, course, courseCode, batch, semester, status, sessions, timetable) {
+            document.getElementById('viewTeacher').textContent = teacher || 'N/A';
+            document.getElementById('viewCourse').textContent = course || 'N/A';
+            document.getElementById('viewCourseCode').textContent = courseCode || 'N/A';
             document.getElementById('viewBatch').textContent = batch || 'N/A';
-            document.getElementById('viewCreatedAt').textContent = createdAt || 'N/A';
+            document.getElementById('viewSemester').textContent = semester || 'N/A';
+            document.getElementById('viewSessions').textContent = sessions || '0';
+            document.getElementById('viewTimetable').textContent = timetable || '0';
 
             const statusElement = document.getElementById('viewStatus');
             if (status === 'Active') {
@@ -411,16 +446,17 @@
         }
 
         // Delete Modal Functions
-        function confirmDelete(studentId, studentName, attendanceCount, enrollmentCount) {
-            document.getElementById('deleteStudentId').value = studentId;
-            document.getElementById('deleteStudentName').textContent = studentName;
+        function confirmDelete(assignmentId, teacherName, courseName, sessionsCount, timetableCount) {
+            document.getElementById('deleteAssignmentId').value = assignmentId;
+            document.getElementById('deleteTeacherName').textContent = teacherName;
+            document.getElementById('deleteCourseName').textContent = courseName;
 
             const warningMessage = document.getElementById('warningMessage');
-            if (attendanceCount > 0 || enrollmentCount > 0) {
+            if (sessionsCount > 0 || timetableCount > 0) {
                 let warnings = [];
-                if (attendanceCount > 0) warnings.push(`${attendanceCount} attendance record(s)`);
-                if (enrollmentCount > 0) warnings.push(`${enrollmentCount} enrollment(s)`);
-                warningMessage.textContent = `This student has ${warnings.join(' and ')}.`;
+                if (sessionsCount > 0) warnings.push(`${sessionsCount} session(s)`);
+                if (timetableCount > 0) warnings.push(`${timetableCount} timetable slot(s)`);
+                warningMessage.textContent = `This assignment has ${warnings.join(' and ')}.`;
                 warningMessage.classList.remove('hidden');
             } else {
                 warningMessage.classList.add('hidden');
@@ -438,6 +474,7 @@
             modal.classList.remove('flex');
             document.body.style.overflow = 'auto';
         }
+
         // Close modals on escape key
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
