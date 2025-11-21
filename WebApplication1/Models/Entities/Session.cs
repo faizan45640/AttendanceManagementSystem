@@ -6,11 +6,11 @@
 
         public int? CourseAssignmentId { get; set; }
 
-        public DateOnly? SessionDate { get; set; }
+        public DateOnly SessionDate { get; set; }
 
-        public TimeOnly? StartTime { get; set; }
+        public TimeOnly StartTime { get; set; }
 
-        public TimeOnly? EndTime { get; set; }
+        public TimeOnly EndTime { get; set; }
 
         public int? CreatedBy { get; set; }
 

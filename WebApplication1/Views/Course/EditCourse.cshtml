@@ -1,56 +1,12 @@
-﻿@model AMS.Models.ViewModels.CourseFilterViewModel
+﻿@model AMS.Models.ViewModels.AddCourseViewModel
 @{
-    ViewData["Title"] = "Courses";
+    ViewData["Title"] = "Edit Course";
 }
 
-<!-- Success Message -->
-@if (TempData["success"] != null)
-{
-    <div class="mb-6 rounded-xl border border-success-500 bg-success-50 p-4 dark:border-success-500/30 dark:bg-success-500/15">
-        <div class="flex items-start gap-3">
-            <div class="-mt-0.5 text-success-500">
-                <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M3.70186 12.0001C3.70186 7.41711 7.41711 3.70186 12.0001 3.70186C16.5831 3.70186 20.2984 7.41711 20.2984 12.0001C20.2984 16.5831 16.5831 20.2984 12.0001 20.2984C7.41711 20.2984 3.70186 16.5831 3.70186 12.0001ZM12.0001 1.90186C6.423 1.90186 1.90186 6.423 1.90186 12.0001C1.90186 17.5772 6.423 22.0984 12.0001 22.0984C17.5772 22.0984 22.0984 17.5772 22.0984 12.0001C22.0984 6.423 17.5772 1.90186 12.0001 1.90186ZM15.6197 10.7395C15.9712 10.388 15.9712 9.81819 15.6197 9.46672C15.2683 9.11525 14.6984 9.11525 14.347 9.46672L11.1894 12.6243L9.6533 11.0883C9.30183 10.7368 8.73198 10.7368 8.38051 11.0883C8.02904 11.4397 8.02904 12.0096 8.38051 12.3611L10.553 14.5335C10.7217 14.7023 10.9507 14.7971 11.1894 14.7971C11.428 14.7971 11.657 14.7023 11.8257 14.5335L15.6197 10.7395Z" fill=""></path>
-                </svg>
-            </div>
-            <div>
-                <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">
-                    Success
-                </h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    @TempData["success"]
-                </p>
-            </div>
-        </div>
-    </div>
-}
-
-<!-- Error Message -->
-@if (TempData["error"] != null)
-{
-    <div class="mb-6 rounded-xl border border-error-500 bg-error-50 p-4 dark:border-error-500/30 dark:bg-error-500/15">
-        <div class="flex items-start gap-3">
-            <div class="-mt-0.5 text-error-500">
-                <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.70186C7.41711 3.70186 3.70186 7.41711 3.70186 12C3.70186 16.5829 7.41711 20.2981 12 20.2981C16.5829 20.2981 20.2981 16.5829 20.2981 12C20.2981 7.41711 16.5829 3.70186 12 3.70186ZM1.90186 12C1.90186 6.423 6.423 1.90186 12 1.90186C17.577 1.90186 22.0981 6.423 22.0981 12C22.0981 17.577 17.577 22.0981 12 22.0981C6.423 22.0981 1.90186 17.577 1.90186 12ZM12 7.40186C12.4971 7.40186 12.9 7.80476 12.9 8.30186V12.6019C12.9 13.099 12.4971 13.5019 12 13.5019C11.5029 13.5019 11.1 13.099 11.1 12.6019V8.30186C11.1 7.80476 11.5029 7.40186 12 7.40186ZM12 17.1019C12.6627 17.1019 13.2 16.5646 13.2 15.9019C13.2 15.2392 12.6627 14.7019 12 14.7019C11.3373 14.7019 10.8 15.2392 10.8 15.9019C10.8 16.5646 11.3373 17.1019 12 17.1019Z" fill=""></path>
-                </svg>
-            </div>
-            <div>
-                <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">
-                    Error
-                </h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    @TempData["error"]
-                </p>
-            </div>
-        </div>
-    </div>
-}
-
-<!-- Page Header -->
+<!-- Breadcrumb -->
 <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-title-md2 font-bold text-gray-900 dark:text-white">
-        Courses
+        Edit Course
     </h2>
     <nav>
         <ol class="flex items-center gap-2">
@@ -58,357 +14,127 @@
                 <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Home</a>
             </li>
             <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
-            <li class="text-sm font-medium text-brand-500">Courses</li>
+            <li>
+                <a asp-controller="Course" asp-action="Courses" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Courses</a>
+            </li>
+            <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
+            <li class="text-sm font-medium text-brand-500">Edit</li>
         </ol>
     </nav>
 </div>
 
-<!-- Filter Card -->
-<div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-    <form method="get" asp-action="Courses" class="space-y-4">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <!-- Course Code Filter -->
+<!-- Success/Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+        <div class="flex items-center">
+            <svg class="mr-3 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-sm font-medium text-green-800 dark:text-green-300">@TempData["SuccessMessage"]</span>
+        </div>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+        <div class="flex items-center">
+            <svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-sm font-medium text-red-800 dark:text-red-300">@TempData["ErrorMessage"]</span>
+        </div>
+    </div>
+}
+
+<!-- Form Card -->
+<div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <!-- Card Header -->
+    <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Course Information</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update course details</p>
+    </div>
+
+    <!-- Form -->
+    <form method="post" asp-action="EditCourse" asp-route-id="@ViewBag.CourseId">
+        @Html.AntiForgeryToken()
+
+        <div class="space-y-6 p-6">
+            <!-- Course Code -->
             <div>
-                <label for="CourseCode" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Course Code</label>
-                <input type="text"
-                       id="CourseCode"
-                       name="CourseCode"
-                       value="@Model.CourseCode"
-                       placeholder="e.g., CS101"
+                <label asp-for="CourseCode" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Course Code<span class="text-error-500">*</span>
+                </label>
+                <input asp-for="CourseCode"
+                       type="text"
+                       placeholder="e.g., CS101, MATH201"
                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                <span asp-validation-for="CourseCode" class="mt-1 block text-sm text-error-500"></span>
             </div>
 
-            <!-- Course Name Filter -->
+            <!-- Course Name -->
             <div>
-                <label for="CourseName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Course Name</label>
-                <input type="text"
-                       id="CourseName"
-                       name="CourseName"
-                       value="@Model.CourseName"
-                       placeholder="e.g., Programming"
+                <label asp-for="CourseName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Course Name<span class="text-error-500">*</span>
+                </label>
+                <input asp-for="CourseName"
+                       type="text"
+                       placeholder="e.g., Introduction to Programming"
                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                <span asp-validation-for="CourseName" class="mt-1 block text-sm text-error-500"></span>
             </div>
 
-            <!-- Status Filter -->
+            <!-- Credit Hours -->
             <div>
-                <label for="Status" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Status</label>
-                <select id="Status"
-                        name="Status"
-                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
-                    <option value="">All Status</option>
-                    <option value="Active" selected="@(Model.Status == "Active")">Active</option>
-                    <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
-                </select>
+                <label asp-for="CreditHours" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Credit Hours<span class="text-error-500">*</span>
+                </label>
+                <input asp-for="CreditHours"
+                       type="number"
+                       placeholder="3"
+                       min="1"
+                       max="10"
+                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                <span asp-validation-for="CreditHours" class="mt-1 block text-sm text-error-500"></span>
+            </div>
+
+            <!-- Active Status -->
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Status
+                </label>
+                <div class="flex items-center">
+                    <input asp-for="IsActive"
+                           type="checkbox"
+                           class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900" />
+                    <label asp-for="IsActive" class="ml-2 text-sm text-gray-700 dark:text-gray-400">
+                        Active
+                    </label>
+                </div>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Only active courses will be available for assignments and enrollments
+                </p>
             </div>
         </div>
 
-        <!-- Filter Buttons -->
-        <div class="flex items-center gap-3">
+        <!-- Card Footer -->
+        <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+            <a asp-controller="Course" asp-action="Courses"
+               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+                Cancel
+            </a>
             <button type="submit"
                     class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                 <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                Apply Filter
+                Save Changes
             </button>
-            <a asp-action="Courses"
-               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
-                <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Reset
-            </a>
         </div>
     </form>
 </div>
 
-<!-- Courses Table Card -->
-<div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-    <!-- Card Header -->
-    <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
-        <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Courses</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Total: @Model.Courses.Count() course(s)
-            </p>
-        </div>
-        <a asp-controller="Course" asp-action="AddCourse"
-           class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-            <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Course
-        </a>
-    </div>
-
-    <!-- Table -->
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Course Code</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Course Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Credit Hours</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Assignments</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Enrollments</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-400">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                @if (Model.Courses.Any())
-                {
-                    @foreach (var course in Model.Courses)
-                    {
-                        <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                            <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">@course.CourseCode</div>
-                            </td>
-                            <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@course.CourseName</div>
-                            </td>
-                            <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@course.CreditHours</div>
-                            </td>
-                            <td class="whitespace-nowrap px-6 py-4">
-                                <div class="flex items-center">
-                                    @if (course.IsActive ?? false)
-                                    {
-                                        <span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                                            Active
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="rounded-full bg-error-50 px-2 py-0.5 text-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
-                                            Inactive
-                                        </span>
-                                    }
-                                </div>
-                            </td>
-                            <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@(course.CourseAssignments?.Count ?? 0)</div>
-                            </td>
-                            <td class="whitespace-nowrap px-6 py-4">
-                                <div class="text-sm text-gray-700 dark:text-gray-300">@(course.Enrollments?.Count ?? 0)</div>
-                            </td>
-                            <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button type="button"
-                                            onclick="viewCourse(@course.CourseId)"
-                                            class="text-brand-600 transition-colors hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
-                                            title="View Details">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </button>
-                                    <a asp-controller="Course" asp-action="EditCourse" asp-route-id="@course.CourseId"
-                                       class="text-yellow-600 transition-colors hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
-                                       title="Edit">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </a>
-                                    <button type="button"
-                                            onclick="confirmDelete(@course.CourseId)"
-                                            class="text-red-600 transition-colors hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                            title="Delete">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No courses found</h3>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new course.</p>
-                            <div class="mt-6">
-                                <a asp-controller="Course" asp-action="AddCourse"
-                                   class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Add Course
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- View Course Modal -->
-<div id="viewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-    <div class="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-900">
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Course Details</h3>
-            <button type="button" onclick="closeViewModal()" class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="p-6">
-            <div id="viewModalContent" class="space-y-4">
-                <!-- Content will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-            <button type="button"
-                    onclick="closeViewModal()"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
-                Close
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-    <div class="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-gray-900">
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirm Delete</h3>
-            <button type="button" onclick="closeDeleteModal()" class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="p-6">
-            <div class="flex items-start">
-                <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-                    <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Delete Course</h3>
-                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        <p id="deleteMessage">Are you sure you want to delete this course? This action cannot be undone.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-            <button type="button"
-                    onclick="closeDeleteModal()"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
-                Cancel
-            </button>
-            <form id="deleteForm" method="post" asp-action="DeleteCourse" class="inline">
-                @Html.AntiForgeryToken()
-                <input type="hidden" id="deleteId" name="id" value="" />
-                <button type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50">
-                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
-    <script>
-        function viewCourse(id) {
-            const courses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Courses));
-            const data = courses.find(c => c.CourseId === id);
-
-            if (data) {
-                document.getElementById('viewModalContent').innerHTML = `
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Code</label>
-                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.CourseCode || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Name</label>
-                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.CourseName || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Credit Hours</label>
-                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.CreditHours || 0}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>
-                            <p class="mt-1">
-                                ${data.IsActive
-                                    ? '<span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Active</span>'
-                                    : '<span class="rounded-full bg-error-50 px-2 py-0.5 text-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">Inactive</span>'}
-                            </p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Course Assignments</label>
-                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.CourseAssignments?.length || 0} assignment(s)</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Student Enrollments</label>
-                            <p class="mt-1 text-base text-gray-900 dark:text-white">${data.Enrollments?.length || 0} student(s)</p>
-                        </div>
-                    </div>
-                `;
-
-                document.getElementById('viewModal').classList.remove('hidden');
-                document.getElementById('viewModal').classList.add('flex');
-            }
-        }
-
-        function closeViewModal() {
-            document.getElementById('viewModal').classList.add('hidden');
-            document.getElementById('viewModal').classList.remove('flex');
-        }
-
-        function confirmDelete(id) {
-            const courses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Courses));
-            const data = courses.find(c => c.CourseId === id);
-
-            if (data) {
-                const assignmentCount = data.CourseAssignments?.length || 0;
-                const enrollmentCount = data.Enrollments?.length || 0;
-                let message = `Are you sure you want to delete "${data.CourseCode} - ${data.CourseName}"?`;
-
-                if (assignmentCount > 0 || enrollmentCount > 0) {
-                    message = `<p class="font-semibold text-red-600 dark:text-red-400">Warning: This course has ${assignmentCount} assignment(s) and ${enrollmentCount} enrollment(s).</p>
-                              <p class="mt-2">Deleting this course will also remove all associated data. This action cannot be undone.</p>`;
-                } else {
-                    message = `<p>Are you sure you want to delete "${data.CourseCode} - ${data.CourseName}"? This action cannot be undone.</p>`;
-                }
-
-                document.getElementById('deleteMessage').innerHTML = message;
-                document.getElementById('deleteId').value = id;
-
-                document.getElementById('deleteModal').classList.remove('hidden');
-                document.getElementById('deleteModal').classList.add('flex');
-            }
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.add('hidden');
-            document.getElementById('deleteModal').classList.remove('flex');
-        }
-    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

@@ -1,0 +1,61 @@
+﻿@model AMS.Models.ViewModels.BulkEnrollViewModel
+
+@{
+    ViewData["Title"] = "Bulk Enroll";
+}
+
+<div class="flex min-h-screen items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 dark:bg-gray-900">
+    <div class="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-lg dark:bg-gray-800">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                Bulk Enroll Batch
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                Enroll all students from a batch into a course
+            </p>
+        </div>
+
+        <form class="mt-8 space-y-6" asp-action="BulkEnroll" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-sm text-error-500 text-center"></div>
+
+            <div class="space-y-4 rounded-md shadow-sm">
+                <div>
+                    <label asp-for="BatchId" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Batch</label>
+                    <select asp-for="BatchId" asp-items="Model.Batches" class="relative block w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 dark:border-gray-600 dark:text-white sm:text-sm">
+                        <option value="">Select Batch</option>
+                    </select>
+                    <span asp-validation-for="BatchId" class="text-xs text-error-500"></span>
+                </div>
+
+                <div>
+                    <label asp-for="SemesterId" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Semester</label>
+                    <select asp-for="SemesterId" asp-items="Model.Semesters" class="relative block w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 dark:border-gray-600 dark:text-white sm:text-sm">
+                        <option value="">Select Semester</option>
+                    </select>
+                    <span asp-validation-for="SemesterId" class="text-xs text-error-500"></span>
+                </div>
+
+                <div>
+                    <label asp-for="CourseId" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Course</label>
+                    <select asp-for="CourseId" asp-items="Model.Courses" class="relative block w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 dark:border-gray-600 dark:text-white sm:text-sm">
+                        <option value="">Select Course</option>
+                    </select>
+                    <span asp-validation-for="CourseId" class="text-xs text-error-500"></span>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <a asp-action="Enrollments" class="group relative flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
+                    Cancel
+                </a>
+                <button type="submit" class="group relative flex w-full justify-center rounded-lg border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
+                    Enroll Batch
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

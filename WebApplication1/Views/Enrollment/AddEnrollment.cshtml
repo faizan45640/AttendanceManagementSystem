@@ -1,0 +1,148 @@
+﻿@model AMS.Models.ViewModels.AddEnrollmentViewModel
+
+@{
+    ViewData["Title"] = "Add Enrollment";
+}
+
+<div class="p-4 sm:p-6 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center gap-3 mb-2">
+            <a href="@Url.Action("Enrollments")"
+               class="inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Enrollments
+            </a>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Add Enrollment</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Enroll a student in a course for a specific semester</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="p-5 sm:p-6">
+            <form asp-action="AddEnrollment" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="space-y-6">
+                    <!-- Student -->
+                    <div>
+                        <label asp-for="StudentId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Student <span class="text-red-500">*</span>
+                        </label>
+                        <select asp-for="StudentId" asp-items="Model.Students"
+                                class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                            <option value="">-- Select Student --</option>
+                        </select>
+                        <span asp-validation-for="StudentId" class="text-red-600 dark:text-red-400 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- Course -->
+                    <div>
+                        <label asp-for="CourseId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Course <span class="text-red-500">*</span>
+                        </label>
+                        <select asp-for="CourseId" asp-items="Model.Courses"
+                                class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                            <option value="">-- Select Course --</option>
+                        </select>
+                        <span asp-validation-for="CourseId" class="text-red-600 dark:text-red-400 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- Grid for Semester and Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Semester -->
+                        <div>
+                            <label asp-for="SemesterId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Semester <span class="text-red-500">*</span>
+                            </label>
+                            <select asp-for="SemesterId" asp-items="Model.Semesters"
+                                    class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                                <option value="">-- Select Semester --</option>
+                            </select>
+                            <span asp-validation-for="SemesterId" class="text-red-600 dark:text-red-400 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- Status -->
+                        <div>
+                            <label asp-for="Status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Status <span class="text-red-500">*</span>
+                            </label>
+                            <select asp-for="Status"
+                                    class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                                <option value="">-- Select Status --</option>
+                                <option value="Active" selected>Active</option>
+                                <option value="Dropped">Dropped</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-red-600 dark:text-red-400 text-sm mt-1 block"></span>
+                        </div>
+                    </div>
+
+                    <!-- Info Box -->
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Enrollment Information</h3>
+                                <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li>Each student can only be enrolled once per course per semester</li>
+                                        <li>Student's batch information is automatically tracked</li>
+                                        <li>Status can be changed later if needed</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Validation Summary -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Please correct the following errors:</h3>
+                                    <div asp-validation-summary="All" class="mt-2 text-sm text-red-700 dark:text-red-400"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Form Actions -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button type="submit"
+                                class="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Add Enrollment
+                        </button>
+                        <a href="@Url.Action("Enrollments")"
+                           class="inline-flex items-center justify-center px-6 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

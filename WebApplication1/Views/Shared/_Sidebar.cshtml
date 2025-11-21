@@ -239,13 +239,55 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a asp-controller="CourseAssignment" asp-action="Assignments" class="menu-dropdown-item group menu-dropdown-item-inactive">
+                                    <a asp-controller="CourseAssignment" asp-action="CourseAssignments" class="menu-dropdown-item group menu-dropdown-item-inactive">
                                         Course Assignments
                                     </a>
                                 </li>
                                 <li>
                                     <a asp-controller="Enrollment" asp-action="Enrollments" class="menu-dropdown-item group menu-dropdown-item-inactive">
                                         Course Enrollments
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- Dropdown Menu End -->
+                    </li>
+
+                    <!-- Menu Item Timetable -->
+                    <li>
+                        <a href="#" @@click.prevent="selected = (selected === 'Timetable' ? '':'Timetable')"
+                           class="menu-item group"
+                           :class="selected === 'Timetable' ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="selected === 'Timetable' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+                                 width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M6 2C5.44772 2 5 2.44772 5 3V21C5 21.5523 5.44772 22 6 22H18C18.5523 22 19 21.5523 19 21V3C19 2.44772 18.5523 2 18 2H6ZM7 4H17V20H7V4ZM9 6H15V8H9V6ZM9 10H15V12H9V10ZM9 14H15V16H9V14Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Timetable
+                            </span>
+                            <svg class="menu-item-arrow"
+                                 :class="[selected === 'Timetable' ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                 width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </a>
+
+                        <!-- Dropdown Menu Start -->
+                        <div class="translate transform overflow-hidden" :class="selected === 'Timetable' ? 'block' :'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="menu-dropdown mt-2 flex flex-col gap-1 pl-9">
+                                <li>
+                                    <a asp-controller="Timetable" asp-action="Index" class="menu-dropdown-item group menu-dropdown-item-inactive">
+                                        All Timetables
+                                    </a>
+                                </li>
+                                <li>
+                                    <a asp-controller="Timetable" asp-action="Create" class="menu-dropdown-item group menu-dropdown-item-inactive">
+                                        Add Timetable
+                                    </a>
+                                </li>
+                                <li>
+                                    <a asp-controller="Timetable" asp-action="MyTimetable" class="menu-dropdown-item group menu-dropdown-item-inactive">
+                                        My Timetable
                                     </a>
                                 </li>
                             </ul>
@@ -278,23 +320,18 @@
                         <div class="translate transform overflow-hidden" :class="selected === 'Attendance' ? 'block' :'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="menu-dropdown mt-2 flex flex-col gap-1 pl-9">
                                 <li>
-                                    <a asp-controller="Attendance" asp-action="MarkAttendance" class="menu-dropdown-item group menu-dropdown-item-inactive">
+                                    <a asp-controller="Timetable" asp-action="MyTimetable" class="menu-dropdown-item group menu-dropdown-item-inactive">
                                         Mark Attendance
                                     </a>
                                 </li>
                                 <li>
-                                    <a asp-controller="Attendance" asp-action="ViewAttendance" class="menu-dropdown-item group menu-dropdown-item-inactive">
-                                        View Attendance
+                                    <a asp-controller="Attendance" asp-action="TeacherReport" class="menu-dropdown-item group menu-dropdown-item-inactive">
+                                        Teacher Report
                                     </a>
                                 </li>
                                 <li>
-                                    <a asp-controller="Attendance" asp-action="Reports" class="menu-dropdown-item group menu-dropdown-item-inactive">
-                                        Attendance Reports
-                                    </a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Attendance" asp-action="Statistics" class="menu-dropdown-item group menu-dropdown-item-inactive">
-                                        Statistics
+                                    <a asp-controller="Attendance" asp-action="StudentReport" class="menu-dropdown-item group menu-dropdown-item-inactive">
+                                        Student Report
                                     </a>
                                 </li>
                             </ul>

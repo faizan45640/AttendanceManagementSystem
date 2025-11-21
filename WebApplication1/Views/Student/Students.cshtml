@@ -215,6 +215,21 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
+                                    <a asp-controller="Enrollment" asp-action="Enrollments" asp-route-StudentId="@student.StudentId"
+                                       class="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                       title="View Enrollments">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </a>
+                                    <button type="button"
+                                            onclick="openQuickEnrollStudent(@student.StudentId, '@student.RollNumber', '@fullName.Replace("'", "\\'")')"
+                                            class="text-teal-600 transition-colors hover:text-teal-900 dark:text-teal-400 dark:hover:text-teal-300"
+                                            title="Quick Enroll in Course">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                        </svg>
+                                    </button>
                                     <a asp-controller="Student" asp-action="EditStudent" asp-route-StudentId="@student.StudentId"
                                        class="text-yellow-600 transition-colors hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                                        title="Edit">
@@ -376,6 +391,69 @@
     </div>
 </div>
 
+<!-- Quick Enroll Modal -->
+<div id="quickEnrollModal" class="hidden fixed inset-0 z-[99999] flex items-center p-4 overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
+    <div onclick="closeQuickEnrollModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
+        <button onclick="closeQuickEnrollModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
+            </svg>
+        </button>
+
+        <div class="text-center">
+            <h4 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Quick Enroll in Course
+            </h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Enroll <strong id="enrollStudentDisplay" class="text-gray-900 dark:text-white"></strong> in a course
+            </p>
+
+            <form id="quickEnrollForm" class="mt-4 space-y-4 text-left">
+                <input type="hidden" id="enrollStudentId" />
+
+                <!-- Course Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Course <span class="text-red-500">*</span>
+                    </label>
+                    <select id="enrollCourseId" required
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                        <option value="">-- Select Course --</option>
+                    </select>
+                </div>
+
+                <!-- Semester Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Semester <span class="text-red-500">*</span>
+                    </label>
+                    <select id="enrollSemesterId" required
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                        <option value="">-- Select Semester --</option>
+                    </select>
+                </div>
+
+                <!-- Message Display -->
+                <div id="enrollMessage" class="hidden rounded-lg p-3 text-sm"></div>
+
+                <div class="flex items-center justify-center w-full gap-2 mt-5">
+                    <button type="button" onclick="closeQuickEnrollModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
+                        Cancel
+                    </button>
+                    <button type="submit" id="quickEnrollSubmitBtn" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-teal-500 shadow-theme-xs hover:bg-teal-600 sm:w-auto">
+                        <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        Enroll
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
@@ -443,6 +521,115 @@
             if (event.key === 'Escape') {
                 closeViewModal();
                 closeDeleteModal();
+                closeQuickEnrollModal();
+            }
+        });
+
+        // Quick Enroll Functions
+        let enrollCourses = [];
+        let enrollSemesters = [];
+
+        async function loadEnrollDropdownData() {
+            try {
+                const response = await fetch('/Enrollment/GetDropdownData');
+                const data = await response.json();
+                enrollCourses = data.courses || [];
+                enrollSemesters = data.semesters || [];
+            } catch (error) {
+                console.error('Error loading enrollment dropdown data:', error);
+            }
+        }
+
+        // Load enrollment dropdown data when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            loadEnrollDropdownData();
+        });
+
+        function openQuickEnrollStudent(studentId, rollNumber, fullName) {
+            document.getElementById('enrollStudentId').value = studentId;
+            document.getElementById('enrollStudentDisplay').textContent = fullName + ' (' + rollNumber + ')';
+
+            // Hide messages
+            document.getElementById('enrollMessage').classList.add('hidden');
+
+            // Populate course dropdown
+            const courseSelect = document.getElementById('enrollCourseId');
+            courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+            enrollCourses.forEach(c => {
+                courseSelect.innerHTML += `<option value="${c.id}">${c.text}</option>`;
+            });
+
+            // Populate semester dropdown
+            const semesterSelect = document.getElementById('enrollSemesterId');
+            semesterSelect.innerHTML = '<option value="">-- Select Semester --</option>';
+            enrollSemesters.forEach(s => {
+                semesterSelect.innerHTML += `<option value="${s.id}">${s.text}</option>`;
+            });
+
+            // Reset form
+            document.getElementById('quickEnrollForm').reset();
+            document.getElementById('enrollStudentId').value = studentId;
+
+            document.getElementById('quickEnrollModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeQuickEnrollModal() {
+            document.getElementById('quickEnrollModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('quickEnrollForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('quickEnrollSubmitBtn');
+            const messageDiv = document.getElementById('enrollMessage');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Enrolling...';
+
+            const formData = {
+                studentId: parseInt(document.getElementById('enrollStudentId').value),
+                courseId: parseInt(document.getElementById('enrollCourseId').value),
+                semesterId: parseInt(document.getElementById('enrollSemesterId').value)
+            };
+
+            try {
+                const response = await fetch('/Enrollment/QuickEnroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    messageDiv.textContent = result.message;
+                    messageDiv.className = 'rounded-lg p-3 text-sm bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-200 border border-green-200 dark:border-green-800';
+                    messageDiv.classList.remove('hidden');
+
+                    // Reset form
+                    document.getElementById('quickEnrollForm').reset();
+
+                    // Close modal after 1.5 seconds and reload page
+                    setTimeout(() => {
+                        closeQuickEnrollModal();
+                        location.reload();
+                    }, 1500);
+                } else {
+                    messageDiv.textContent = result.message || 'An error occurred';
+                    messageDiv.className = 'rounded-lg p-3 text-sm bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200 border border-red-200 dark:border-red-800';
+                    messageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                messageDiv.textContent = 'Network error. Please try again.';
+                messageDiv.className = 'rounded-lg p-3 text-sm bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200 border border-red-200 dark:border-red-800';
+                messageDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> Enroll';
             }
         });
     </script>

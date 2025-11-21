@@ -1,7 +1,7 @@
-﻿using AMS.Models;
+﻿
+using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,12 +17,9 @@ namespace AMS.Controllers
         }
 
         // GET: Course/Courses
-        [Authorize (Roles = "Admin")]
         public async Task<IActionResult> Courses(CourseFilterViewModel filter)
         {
             var query = _context.Courses
-                .Include(c => c.CourseAssignments)
-                .Include(c => c.Enrollments)
                 .AsQueryable();
 
             // Apply filters
@@ -46,11 +43,24 @@ namespace AMS.Controllers
                 .OrderBy(c => c.CourseCode)
                 .ToListAsync();
 
+            // Load counts separately to avoid circular references
+            foreach (var course in filter.Courses)
+            {
+                course.CourseAssignments = await _context.CourseAssignments
+                    .Where(ca => ca.CourseId == course.CourseId)
+                    .Select(ca => new CourseAssignment { AssignmentId = ca.AssignmentId })
+                    .ToListAsync();
+
+                course.Enrollments = await _context.Enrollments
+                    .Where(e => e.CourseId == course.CourseId)
+                    .Select(e => new Enrollment { EnrollmentId = e.EnrollmentId })
+                    .ToListAsync();
+            }
+
             return View(filter);
         }
 
         // GET: Course/AddCourse
-        [Authorize(Roles = "Admin")]
         public IActionResult AddCourse()
         {
             var model = new AddCourseViewModel
@@ -62,7 +72,6 @@ namespace AMS.Controllers
 
         // POST: Course/AddCourse
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddCourse(AddCourseViewModel model)
         {
@@ -97,7 +106,6 @@ namespace AMS.Controllers
         }
 
         // GET: Course/EditCourse/5
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditCourse(int? id)
         {
             if (id == null)
@@ -124,7 +132,6 @@ namespace AMS.Controllers
         }
 
         // POST: Course/EditCourse/5
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditCourse(int id, AddCourseViewModel model)
@@ -165,7 +172,6 @@ namespace AMS.Controllers
         }
 
         // POST: Course/DeleteCourse
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteCourse(int id)

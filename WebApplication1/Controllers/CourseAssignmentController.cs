@@ -72,7 +72,7 @@ namespace AMS.Controllers
                 .Select(t => new SelectListItem
                 {
                     Value = t.TeacherId.ToString(),
-                    Text = $"{t.FirstName} {t.LastName}"
+                    Text = $"{t.User} {t.LastName}"
                 })
                 .ToListAsync();
 
@@ -99,7 +99,7 @@ namespace AMS.Controllers
                 .Select(s => new SelectListItem
                 {
                     Value = s.SemesterId.ToString(),
-                    Text = s.SemesterName
+                    Text = $"{s.SemesterName} - {s.Year}"
                 })
                 .ToListAsync();
 
@@ -309,7 +309,7 @@ namespace AMS.Controllers
                 .Select(t => new SelectListItem
                 {
                     Value = t.TeacherId.ToString(),
-                    Text = $"{t.User} {t.User}"
+                    Text = $"{t.FirstName} {t.LastName}"
                 })
                 .ToListAsync();
 
@@ -336,7 +336,7 @@ namespace AMS.Controllers
                 .Select(s => new SelectListItem
                 {
                     Value = s.SemesterId.ToString(),
-                    Text = s.SemesterName
+                    Text = $"{s.SemesterName} - {s.Year}"
                 })
                 .ToListAsync();
         }
@@ -344,6 +344,90 @@ namespace AMS.Controllers
         private bool CourseAssignmentExists(int id)
         {
             return _context.CourseAssignments.Any(e => e.AssignmentId == id);
+        }
+        // GET: CourseAssignment/GetDropdownData (for AJAX)
+        [HttpGet]
+        public async Task<IActionResult> GetDropdownData()
+        {
+            var data = new
+            {
+                teachers = await _context.Teachers
+                    .Include(t => t.User)
+                    .Where(t => t.IsActive == true)
+                    .Select(t => new { value = t.TeacherId.ToString(), text = $"{t.FirstName} {t.LastName}" })
+                    .ToListAsync(),
+
+                courses = await _context.Courses
+                    .Where(c => c.IsActive == true)
+                    .Select(c => new { value = c.CourseId.ToString(), text = $"{c.CourseCode} - {c.CourseName}" })
+                    .ToListAsync(),
+
+                batches = await _context.Batches
+                    .Where(b => b.IsActive == true)
+                    .Select(b => new { value = b.BatchId.ToString(), text = $"{b.BatchName} - {b.Year}" })
+                    .ToListAsync(),
+
+                semesters = await _context.Semesters
+                    .Where(s => s.IsActive == true)
+                    .Select(s => new { value = s.SemesterId.ToString(), text = $"{s.SemesterName} - {s.Year}" })
+                    .ToListAsync()
+            };
+
+            return Json(data);
+        }
+
+        // POST: CourseAssignment/QuickAssign (AJAX endpoint)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickAssign([FromBody] QuickAssignRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Json(new { success = false, message = "Invalid data provided." });
+                }
+
+                // Check for duplicate assignment
+                var existingAssignment = await _context.CourseAssignments
+                    .FirstOrDefaultAsync(ca =>
+                        ca.TeacherId == request.TeacherId &&
+                        ca.CourseId == request.CourseId &&
+                        ca.BatchId == request.BatchId &&
+                        ca.SemesterId == request.SemesterId);
+
+                if (existingAssignment != null)
+                {
+                    return Json(new { success = false, message = "This course assignment already exists." });
+                }
+
+                var courseAssignment = new CourseAssignment
+                {
+                    TeacherId = request.TeacherId,
+                    CourseId = request.CourseId,
+                    BatchId = request.BatchId,
+                    SemesterId = request.SemesterId,
+                    IsActive = true
+                };
+
+                _context.CourseAssignments.Add(courseAssignment);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Course assigned successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while assigning the course." });
+            }
+        }
+
+        // Request model for QuickAssign
+        public class QuickAssignRequest
+        {
+            public int TeacherId { get; set; }
+            public int CourseId { get; set; }
+            public int BatchId { get; set; }
+            public int SemesterId { get; set; }
         }
     }
 }

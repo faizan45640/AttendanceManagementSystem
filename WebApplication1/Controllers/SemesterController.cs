@@ -1,4 +1,5 @@
-﻿using AMS.Models;
+﻿
+using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AMS.Controllers
 {
-    public class SemesterController: Controller
+    public class SemesterController : Controller
     {
         private readonly ApplicationDbContext _context;
 
@@ -19,8 +20,6 @@ namespace AMS.Controllers
         public async Task<IActionResult> Semesters(SemesterFilterViewModel filter)
         {
             var query = _context.Semesters
-                .Include(s => s.CourseAssignments)
-                .Include(s => s.Enrollments)
                 .AsQueryable();
 
             // Apply filters
@@ -39,6 +38,20 @@ namespace AMS.Controllers
                 .OrderByDescending(s => s.Year)
                 .ThenByDescending(s => s.StartDate)
                 .ToListAsync();
+
+            // Load counts separately to avoid circular references
+            foreach (var semester in filter.Semesters)
+            {
+                semester.CourseAssignments = await _context.CourseAssignments
+                    .Where(ca => ca.SemesterId == semester.SemesterId)
+                    .Select(ca => new CourseAssignment { AssignmentId = ca.AssignmentId })
+                    .ToListAsync();
+
+                semester.Enrollments = await _context.Enrollments
+                    .Where(e => e.SemesterId == semester.SemesterId)
+                    .Select(e => new Enrollment { EnrollmentId = e.EnrollmentId })
+                    .ToListAsync();
+            }
 
             return View(filter);
         }

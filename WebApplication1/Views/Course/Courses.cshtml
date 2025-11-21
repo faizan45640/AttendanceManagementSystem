@@ -203,6 +203,14 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
+                                    <button type="button"
+                                            onclick="openQuickAssign(@course.CourseId, '@course.CourseCode', '@course.CourseName')"
+                                            class="text-green-600 transition-colors hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                            title="Quick Assign">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </button>
                                     <a asp-controller="CourseAssignment" asp-action="CourseAssignments" asp-route-CourseId="@course.CourseId"
                                        class="text-purple-600 transition-colors hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
                                        title="View Assignments">
@@ -210,6 +218,21 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                         </svg>
                                     </a>
+                                    <a asp-controller="Enrollment" asp-action="Enrollments" asp-route-CourseId="@course.CourseId"
+                                       class="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                       title="View Enrollments">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </a>
+                                    <button type="button"
+                                            onclick="openQuickEnrollCourse(@course.CourseId, '@course.CourseCode', '@course.CourseName')"
+                                            class="text-teal-600 transition-colors hover:text-teal-900 dark:text-teal-400 dark:hover:text-teal-300"
+                                            title="Quick Enroll Student">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                        </svg>
+                                    </button>
                                     <a asp-controller="Course" asp-action="EditCourse" asp-route-id="@course.CourseId"
                                        class="text-yellow-600 transition-colors hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                                        title="Edit">
@@ -345,6 +368,157 @@
     </div>
 </div>
 
+<!-- Quick Assign Modal -->
+<div id="quickAssignModal" class="hidden fixed inset-0 z-[99999] flex items-center p-4 overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
+    <div onclick="closeQuickAssignModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
+        <button onclick="closeQuickAssignModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
+            </svg>
+        </button>
+
+        <div class="text-center">
+            <div class="relative flex items-center justify-center z-1 mb-4">
+                <svg class="fill-green-50 dark:fill-green-500/15" width="70" height="70" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z" fill=""></path>
+                </svg>
+
+                <span class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                    <svg class="fill-green-600 dark:fill-green-500" width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" stroke="currentColor" />
+                    </svg>
+                </span>
+            </div>
+
+            <h4 class="mb-3 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Quick Assign Course
+            </h4>
+
+            <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+                Assign <span id="quickAssignCourseName" class="font-semibold text-gray-700 dark:text-gray-300"></span> to a teacher and batch
+            </p>
+
+            <!-- Error Message -->
+            <div id="quickAssignError" class="hidden mb-4 rounded-lg border border-error-500 bg-error-50 p-3 text-left dark:border-error-500/30 dark:bg-error-500/15">
+                <p class="text-sm text-error-600 dark:text-error-400" id="quickAssignErrorText"></p>
+            </div>
+
+            <!-- Success Message -->
+            <div id="quickAssignSuccess" class="hidden mb-4 rounded-lg border border-success-500 bg-success-50 p-3 text-left dark:border-success-500/30 dark:bg-success-500/15">
+                <p class="text-sm text-success-600 dark:text-success-400">Assignment created successfully!</p>
+            </div>
+
+            <form id="quickAssignForm" class="space-y-4 text-left">
+                <input type="hidden" id="quickAssignCourseId" />
+
+                <!-- Teacher -->
+                <div>
+                    <label for="quickAssignTeacherId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Teacher *</label>
+                    <select id="quickAssignTeacherId" required
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                        <option value="">Select Teacher</option>
+                    </select>
+                </div>
+
+                <!-- Batch -->
+                <div>
+                    <label for="quickAssignBatchId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Batch *</label>
+                    <select id="quickAssignBatchId" required
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                        <option value="">Select Batch</option>
+                    </select>
+                </div>
+
+                <!-- Semester -->
+                <div>
+                    <label for="quickAssignSemesterId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Semester *</label>
+                    <select id="quickAssignSemesterId" required
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                        <option value="">Select Semester</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-center w-full gap-2 mt-5">
+                    <button type="button" onclick="closeQuickAssignModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
+                        Cancel
+                    </button>
+                    <button type="submit" id="quickAssignSubmitBtn" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-green-500 shadow-theme-xs hover:bg-green-600 sm:w-auto">
+                        <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Assign
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Enroll Modal -->
+<div id="quickEnrollModal" class="hidden fixed inset-0 z-[99999] flex items-center p-4 overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
+    <div onclick="closeQuickEnrollModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-5 dark:bg-gray-900 sm:p-6">
+        <button onclick="closeQuickEnrollModal()" class="absolute right-2 top-2 z-999 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-4 sm:top-4">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
+            </svg>
+        </button>
+
+        <div class="text-center">
+            <h4 class="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+                Quick Enroll Student
+            </h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Enroll a student in <strong id="enrollCourseDisplay" class="text-gray-900 dark:text-white"></strong>
+            </p>
+
+            <form id="quickEnrollForm" class="mt-4 space-y-4 text-left">
+                <input type="hidden" id="enrollCourseId" />
+
+                <!-- Student Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Student <span class="text-red-500">*</span>
+                    </label>
+                    <select id="enrollStudentId" required
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                        <option value="">-- Select Student --</option>
+                    </select>
+                </div>
+
+                <!-- Semester Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Semester <span class="text-red-500">*</span>
+                    </label>
+                    <select id="enrollSemesterId" required
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                        <option value="">-- Select Semester --</option>
+                    </select>
+                </div>
+
+                <!-- Message Display -->
+                <div id="enrollMessage" class="hidden rounded-lg p-3 text-sm"></div>
+
+                <div class="flex items-center justify-center w-full gap-2 mt-5">
+                    <button type="button" onclick="closeQuickEnrollModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
+                        Cancel
+                    </button>
+                    <button type="submit" id="quickEnrollSubmitBtn" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-teal-500 shadow-theme-xs hover:bg-teal-600 sm:w-auto">
+                        <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        Enroll
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         function viewCourse(id) {
@@ -428,5 +602,228 @@
             document.getElementById('deleteModal').classList.add('hidden');
             document.getElementById('deleteModal').classList.remove('flex');
         }
+
+        // Quick Assign Functions
+        let teachers = [];
+        let batches = [];
+        let semesters = [];
+
+        async function loadDropdownData() {
+            try {
+                const response = await fetch('/CourseAssignment/GetDropdownData');
+                const data = await response.json();
+                teachers = data.teachers || [];
+                batches = data.batches || [];
+                semesters = data.semesters || [];
+            } catch (error) {
+                console.error('Error loading dropdown data:', error);
+            }
+        }
+
+        // Load dropdown data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDropdownData();
+        });
+
+        function openQuickAssign(courseId, courseCode, courseName) {
+            document.getElementById('quickAssignCourseId').value = courseId;
+            document.getElementById('quickAssignCourseName').textContent = courseCode + ' - ' + courseName;
+
+            // Hide messages
+            document.getElementById('quickAssignError').classList.add('hidden');
+            document.getElementById('quickAssignSuccess').classList.add('hidden');
+
+            // Populate dropdowns
+            const teacherSelect = document.getElementById('quickAssignTeacherId');
+            teacherSelect.innerHTML = '<option value="">Select Teacher</option>';
+            teachers.forEach(t => {
+                teacherSelect.innerHTML += `<option value="${t.value}">${t.text}</option>`;
+            });
+
+            const batchSelect = document.getElementById('quickAssignBatchId');
+            batchSelect.innerHTML = '<option value="">Select Batch</option>';
+            batches.forEach(b => {
+                batchSelect.innerHTML += `<option value="${b.value}">${b.text}</option>`;
+            });
+
+            const semesterSelect = document.getElementById('quickAssignSemesterId');
+            semesterSelect.innerHTML = '<option value="">Select Semester</option>';
+            semesters.forEach(s => {
+                semesterSelect.innerHTML += `<option value="${s.value}">${s.text}</option>`;
+            });
+
+            // Reset form
+            document.getElementById('quickAssignForm').reset();
+            document.getElementById('quickAssignCourseId').value = courseId;
+
+            document.getElementById('quickAssignModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeQuickAssignModal() {
+            document.getElementById('quickAssignModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('quickAssignForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('quickAssignSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Assigning...';
+
+            const formData = {
+                courseId: parseInt(document.getElementById('quickAssignCourseId').value),
+                teacherId: parseInt(document.getElementById('quickAssignTeacherId').value),
+                batchId: parseInt(document.getElementById('quickAssignBatchId').value),
+                semesterId: parseInt(document.getElementById('quickAssignSemesterId').value)
+            };
+
+            try {
+                const response = await fetch('/CourseAssignment/QuickAssign', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('quickAssignSuccess').classList.remove('hidden');
+                    document.getElementById('quickAssignError').classList.add('hidden');
+
+                    // Reset form
+                    document.getElementById('quickAssignForm').reset();
+
+                    // Close modal after 2 seconds and reload page
+                    setTimeout(() => {
+                        closeQuickAssignModal();
+                        location.reload();
+                    }, 1500);
+                } else {
+                    document.getElementById('quickAssignErrorText').textContent = result.message || 'An error occurred';
+                    document.getElementById('quickAssignError').classList.remove('hidden');
+                    document.getElementById('quickAssignSuccess').classList.add('hidden');
+                }
+            } catch (error) {
+                document.getElementById('quickAssignErrorText').textContent = 'Network error. Please try again.';
+                document.getElementById('quickAssignError').classList.remove('hidden');
+                document.getElementById('quickAssignSuccess').classList.add('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Assign';
+            }
+        });
+
+        // Quick Enroll Functions
+        let enrollStudents = [];
+        let enrollSemesters = [];
+
+        async function loadEnrollDropdownData() {
+            try {
+                const response = await fetch('/Enrollment/GetDropdownData');
+                const data = await response.json();
+                enrollStudents = data.students || [];
+                enrollSemesters = data.semesters || [];
+            } catch (error) {
+                console.error('Error loading enrollment dropdown data:', error);
+            }
+        }
+
+        // Load enrollment dropdown data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEnrollDropdownData();
+        });
+
+        function openQuickEnrollCourse(courseId, courseCode, courseName) {
+            document.getElementById('enrollCourseId').value = courseId;
+            document.getElementById('enrollCourseDisplay').textContent = courseCode + ' - ' + courseName;
+
+            // Hide messages
+            document.getElementById('enrollMessage').classList.add('hidden');
+
+            // Populate student dropdown
+            const studentSelect = document.getElementById('enrollStudentId');
+            studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
+            enrollStudents.forEach(s => {
+                studentSelect.innerHTML += `<option value="${s.id}">${s.text}</option>`;
+            });
+
+            // Populate semester dropdown
+            const semesterSelect = document.getElementById('enrollSemesterId');
+            semesterSelect.innerHTML = '<option value="">-- Select Semester --</option>';
+            enrollSemesters.forEach(s => {
+                semesterSelect.innerHTML += `<option value="${s.id}">${s.text}</option>`;
+            });
+
+            // Reset form
+            document.getElementById('quickEnrollForm').reset();
+            document.getElementById('enrollCourseId').value = courseId;
+
+            document.getElementById('quickEnrollModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeQuickEnrollModal() {
+            document.getElementById('quickEnrollModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('quickEnrollForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('quickEnrollSubmitBtn');
+            const messageDiv = document.getElementById('enrollMessage');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Enrolling...';
+
+            const formData = {
+                studentId: parseInt(document.getElementById('enrollStudentId').value),
+                courseId: parseInt(document.getElementById('enrollCourseId').value),
+                semesterId: parseInt(document.getElementById('enrollSemesterId').value)
+            };
+
+            try {
+                const response = await fetch('/Enrollment/QuickEnroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    messageDiv.textContent = result.message;
+                    messageDiv.className = 'rounded-lg p-3 text-sm bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-200 border border-green-200 dark:border-green-800';
+                    messageDiv.classList.remove('hidden');
+
+                    // Reset form
+                    document.getElementById('quickEnrollForm').reset();
+
+                    // Close modal after 1.5 seconds and reload page
+                    setTimeout(() => {
+                        closeQuickEnrollModal();
+                        location.reload();
+                    }, 1500);
+                } else {
+                    messageDiv.textContent = result.message || 'An error occurred';
+                    messageDiv.className = 'rounded-lg p-3 text-sm bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200 border border-red-200 dark:border-red-800';
+                    messageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                messageDiv.textContent = 'Network error. Please try again.';
+                messageDiv.className = 'rounded-lg p-3 text-sm bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200 border border-red-200 dark:border-red-800';
+                messageDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg> Enroll';
+            }
+        });
     </script>
 }
