@@ -5,6 +5,7 @@ using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AMS.Controllers
 {
@@ -70,6 +71,20 @@ namespace AMS.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Check if timetable already exists for this batch and semester
+                var existingTimetable = await _context.Timetables
+                    .AnyAsync(t => t.BatchId == model.BatchId && t.SemesterId == model.SemesterId);
+
+                if (existingTimetable)
+                {
+                    ModelState.AddModelError("", "A timetable already exists for this batch and semester. Please edit the existing one.");
+
+                    model.Batches = new SelectList(await _context.Batches.ToListAsync(), "BatchId", "BatchName");
+                    var sems = await _context.Semesters.Select(s => new { s.SemesterId, Name = s.Year + " - " + s.StartDate }).ToListAsync();
+                    model.Semesters = new SelectList(sems, "SemesterId", "Name");
+                    return View(model);
+                }
+
                 var timetable = new Timetable
                 {
                     BatchId = model.BatchId,
@@ -212,6 +227,17 @@ namespace AMS.Controllers
         // GET: Timetable/MyTimetable
         public async Task<IActionResult> MyTimetable(int? batchId, int? teacherId)
         {
+            // Security: If Teacher, force teacherId to be their own
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                if (teacher == null) return RedirectToAction("Login", "Auth");
+
+                teacherId = teacher.TeacherId;
+                batchId = null; // Teachers shouldn't view by batch here, or we can allow it if we filter by their courses
+            }
+
             if (batchId.HasValue)
             {
                 var timetable = await _context.Timetables

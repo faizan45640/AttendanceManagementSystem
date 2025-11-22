@@ -1,13 +1,16 @@
-﻿using AMS.Models;
-using AMS.Models.Entities;
+﻿using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Linq;
+using AMS.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AMS.Controllers
 {
+    [Authorize]
     public class AttendanceController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,6 +18,19 @@ namespace AMS.Controllers
         public AttendanceController(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        // GET: Attendance/MyTeacherReport
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> MyTeacherReport()
+        {
+            var userId = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Auth");
+
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+            if (teacher == null) return RedirectToAction("Login", "Auth");
+
+            return await TeacherReport(teacher.TeacherId);
         }
 
         // GET: Attendance/Mark
@@ -33,6 +49,17 @@ namespace AMS.Controllers
 
             if (slot == null) return NotFound("Slot not found.");
             if (slot.Timetable?.IsActive != true) return BadRequest("Cannot mark attendance for inactive timetable.");
+
+            // Security Check: If user is a Teacher, ensure they own this slot
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                if (teacher == null || slot.CourseAssignment.TeacherId != teacher.TeacherId)
+                {
+                    return Forbid();
+                }
+            }
 
             // Calculate the date based on the dayOfWeek
             var today = DateOnly.FromDateTime(DateTime.Now);
@@ -132,12 +159,24 @@ namespace AMS.Controllers
             // Get students enrolled in this course/semester
             var enrollments = await _context.Enrollments
                 .Include(e => e.Student)
-                .ThenInclude(s => s.User)
                 .Where(e => e.CourseId == assignment.CourseId && e.SemesterId == assignment.SemesterId && e.Status == "Active")
                 .ToListAsync();
 
             // If CourseAssignment has a specific BatchId, filter by it
             // Also filter by Timetable's BatchId to be sure we are marking for the correct batch
+            // FIX: Allow students from other batches if they are explicitly enrolled in this course/semester
+            // We only filter by batch if the enrollment logic requires it, but here we assume Enrollment is the source of truth.
+            // However, if the same course is taught to multiple batches separately, we might need to distinguish.
+            // But if a student is enrolled in "Math 101" for "Semester 1", and there are two sections (Batch A, Batch B),
+            // the Enrollment table doesn't specify Section/Batch.
+            // If we remove the filter, the student appears in BOTH sections.
+            // Given the user's request ("I enrolled a student from another batch... teacher can't see that student"),
+            // we MUST include them.
+            // To avoid duplicates in multiple sections, we could check if the student belongs to the batch OR is enrolled.
+            // But since we don't have SectionId in Enrollment, we'll show them in all sections of that course.
+            // This is the intended behavior for "Out of Batch" enrollments in this system context.
+
+            /* 
             if (slot.Timetable?.BatchId != null)
             {
                 enrollments = enrollments.Where(e => e.Student.BatchId == slot.Timetable.BatchId).ToList();
@@ -146,6 +185,7 @@ namespace AMS.Controllers
             {
                 enrollments = enrollments.Where(e => e.Student.BatchId == assignment.BatchId).ToList();
             }
+            */
 
             foreach (var enrollment in enrollments)
             {
@@ -173,6 +213,21 @@ namespace AMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Save(MarkAttendanceViewModel model)
         {
+            // Security Check: If user is a Teacher, ensure they own this course assignment
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+
+                // We need to check the CourseAssignment ownership
+                var assignment = await _context.CourseAssignments.FindAsync(model.CourseAssignmentId);
+
+                if (teacher == null || assignment == null || assignment.TeacherId != teacher.TeacherId)
+                {
+                    return Forbid();
+                }
+            }
+
             // Find or create session
             var session = await _context.Sessions
                 .Include(s => s.Attendances)
@@ -232,17 +287,51 @@ namespace AMS.Controllers
                 Duration = duration
             };
 
+            // Security: Check if Teacher
+            int? currentTeacherId = null;
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                if (teacher != null) currentTeacherId = teacher.TeacherId;
+            }
+
             // Populate Dropdowns
-            model.BatchList = await _context.Batches
-                .Select(b => new SelectListItem { Value = b.BatchId.ToString(), Text = b.BatchName, Selected = b.BatchId == batchId })
-                .ToListAsync();
+            if (currentTeacherId.HasValue)
+            {
+                // Teacher: Only show assigned batches and courses
+                var teacherAssignments = await _context.CourseAssignments
+                    .Where(ca => ca.TeacherId == currentTeacherId && ca.IsActive == true)
+                    .Select(ca => new { ca.BatchId, ca.Batch.BatchName, ca.CourseId, ca.Course.CourseName })
+                    .ToListAsync();
+
+                var batchIds = teacherAssignments.Select(a => a.BatchId).Distinct().ToList();
+                var courseIds = teacherAssignments.Select(a => a.CourseId).Distinct().ToList();
+
+                model.BatchList = await _context.Batches
+                    .Where(b => batchIds.Contains(b.BatchId))
+                    .Select(b => new SelectListItem { Value = b.BatchId.ToString(), Text = b.BatchName, Selected = b.BatchId == batchId })
+                    .ToListAsync();
+
+                model.CourseList = await _context.Courses
+                    .Where(c => courseIds.Contains(c.CourseId))
+                    .Select(c => new SelectListItem { Value = c.CourseId.ToString(), Text = c.CourseName, Selected = c.CourseId == courseId })
+                    .ToListAsync();
+            }
+            else
+            {
+                // Admin: Show all
+                model.BatchList = await _context.Batches
+                    .Select(b => new SelectListItem { Value = b.BatchId.ToString(), Text = b.BatchName, Selected = b.BatchId == batchId })
+                    .ToListAsync();
+
+                model.CourseList = await _context.Courses
+                    .Select(c => new SelectListItem { Value = c.CourseId.ToString(), Text = c.CourseName, Selected = c.CourseId == courseId })
+                    .ToListAsync();
+            }
 
             model.SemesterList = await _context.Semesters
                 .Select(s => new SelectListItem { Value = s.SemesterId.ToString(), Text = s.SemesterName, Selected = s.SemesterId == semesterId })
-                .ToListAsync();
-
-            model.CourseList = await _context.Courses
-                .Select(c => new SelectListItem { Value = c.CourseId.ToString(), Text = c.CourseName, Selected = c.CourseId == courseId })
                 .ToListAsync();
 
             // Find Student
@@ -256,13 +345,72 @@ namespace AMS.Controllers
                 student = await _context.Students.Include(s => s.Batch).FirstOrDefaultAsync(s => s.RollNumber == rollNumber);
             }
 
+            // Security: Verify Teacher access to student
+            if (currentTeacherId.HasValue && student != null)
+            {
+                // Check if student is enrolled in any course taught by this teacher
+                // We check if the teacher has an assignment for the course the student is enrolled in.
+                // We do NOT restrict by student's batch, as they might be an out-of-batch enrollment.
+                var isEnrolled = await _context.Enrollments
+                    .AnyAsync(e => e.StudentId == student.StudentId &&
+                                   e.Status == "Active" &&
+                                   _context.CourseAssignments.Any(ca => ca.TeacherId == currentTeacherId && ca.CourseId == e.CourseId));
+
+                if (!isEnrolled)
+                {
+                    // If not enrolled, maybe check if they are just in the batch (for initial lookup)
+                    // But the requirement says "restricted to his students".
+                    // If strict, we deny.
+                    // Let's return a view with error or null student.
+                    TempData["error"] = "You do not have permission to view this student's report.";
+                    student = null;
+                    model.SelectedStudentId = null;
+                    model.RollNumber = null;
+                    model.SearchRollNumber = null;
+                }
+            }
+
             // Populate Student List if Batch is selected
             if (batchId.HasValue)
             {
-                model.StudentList = await _context.Students
-                   .Where(s => s.BatchId == batchId)
-                   .Select(s => new SelectListItem { Value = s.StudentId.ToString(), Text = $"{s.FirstName} {s.LastName} ({s.RollNumber})", Selected = s.StudentId == (student != null ? student.StudentId : null) })
-                   .ToListAsync();
+                // Start with students belonging to the batch
+                var query = _context.Students.Where(s => s.BatchId == batchId);
+
+                // Also include students from OTHER batches who are enrolled in courses assigned to this batch (and teacher)
+                if (currentTeacherId.HasValue)
+                {
+                    // 1. Get courses taught by this teacher to this batch
+                    var teacherCourseIds = await _context.CourseAssignments
+                        .Where(ca => ca.TeacherId == currentTeacherId && ca.BatchId == batchId)
+                        .Select(ca => ca.CourseId)
+                        .ToListAsync();
+
+                    // 2. Get ALL students enrolled in these courses (regardless of their batch)
+                    var enrolledStudentIds = await _context.Enrollments
+                        .Where(e => teacherCourseIds.Contains(e.CourseId) && e.Status == "Active" && e.StudentId != null)
+                        .Select(e => (int)e.StudentId)
+                        .Distinct()
+                        .ToListAsync();
+
+                    // 3. Select students who are EITHER in the batch OR enrolled in the courses
+                    // Since 'query' is IQueryable, we need to reconstruct it to allow OR condition across tables
+                    // Easier way: Get the list of IDs first
+                    var batchStudentIds = await query.Select(s => s.StudentId).ToListAsync();
+                    var allStudentIds = batchStudentIds.Concat(enrolledStudentIds).Distinct().ToList();
+
+                    model.StudentList = await _context.Students
+                        .Where(s => allStudentIds.Contains(s.StudentId))
+                        .Select(s => new SelectListItem { Value = s.StudentId.ToString(), Text = $"{s.FirstName} {s.LastName} ({s.RollNumber})", Selected = s.StudentId == (student != null ? student.StudentId : null) })
+                        .ToListAsync();
+                }
+                else
+                {
+                    // Admin view: Just show batch students (default behavior) or expand if needed.
+                    // For now, keep default for Admin to avoid clutter, unless requested.
+                    model.StudentList = await query
+                        .Select(s => new SelectListItem { Value = s.StudentId.ToString(), Text = $"{s.FirstName} {s.LastName} ({s.RollNumber})", Selected = s.StudentId == (student != null ? student.StudentId : null) })
+                        .ToListAsync();
+                }
             }
 
             if (student == null)
@@ -277,7 +425,7 @@ namespace AMS.Controllers
             model.SearchRollNumber = student.RollNumber;
 
             // Get all attendance records for this student
-            var query = _context.Attendances
+            var attendanceQuery = _context.Attendances
                 .Include(a => a.Session)
                 .ThenInclude(s => s.CourseAssignment)
                 .ThenInclude(ca => ca.Course)
@@ -289,17 +437,23 @@ namespace AMS.Controllers
                 .ThenInclude(ca => ca.Teacher)
                 .Where(a => a.StudentId == student.StudentId);
 
+            // Security: Filter attendance for Teacher
+            if (currentTeacherId.HasValue)
+            {
+                attendanceQuery = attendanceQuery.Where(a => a.Session.CourseAssignment.TeacherId == currentTeacherId);
+            }
+
             // Apply Filters
             if (semesterId.HasValue)
             {
-                query = query.Where(a => a.Session.CourseAssignment.SemesterId == semesterId);
+                attendanceQuery = attendanceQuery.Where(a => a.Session.CourseAssignment.SemesterId == semesterId);
             }
             if (courseId.HasValue)
             {
-                query = query.Where(a => a.Session.CourseAssignment.CourseId == courseId);
+                attendanceQuery = attendanceQuery.Where(a => a.Session.CourseAssignment.CourseId == courseId);
             }
 
-            var attendances = await query
+            var attendances = await attendanceQuery
                 .OrderByDescending(a => a.Session.SessionDate)
                 .ToListAsync();
 
@@ -519,6 +673,12 @@ namespace AMS.Controllers
                         if (courseId.HasValue)
                         {
                             daySlots = daySlots.Where(s => s.CourseAssignment.CourseId == courseId).ToList();
+                        }
+
+                        // Security: If Teacher, only show slots assigned to them
+                        if (currentTeacherId.HasValue)
+                        {
+                            daySlots = daySlots.Where(s => s.CourseAssignment.TeacherId == currentTeacherId).ToList();
                         }
                     }
 

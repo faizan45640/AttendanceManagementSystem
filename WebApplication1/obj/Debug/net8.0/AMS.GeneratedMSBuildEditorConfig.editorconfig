@@ -62,12 +62,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxNeUF0dGVuZGFuY2UuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/StudentReport.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxTdHVkZW50UmVwb3J0LmNzaHRtbA==
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/MyTeacherReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxNeVRlYWNoZXJSZXBvcnQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/TeacherReport.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxUZWFjaGVyUmVwb3J0LmNzaHRtbA==
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/StudentReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxTdHVkZW50UmVwb3J0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Auth/Login.cshtml]
@@ -192,6 +192,14 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Student/Students.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxTdHVkZW50cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TeacherPortal/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclBvcnRhbFxEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TeacherPortal/MyCourses.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclBvcnRhbFxNeUNvdXJzZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Teacher/AddTeacher.cshtml]

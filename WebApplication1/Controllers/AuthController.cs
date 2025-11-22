@@ -52,7 +52,7 @@ namespace AMS.Controllers
             return user.Role switch
             {
                 "Admin" => RedirectToAction("Dashboard", "Admin"),
-                "Teacher" => RedirectToAction("Dashboard", "Teacher"),
+                "Teacher" => RedirectToAction("Dashboard", "TeacherPortal"),
                 "Student" => RedirectToAction("Dashboard", "Student"),
                 _ => RedirectToAction("Login")
             };

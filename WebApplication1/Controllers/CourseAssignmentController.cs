@@ -67,12 +67,11 @@ namespace AMS.Controllers
 
             // Load dropdowns
             filter.Teachers = await _context.Teachers
-                .Include(t => t.User)
                 .Where(t => t.IsActive == true)
                 .Select(t => new SelectListItem
                 {
                     Value = t.TeacherId.ToString(),
-                    Text = $"{t.User} {t.LastName}"
+                    Text = $"{t.FirstName} {t.LastName}"
                 })
                 .ToListAsync();
 
@@ -126,17 +125,16 @@ namespace AMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Check for duplicate assignment
+                // Check if this course is already assigned to this batch in this semester (regardless of teacher)
                 var existingAssignment = await _context.CourseAssignments
                     .FirstOrDefaultAsync(ca =>
-                        ca.TeacherId == model.TeacherId &&
                         ca.CourseId == model.CourseId &&
                         ca.BatchId == model.BatchId &&
                         ca.SemesterId == model.SemesterId);
 
                 if (existingAssignment != null)
                 {
-                    ModelState.AddModelError("", "This course assignment already exists.");
+                    ModelState.AddModelError("", "This course is already assigned to a teacher for this batch and semester. Only one teacher can be assigned per course per batch in a semester.");
                     await LoadDropdowns(model);
                     return View(model);
                 }
@@ -154,7 +152,7 @@ namespace AMS.Controllers
                 await _context.SaveChangesAsync();
 
                 // Get names for success message
-                var teacher = await _context.Teachers.Include(t => t.User).FirstOrDefaultAsync(t => t.TeacherId == model.TeacherId);
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.TeacherId == model.TeacherId);
                 var course = await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == model.CourseId);
 
                 TempData["success"] = $"Course '{course?.CourseName}' has been assigned to '{teacher?.FirstName} {teacher?.LastName}' successfully!";
@@ -215,17 +213,17 @@ namespace AMS.Controllers
                 try
                 {
                     // Check for duplicate assignment (excluding current)
+                    // Ensure only one teacher per course-batch-semester
                     var existingAssignment = await _context.CourseAssignments
                         .FirstOrDefaultAsync(ca =>
                             ca.AssignmentId != AssignmentId &&
-                            ca.TeacherId == model.TeacherId &&
                             ca.CourseId == model.CourseId &&
                             ca.BatchId == model.BatchId &&
                             ca.SemesterId == model.SemesterId);
 
                     if (existingAssignment != null)
                     {
-                        ModelState.AddModelError("", "This course assignment already exists.");
+                        ModelState.AddModelError("", "This course is already assigned to a teacher for this batch and semester. Only one teacher can be assigned per course per batch in a semester.");
                         await LoadDropdowns(model);
                         ViewBag.AssignmentId = AssignmentId;
                         return View(model);
@@ -304,7 +302,6 @@ namespace AMS.Controllers
         private async Task LoadDropdowns(AddCourseAssignmentViewModel model)
         {
             model.Teachers = await _context.Teachers
-                .Include(t => t.User)
                 .Where(t => t.IsActive == true)
                 .Select(t => new SelectListItem
                 {
@@ -345,6 +342,7 @@ namespace AMS.Controllers
         {
             return _context.CourseAssignments.Any(e => e.AssignmentId == id);
         }
+
         // GET: CourseAssignment/GetDropdownData (for AJAX)
         [HttpGet]
         public async Task<IActionResult> GetDropdownData()
@@ -352,7 +350,6 @@ namespace AMS.Controllers
             var data = new
             {
                 teachers = await _context.Teachers
-                    .Include(t => t.User)
                     .Where(t => t.IsActive == true)
                     .Select(t => new { value = t.TeacherId.ToString(), text = $"{t.FirstName} {t.LastName}" })
                     .ToListAsync(),
@@ -391,14 +388,13 @@ namespace AMS.Controllers
                 // Check for duplicate assignment
                 var existingAssignment = await _context.CourseAssignments
                     .FirstOrDefaultAsync(ca =>
-                        ca.TeacherId == request.TeacherId &&
                         ca.CourseId == request.CourseId &&
                         ca.BatchId == request.BatchId &&
                         ca.SemesterId == request.SemesterId);
 
                 if (existingAssignment != null)
                 {
-                    return Json(new { success = false, message = "This course assignment already exists." });
+                    return Json(new { success = false, message = "This course is already assigned to a teacher for this batch and semester. Only one teacher can be assigned per course per batch in a semester." });
                 }
 
                 var courseAssignment = new CourseAssignment
