@@ -11,8 +11,10 @@ namespace AMS.Models.Entities
         public int? CourseId { get; set; }
 
         public int? SemesterId { get; set; }
-
+        public int? BatchId { get; set; }
         public string? Status { get; set; }
+
+        public virtual Batch? Batch { get; set; }
 
         public virtual Course? Course { get; set; }
 

@@ -51,8 +51,8 @@
                         <span asp-validation-for="CourseId" class="text-red-600 dark:text-red-400 text-sm mt-1 block"></span>
                     </div>
 
-                    <!-- Grid for Semester and Status -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Grid for Semester, Batch and Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Semester -->
                         <div>
                             <label asp-for="SemesterId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -63,6 +63,19 @@
                                 <option value="">-- Select Semester --</option>
                             </select>
                             <span asp-validation-for="SemesterId" class="text-red-600 dark:text-red-400 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- Batch (Optional) -->
+                        <div>
+                            <label asp-for="BatchId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Batch (Optional)
+                            </label>
+                            <select asp-for="BatchId" asp-items="Model.Batches"
+                                    class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-colors">
+                                <option value="">-- Default (Student's Batch) --</option>
+                            </select>
+                            <span asp-validation-for="BatchId" class="text-red-600 dark:text-red-400 text-sm mt-1 block"></span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Select if student attends a different batch for this course</p>
                         </div>
 
                         <!-- Status -->

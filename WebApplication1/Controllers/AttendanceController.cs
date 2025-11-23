@@ -6,9 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Linq;
 using AMS.Models;
+//rendering
 using Microsoft.AspNetCore.Mvc.Rendering;
-
 namespace AMS.Controllers
+    
 {
     [Authorize]
     public class AttendanceController : Controller
@@ -187,7 +188,21 @@ namespace AMS.Controllers
             }
             */
 
-            foreach (var enrollment in enrollments)
+            // ROBUST LOGIC: Use Enrollment.BatchId to determine class allocation.
+            // 1. If Enrollment has a specific BatchId, the student attends THAT batch's class.
+            // 2. If Enrollment.BatchId is null, the student attends their Home Batch's class (Student.BatchId).
+
+            var slotBatchId = slot.Timetable?.BatchId ?? assignment.BatchId;
+
+            // Filter enrollments based on the target batch
+            var validEnrollments = enrollments.Where(e =>
+                // Case A: Explicitly assigned to this batch for this course
+                (e.BatchId.HasValue && e.BatchId == slotBatchId) ||
+                // Case B: Not explicitly assigned, but their home batch matches (Standard case)
+                (!e.BatchId.HasValue && e.Student.BatchId == slotBatchId)
+            ).ToList();
+
+            foreach (var enrollment in validEnrollments)
             {
                 var student = enrollment.Student;
                 if (student == null) continue;
@@ -386,15 +401,24 @@ namespace AMS.Controllers
                         .ToListAsync();
 
                     // 2. Get ALL students enrolled in these courses (regardless of their batch)
+                    // Updated Logic: Only include students who are explicitly assigned to this batch via Enrollment
+                    // OR students who are in this batch and have no specific override.
                     var enrolledStudentIds = await _context.Enrollments
                         .Where(e => teacherCourseIds.Contains(e.CourseId) && e.Status == "Active" && e.StudentId != null)
+                        .Where(e => (e.BatchId == batchId) || (e.BatchId == null && e.Student.BatchId == batchId))
                         .Select(e => (int)e.StudentId)
                         .Distinct()
                         .ToListAsync();
 
                     // 3. Select students who are EITHER in the batch OR enrolled in the courses
-                    // Since 'query' is IQueryable, we need to reconstruct it to allow OR condition across tables
-                    // Easier way: Get the list of IDs first
+                    // Since we filtered enrolledStudentIds to only include those relevant to THIS batch,
+                    // we can just use that list.
+                    // However, the original 'query' gets all students in the batch.
+                    // We should combine them carefully.
+
+                    // Actually, with the new logic, 'enrolledStudentIds' covers everyone who SHOULD be in this batch's report for these courses.
+                    // But 'query' covers students who are physically in the batch (for general reporting).
+
                     var batchStudentIds = await query.Select(s => s.StudentId).ToListAsync();
                     var allStudentIds = batchStudentIds.Concat(enrolledStudentIds).Distinct().ToList();
 

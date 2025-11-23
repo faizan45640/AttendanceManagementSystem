@@ -1,4 +1,5 @@
-﻿using AMS.Models;
+﻿
+using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,7 @@ namespace AMS.Controllers
         public async Task<IActionResult> Enrollments(EnrollmentFilterViewModel filter)
         {
             var query = _context.Enrollments
-                .Include(e => e.Student).ThenInclude(s => s.User)
+                .Include(e => e.Student)
                 .Include(e => e.Student).ThenInclude(s => s.Batch)
                 .Include(e => e.Course)
                 .Include(e => e.Semester)
@@ -58,7 +59,6 @@ namespace AMS.Controllers
 
             // Load dropdowns
             filter.Students = await _context.Students
-                .Include(s => s.User)
                 .Include(s => s.Batch)
                 .Where(s => s.IsActive == true)
                 .Select(s => new SelectListItem
@@ -129,6 +129,7 @@ namespace AMS.Controllers
                     StudentId = model.StudentId,
                     CourseId = model.CourseId,
                     SemesterId = model.SemesterId,
+                    BatchId = model.BatchId,
                     Status = model.Status
                 };
 
@@ -136,7 +137,7 @@ namespace AMS.Controllers
                 await _context.SaveChangesAsync();
 
                 // Get names for success message
-                var student = await _context.Students.Include(s => s.User).FirstOrDefaultAsync(s => s.StudentId == model.StudentId);
+                var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == model.StudentId);
                 var course = await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == model.CourseId);
 
                 TempData["success"] = $"'{student?.FirstName} {student?.LastName}' has been enrolled in '{course?.CourseName}' successfully!";
@@ -156,7 +157,7 @@ namespace AMS.Controllers
             }
 
             var enrollment = await _context.Enrollments
-                .Include(e => e.Student).ThenInclude(s => s.User)
+                .Include(e => e.Student)
                 .Include(e => e.Course)
                 .Include(e => e.Semester)
                 .FirstOrDefaultAsync(e => e.EnrollmentId == id);
@@ -171,6 +172,7 @@ namespace AMS.Controllers
                 StudentId = enrollment.StudentId,
                 CourseId = enrollment.CourseId,
                 SemesterId = enrollment.SemesterId,
+                BatchId = enrollment.BatchId,
                 Status = enrollment.Status ?? "Active"
             };
 
@@ -213,6 +215,7 @@ namespace AMS.Controllers
                     enrollment.StudentId = model.StudentId;
                     enrollment.CourseId = model.CourseId;
                     enrollment.SemesterId = model.SemesterId;
+                    enrollment.BatchId = model.BatchId;
                     enrollment.Status = model.Status;
 
                     _context.Update(enrollment);
@@ -245,7 +248,7 @@ namespace AMS.Controllers
         public async Task<IActionResult> DeleteEnrollment(int id)
         {
             var enrollment = await _context.Enrollments
-                .Include(e => e.Student).ThenInclude(s => s.User)
+                .Include(e => e.Student)
                 .Include(e => e.Course)
                 .FirstOrDefaultAsync(e => e.EnrollmentId == id);
 
@@ -266,7 +269,6 @@ namespace AMS.Controllers
         private async Task LoadDropdowns(AddEnrollmentViewModel model)
         {
             model.Students = await _context.Students
-                .Include(s => s.User)
                 .Include(s => s.Batch)
                 .Where(s => s.IsActive == true)
                 .Select(s => new SelectListItem
@@ -293,6 +295,15 @@ namespace AMS.Controllers
                     Text = $"{s.SemesterName} - {s.Year}"
                 })
                 .ToListAsync();
+
+            model.Batches = await _context.Batches
+                .Where(b => b.IsActive == true)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BatchId.ToString(),
+                    Text = b.BatchName
+                })
+                .ToListAsync();
         }
 
         private bool EnrollmentExists(int id)
@@ -305,7 +316,6 @@ namespace AMS.Controllers
         public IActionResult GetDropdownData()
         {
             var students = _context.Students
-                .Include(s => s.User)
                 .Include(s => s.Batch)
                 .Where(s => s.IsActive == true)
                 .Select(s => new
@@ -377,7 +387,6 @@ namespace AMS.Controllers
 
             // Get names for success message
             var student = _context.Students
-                .Include(s => s.User)
                 .FirstOrDefault(s => s.StudentId == request.StudentId);
             var course = _context.Courses
                 .FirstOrDefault(c => c.CourseId == request.CourseId);
@@ -391,6 +400,16 @@ namespace AMS.Controllers
                 message = $"Successfully enrolled {studentName} in {courseName}."
             });
         }
+
+        // DTO for Quick Enroll request
+        public class QuickEnrollRequest
+        {
+            public int StudentId { get; set; }
+            public int CourseId { get; set; }
+            public int SemesterId { get; set; }
+        }
+
+        // GET: Enrollment/BulkEnroll
         public async Task<IActionResult> BulkEnroll()
         {
             var model = new BulkEnrollViewModel();
@@ -469,13 +488,6 @@ namespace AMS.Controllers
                 .Where(c => c.IsActive == true)
                 .Select(c => new { c.CourseId, Name = c.CourseCode + " - " + c.CourseName })
                 .ToListAsync(), "CourseId", "Name");
-        }
-        // DTO for Quick Enroll request
-        public class QuickEnrollRequest
-        {
-            public int StudentId { get; set; }
-            public int CourseId { get; set; }
-            public int SemesterId { get; set; }
         }
     }
 }

@@ -53,7 +53,7 @@ namespace AMS.Controllers
             {
                 "Admin" => RedirectToAction("Dashboard", "Admin"),
                 "Teacher" => RedirectToAction("Dashboard", "TeacherPortal"),
-                "Student" => RedirectToAction("Dashboard", "Student"),
+                "Student" => RedirectToAction("Dashboard", "StudentPortal"),
                 _ => RedirectToAction("Login")
             };
         }

@@ -1,0 +1,116 @@
+﻿@model List<AMS.Models.Entities.TimetableSlot>
+
+@{
+    ViewData["Title"] = "My Timetable";
+    var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+    var timeSlots = Model.Select(s => s.StartTime).Distinct().OrderBy(t => t).ToList();
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Timetable</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Weekly schedule for current semester</p>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Desktop View (Table) -->
+        <div class="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                        <tr>
+                            <th class="px-6 py-4 font-medium w-32">Day</th>
+                            @foreach (var time in timeSlots)
+                            {
+                                <th class="px-6 py-4 font-medium text-center min-w-[160px]">
+                                    @time?.ToString("HH:mm")
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for (int i = 1; i <= 7; i++)
+                        {
+                            var dayName = days[i - 1];
+                            var daySlots = Model.Where(s => s.DayOfWeek == i).ToList();
+
+                            // Skip Sunday if empty
+                            if (i == 7 && !daySlots.Any()) continue;
+
+                            <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white border-r border-gray-100 dark:border-gray-700">
+                                    @dayName
+                                </td>
+                                @foreach (var time in timeSlots)
+                                {
+                                    var slot = daySlots.FirstOrDefault(s => s.StartTime == time);
+                                    <td class="px-2 py-2 border-r border-gray-100 dark:border-gray-700 last:border-0">
+                                        @if (slot != null)
+                                        {
+                                            <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 h-full">
+                                                <div class="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                                                    @slot.CourseAssignment?.Course?.CourseName
+                                                </div>
+                                                <div class="text-xs text-blue-700 dark:text-blue-300 mb-1">
+                                                    @slot.CourseAssignment?.Teacher?.FirstName @slot.CourseAssignment?.Teacher?.LastName
+                                                </div>
+                                            </div>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile View (Cards) -->
+        <div class="lg:hidden space-y-6">
+            @for (int i = 1; i <= 7; i++)
+            {
+                var dayName = days[i - 1];
+                var daySlots = Model.Where(s => s.DayOfWeek == i).OrderBy(s => s.StartTime).ToList();
+
+                if (!daySlots.Any()) continue;
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="font-bold text-gray-900 dark:text-white">@dayName</h3>
+                    </div>
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach (var slot in daySlots)
+                        {
+                            <div class="p-4 flex gap-4">
+                                <div class="flex-shrink-0 w-16 text-center pt-1">
+                                    <div class="text-sm font-bold text-gray-900 dark:text-white">@slot.StartTime?.ToString("HH:mm")</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">@slot.EndTime?.ToString("HH:mm")</div>
+                                </div>
+                                <div class="flex-1 border-l-2 border-blue-500 pl-4">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white">@slot.CourseAssignment?.Course?.CourseName</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">@slot.CourseAssignment?.Teacher?.FirstName @slot.CourseAssignment?.Teacher?.LastName</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">No Timetable Found</h3>
+            <p class="mt-1 text-gray-500 dark:text-gray-400">Your timetable hasn't been created yet.</p>
+        </div>
+    }
+</div>
