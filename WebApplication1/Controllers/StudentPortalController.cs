@@ -1,13 +1,12 @@
-﻿using AMS.Models;
+﻿
+using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-//rendering
-using Microsoft.AspNetCore.Mvc.Rendering;
-
 
 namespace AMS.Controllers
 {
@@ -305,6 +304,85 @@ namespace AMS.Controllers
             }
 
             return View(slots.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime).ToList());
+        }
+
+        public async Task<IActionResult> MyCourses()
+        {
+            var student = await GetCurrentStudentAsync();
+            if (student == null) return RedirectToAction("Login", "Auth");
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var currentSemester = await _context.Semesters
+                .FirstOrDefaultAsync(s => s.StartDate <= today && s.EndDate >= today && s.IsActive == true);
+
+            var model = new List<StudentCourseViewModel>();
+
+            if (currentSemester != null)
+            {
+                // Get Enrollments
+                var enrollments = await _context.Enrollments
+                    .Include(e => e.Course)
+                    .Where(e => e.StudentId == student.StudentId && e.Status == "Active")
+                    .ToListAsync();
+
+                foreach (var enrollment in enrollments)
+                {
+                    var targetBatchId = enrollment.BatchId ?? student.BatchId;
+
+                    // Find Assignment
+                    var assignment = await _context.CourseAssignments
+                        .Include(ca => ca.Teacher)
+                        .FirstOrDefaultAsync(ca => ca.CourseId == enrollment.CourseId &&
+                                                   ca.BatchId == targetBatchId &&
+                                                   ca.SemesterId == currentSemester.SemesterId);
+
+                    if (assignment != null)
+                    {
+                        // Calculate Attendance
+                        var attendances = await _context.Attendances
+                            .Include(a => a.Session)
+                            .Where(a => a.StudentId == student.StudentId &&
+                                        a.Session.CourseAssignmentId == assignment.AssignmentId)
+                            .ToListAsync();
+
+                        var total = attendances.Count;
+                        var present = attendances.Count(a => a.Status == "Present");
+                        var percentage = total > 0 ? (double)present / total * 100 : 0;
+
+                        // Calculate Remaining Classes
+                        int remaining = 0;
+                        var slots = await _context.TimetableSlots
+                             .Include(ts => ts.Timetable)
+                             .Where(ts => ts.CourseAssignmentId == assignment.AssignmentId && ts.Timetable.IsActive == true)
+                             .ToListAsync();
+
+                        if (currentSemester.EndDate != default)
+                        {
+                            var checkDate = today.AddDays(1); // Start from tomorrow
+                            while (checkDate <= currentSemester.EndDate)
+                            {
+                                int dow = (int)checkDate.DayOfWeek;
+                                remaining += slots.Count(s => s.DayOfWeek == dow);
+                                checkDate = checkDate.AddDays(1);
+                            }
+                        }
+
+                        model.Add(new StudentCourseViewModel
+                        {
+                            CourseName = enrollment.Course.CourseName,
+                            CourseCode = enrollment.Course.CourseCode,
+                            TeacherName = assignment.Teacher != null ? $"{assignment.Teacher.FirstName} {assignment.Teacher.LastName}" : "N/A",
+                            TotalClasses = total,
+                            PresentClasses = present,
+                            AttendancePercentage = percentage,
+                            ClassesRemaining = remaining,
+                            TotalSemesterClasses = total + remaining
+                        });
+                    }
+                }
+            }
+
+            return View(model);
         }
     }
 }

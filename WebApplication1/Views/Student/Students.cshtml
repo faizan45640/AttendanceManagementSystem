@@ -119,15 +119,15 @@
         <!-- Filter Buttons -->
         <div class="flex items-center gap-3">
             <button type="submit"
-                    class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 shadow-sm transition-all">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
                 Apply Filter
             </button>
             <a asp-action="Students"
-               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
-                <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Reset
@@ -147,8 +147,8 @@
             </p>
         </div>
         <a asp-controller="Student" asp-action="AddStudent"
-           class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-            <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 shadow-sm transition-all">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             Add Student
@@ -261,8 +261,8 @@
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new student.</p>
                             <div class="mt-6">
                                 <a asp-controller="Student" asp-action="AddStudent"
-                                   class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 shadow-sm transition-all">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                     </svg>
                                     Add Student
@@ -337,7 +337,7 @@
             </div>
 
             <div class="flex items-center justify-center w-full gap-2 mt-5">
-                <button type="button" onclick="closeViewModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 sm:w-auto">
+                <button type="button" onclick="closeViewModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-indigo-600 shadow-theme-xs hover:bg-indigo-700 sm:w-auto">
                     Close
                 </button>
             </div>
@@ -382,7 +382,7 @@
                     <button type="button" onclick="closeDeleteModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
                         Cancel
                     </button>
-                    <button type="submit" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-error-500 shadow-theme-xs hover:bg-error-600 sm:w-auto">
+                    <button type="submit" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-red-600 shadow-theme-xs hover:bg-red-700 sm:w-auto">
                         Delete
                     </button>
                 </div>
@@ -456,7 +456,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         // View Modal Functions
         function openViewModal(studentId, rollNumber, fullName, email, batch, status, createdAt) {
@@ -516,6 +516,43 @@
             modal.classList.remove('flex');
             document.body.style.overflow = 'auto';
         }
+
+        // AJAX Delete Form Handler
+        $(document).ready(function () {
+            $('#deleteForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var $submitBtn = $form.find('button[type="submit"]');
+                var originalBtnText = $submitBtn.text();
+
+                $submitBtn.prop('disabled', true).text('Deleting...');
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            closeDeleteModal();
+                            // Show success and reload
+                            location.reload();
+                        }
+                    },
+                    error: function (xhr) {
+                        var errorMessage = 'An error occurred while deleting the student.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
+                    },
+                    complete: function () {
+                        $submitBtn.prop('disabled', false).text(originalBtnText);
+                    }
+                });
+            });
+        });
+
         // Close modals on escape key
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {

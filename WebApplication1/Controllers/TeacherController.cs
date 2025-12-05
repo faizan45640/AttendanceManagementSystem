@@ -67,8 +67,7 @@ namespace AMS.Controllers
 
                 if (existingUser != null)
                 {
-                    ModelState.AddModelError("Username", "Username is already taken.");
-                    return View(model);
+                    return Conflict(new { success = false, message = "Username is already taken." });
                 }
 
                 // Check if email already exists
@@ -77,8 +76,7 @@ namespace AMS.Controllers
 
                 if (existingEmail != null)
                 {
-                    ModelState.AddModelError("Email", "Email is already registered.");
-                    return View(model);
+                    return Conflict(new { success = false, message = "Email is already registered." });
                 }
 
                 // Create user
@@ -86,7 +84,7 @@ namespace AMS.Controllers
                 {
                     Username = model.Username,
                     Email = model.Email,
-                    PasswordHash =(model.Password),
+                    PasswordHash = (model.Password),
                     Role = "Teacher", // Teacher role
                     IsActive = true,
                     CreatedAt = DateTime.Now
@@ -107,11 +105,16 @@ namespace AMS.Controllers
                 _context.Teachers.Add(teacher);
                 await _context.SaveChangesAsync();
 
-                TempData["success"] = $"Teacher '{model.Username}' has been added successfully!";
-                return RedirectToAction(nameof(Teachers));
+                return Ok(new { success = true, message = $"Teacher '{model.Username}' has been added successfully!" });
             }
 
-            return View(model);
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
         }
 
         // GET: Teacher/EditTeacher/5
@@ -159,8 +162,7 @@ namespace AMS.Controllers
 
                 if (teacher == null || teacher.User == null)
                 {
-                    TempData["error"] = "Teacher not found.";
-                    return RedirectToAction(nameof(Teachers));
+                    return NotFound(new { success = false, message = "Teacher not found." });
                 }
 
                 // Check if username is already taken by another user
@@ -169,8 +171,7 @@ namespace AMS.Controllers
 
                 if (existingUser != null)
                 {
-                    ModelState.AddModelError("Username", "Username is already taken.");
-                    return View(model);
+                    return Conflict(new { success = false, message = "Username is already taken." });
                 }
 
                 // Check if email is already taken by another user
@@ -179,8 +180,7 @@ namespace AMS.Controllers
 
                 if (existingEmail != null)
                 {
-                    ModelState.AddModelError("Email", "Email is already taken.");
-                    return View(model);
+                    return Conflict(new { success = false, message = "Email is already taken." });
                 }
 
                 // Update user information
@@ -202,11 +202,16 @@ namespace AMS.Controllers
                 _context.Update(teacher);
                 await _context.SaveChangesAsync();
 
-                TempData["success"] = $"Teacher '{model.Username}' has been updated successfully!";
-                return RedirectToAction(nameof(Teachers));
+                return Ok(new { success = true, message = $"Teacher '{model.Username}' has been updated successfully!" });
             }
 
-            return View(model);
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
         }
 
         // POST: Teacher/DeleteTeacher
@@ -221,15 +226,13 @@ namespace AMS.Controllers
 
             if (teacher == null)
             {
-                TempData["error"] = "Teacher not found.";
-                return RedirectToAction(nameof(Teachers));
+                return NotFound(new { success = false, message = "Teacher not found." });
             }
 
             // Check if teacher has course assignments
             if (teacher.CourseAssignments.Any())
             {
-                TempData["error"] = $"Cannot delete teacher '{teacher.User?.Username}' because they are assigned to {teacher.CourseAssignments.Count} course(s).";
-                return RedirectToAction(nameof(Teachers));
+                return BadRequest(new { success = false, message = $"Cannot delete teacher '{teacher.User?.Username}' because they are assigned to {teacher.CourseAssignments.Count} course(s)." });
             }
 
             try
@@ -248,14 +251,12 @@ namespace AMS.Controllers
 
                 await _context.SaveChangesAsync();
 
-                TempData["success"] = $"Teacher '{username}' has been deleted successfully!";
+                return Ok(new { success = true, message = $"Teacher '{username}' has been deleted successfully!" });
             }
             catch (Exception ex)
             {
-                TempData["error"] = $"An error occurred while deleting the teacher: {ex.Message}";
+                return StatusCode(500, new { success = false, message = $"An error occurred while deleting the teacher: {ex.Message}" });
             }
-
-            return RedirectToAction(nameof(Teachers));
         }
     }
 }

@@ -4,7 +4,7 @@
 }
 
 <a asp-action="AddTeacher" class="btn btn-success">
-    <button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 mb-3">
+    <button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-indigo-600 shadow-theme-xs hover:bg-indigo-700 mb-3">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -140,7 +140,7 @@
             </div>
 
             <div class="flex items-center gap-3 mt-4">
-                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600 focus:ring-4 focus:ring-brand-300 dark:bg-brand-600 dark:hover:bg-brand-700 dark:focus:ring-brand-800 shadow-sm transition-all">
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 shadow-sm transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -398,7 +398,7 @@
             </div>
 
             <div class="flex items-center justify-center w-full gap-2 mt-5">
-                <button type="button" onclick="closeViewModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 sm:w-auto">
+                <button type="button" onclick="closeViewModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-indigo-600 shadow-theme-xs hover:bg-indigo-700 sm:w-auto">
                     Close
                 </button>
             </div>
@@ -446,7 +446,7 @@
                     <button type="button" onclick="closeDeleteModal()" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors sm:w-auto">
                         Cancel
                     </button>
-                    <button type="submit" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-error-500 shadow-theme-xs hover:bg-error-600 sm:w-auto">
+                    <button type="submit" class="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg bg-red-600 shadow-theme-xs hover:bg-red-700 sm:w-auto">
                         Delete
                     </button>
                 </div>
@@ -545,8 +545,44 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <script>
+        // AJAX Delete Handler
+        $(document).ready(function() {
+            $('#deleteForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var $submitBtn = $form.find('button[type="submit"]');
+                var originalText = $submitBtn.html();
+
+                $submitBtn.prop('disabled', true).html('<svg class="animate-spin h-5 w-5 mr-2 inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Deleting...');
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            closeDeleteModal();
+                            // Show success message and reload
+                            var successHtml = '<div class="rounded-xl border border-success-500 bg-success-50 p-4 dark:border-success-500/30 dark:bg-success-500/15 mb-4"><div class="flex items-start gap-3"><div class="-mt-0.5 text-success-500"><svg class="fill-current" width="24" height="24" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.70186 12.0001C3.70186 7.41711 7.41711 3.70186 12.0001 3.70186C16.5831 3.70186 20.2984 7.41711 20.2984 12.0001C20.2984 16.5831 16.5831 20.2984 12.0001 20.2984C7.41711 20.2984 3.70186 16.5831 3.70186 12.0001ZM12.0001 1.90186C6.423 1.90186 1.90186 6.423 1.90186 12.0001C1.90186 17.5772 6.423 22.0984 12.0001 22.0984C17.5772 22.0984 22.0984 17.5772 22.0984 12.0001C22.0984 6.423 17.5772 1.90186 12.0001 1.90186ZM15.6197 10.7395C15.9712 10.388 15.9712 9.81819 15.6197 9.46672C15.2683 9.11525 14.6984 9.11525 14.347 9.46672L11.1894 12.6243L9.6533 11.0883C9.30183 10.7368 8.73198 10.7368 8.38051 11.0883C8.02904 11.4397 8.02904 12.0096 8.38051 12.3611L10.553 14.5335C10.7217 14.7023 10.9507 14.7971 11.1894 14.7971C11.428 14.7971 11.657 14.7023 11.8257 14.5335L15.6197 10.7395Z" fill=""></path></svg></div><div><h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">Success</h4><p class="text-sm text-gray-500 dark:text-gray-400">' + response.message + '</p></div></div></div>';
+                            $('a[asp-action="AddTeacher"]').before(successHtml);
+                            setTimeout(function() { location.reload(); }, 1500);
+                        } else {
+                            alert(response.message || 'Failed to delete teacher.');
+                            $submitBtn.prop('disabled', false).html(originalText);
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred. Please try again.');
+                        $submitBtn.prop('disabled', false).html(originalText);
+                    }
+                });
+            });
+        });
+
         function toggleFilter() {
             const panel = document.getElementById('filterPanel');
             const icon = document.getElementById('filterIcon');

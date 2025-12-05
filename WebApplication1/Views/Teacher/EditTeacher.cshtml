@@ -87,8 +87,11 @@ else
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update the teacher account details</p>
         </div>
 
+        <!-- Alert Container -->
+        <div id="alertContainer" class="px-6 pt-4"></div>
+
         <!-- Form -->
-        <form method="post" asp-action="EditTeacher">
+        <form id="editTeacherForm" method="post" asp-action="EditTeacher">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="TeacherId" />
             <input type="hidden" asp-for="UserId" />
@@ -192,12 +195,12 @@ else
                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
                     Cancel
                 </a>
-                <button type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                <button type="submit" id="submitBtn"
+                        class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
                     <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    Update Teacher
+                    <span id="submitBtnText">Update Teacher</span>
                 </button>
             </div>
         </form>
@@ -206,4 +209,77 @@ else
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#editTeacherForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var $submitBtn = $('#submitBtn');
+                var $submitBtnText = $('#submitBtnText');
+                var originalBtnText = $submitBtnText.text();
+
+                $submitBtn.prop('disabled', true);
+                $submitBtnText.text('Updating...');
+                $('#alertContainer').empty();
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            var successHtml = `
+                                <div class="flex w-full rounded-lg border border-green-500 bg-green-500/10 p-4 mb-4">
+                                    <div class="flex items-center">
+                                        <svg class="mr-3 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                        <p class="text-sm font-medium text-green-500">${response.message}</p>
+                                    </div>
+                                </div>`;
+                            $('#alertContainer').html(successHtml);
+                            $('html, body').animate({ scrollTop: 0 }, 'fast');
+                            setTimeout(function () {
+                                window.location.href = '/Teacher/Teachers';
+                            }, 1500);
+                        }
+                    },
+                    error: function (xhr) {
+                        var errorMessage = 'An error occurred while updating the teacher.';
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            if (xhr.responseJSON.errors) {
+                                var errors = xhr.responseJSON.errors;
+                                for (var field in errors) {
+                                    var $errorSpan = $('span[data-valmsg-for="' + field + '"]');
+                                    if ($errorSpan.length && errors[field].length > 0) {
+                                        $errorSpan.text(errors[field][0]);
+                                    }
+                                }
+                            }
+                        }
+                        var errorHtml = `
+                            <div class="flex w-full rounded-lg border border-red-500 bg-red-500/10 p-4 mb-4">
+                                <div class="flex items-center">
+                                    <svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                    <p class="text-sm font-medium text-red-500">${errorMessage}</p>
+                                </div>
+                            </div>`;
+                        $('#alertContainer').html(errorHtml);
+                        $('html, body').animate({ scrollTop: 0 }, 'fast');
+                    },
+                    complete: function () {
+                        $submitBtn.prop('disabled', false);
+                        $submitBtnText.text(originalBtnText);
+                    }
+                });
+            });
+        });
+    </script>
 }

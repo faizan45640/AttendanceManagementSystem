@@ -5,10 +5,8 @@ namespace AMS.Models.ViewModels
 {
     public class AdminFilterViewModel
     {
-
-        [Display(Name = "Name")]
-        public string? Name { get; set; }
-
+        [Display(Name = "Search")]
+        public string? Search { get; set; }
 
         [Display(Name = "From Date")]
         [DataType(DataType.Date)]

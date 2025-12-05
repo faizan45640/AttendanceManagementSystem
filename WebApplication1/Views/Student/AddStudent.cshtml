@@ -1,65 +1,53 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model AMS.Models.Entities.Student
 @{
-}
-@model AMS.Models.ViewModels.AddStudentViewModel
-@{
-    ViewData["Title"] = "Add New Student";
+    ViewData["Title"] = "Add Student";
 }
 
-<div class="mb-6">
+<!-- Breadcrumb -->
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-title-md2 font-bold text-gray-900 dark:text-white">
-        Add New Student
+        Add Student
     </h2>
+    <nav>
+        <ol class="flex items-center gap-2">
+            <li>
+                <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-indigo-500 dark:text-gray-400">Home</a>
+            </li>
+            <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
+            <li>
+                <a asp-controller="Student" asp-action="Students" class="text-sm font-medium text-gray-500 hover:text-indigo-500 dark:text-gray-400">Students</a>
+            </li>
+            <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
+            <li class="text-sm font-medium text-indigo-500">Add</li>
+        </ol>
+    </nav>
 </div>
 
+<!-- Alert Messages Container -->
+<div id="alertContainer" class="mb-4"></div>
+
+<!-- Form Card -->
 <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <!-- Card Header -->
     <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Student Information</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Fill in the details to create a new student</p>
     </div>
 
-    <form method="post" asp-action="AddStudent">
+    <!-- Form -->
+    <form id="addStudentForm" method="post" asp-action="AddStudent">
         @Html.AntiForgeryToken()
 
         <div class="space-y-6 p-6">
-            <!-- Username -->
-            <div>
-                <label asp-for="Username" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Username<span class="text-error-500">*</span>
-                </label>
-                <input asp-for="Username" type="text" placeholder="Enter username"
-                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
-                <span asp-validation-for="Username" class="mt-1 block text-sm text-error-500"></span>
-            </div>
-
-            <!-- Email -->
-            <div>
-                <label asp-for="Email" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Email<span class="text-error-500">*</span>
-                </label>
-                <input asp-for="Email" type="email" placeholder="student@example.com"
-                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
-                <span asp-validation-for="Email" class="mt-1 block text-sm text-error-500"></span>
-            </div>
-
-            <!-- Password -->
-            <div>
-                <label asp-for="Password" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Password<span class="text-error-500">*</span>
-                </label>
-                <input asp-for="Password" type="password" placeholder="Enter password"
-                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
-                <span asp-validation-for="Password" class="mt-1 block text-sm text-error-500"></span>
-            </div>
-
             <!-- Roll Number -->
             <div>
                 <label asp-for="RollNumber" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                     Roll Number<span class="text-error-500">*</span>
                 </label>
-                <input asp-for="RollNumber" type="text" placeholder="Enter roll number"
-                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                <input asp-for="RollNumber"
+                       type="text"
+                       placeholder="Enter roll number"
+                       class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
                 <span asp-validation-for="RollNumber" class="mt-1 block text-sm text-error-500"></span>
             </div>
 
@@ -69,8 +57,10 @@
                     <label asp-for="FirstName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         First Name<span class="text-error-500">*</span>
                     </label>
-                    <input asp-for="FirstName" type="text" placeholder="John"
-                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                    <input asp-for="FirstName"
+                           type="text"
+                           placeholder="Enter first name"
+                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
                     <span asp-validation-for="FirstName" class="mt-1 block text-sm text-error-500"></span>
                 </div>
 
@@ -78,42 +68,164 @@
                     <label asp-for="LastName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Last Name<span class="text-error-500">*</span>
                     </label>
-                    <input asp-for="LastName" type="text" placeholder="Doe"
-                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                    <input asp-for="LastName"
+                           type="text"
+                           placeholder="Enter last name"
+                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
                     <span asp-validation-for="LastName" class="mt-1 block text-sm text-error-500"></span>
                 </div>
             </div>
 
-            <!-- Batch Dropdown -->
+            <!-- Batch -->
             <div>
                 <label asp-for="BatchId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                     Batch<span class="text-error-500">*</span>
                 </label>
-                <select asp-for="BatchId" asp-items="ViewBag.Batches"
-                        class="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                <select asp-for="BatchId"
+                        asp-items="@ViewBag.Batches"
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
                     <option value="">-- Select Batch --</option>
                 </select>
                 <span asp-validation-for="BatchId" class="mt-1 block text-sm text-error-500"></span>
             </div>
+
+            <!-- Status -->
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Status
+                </label>
+                <div class="flex items-center gap-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" asp-for="IsActive" value="true" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Active</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" asp-for="IsActive" value="false" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Inactive</span>
+                    </label>
+                </div>
+            </div>
         </div>
 
-        <!-- Footer -->
-        <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-            <a asp-action="Index"
-               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+        <!-- Form Footer -->
+        <div class="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-800">
+            <a asp-controller="Student" asp-action="Students"
+               class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
                 Cancel
             </a>
-            <button type="submit"
-                    class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="submit" id="submitBtn"
+                    class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Add Student
+                <span id="submitBtnText">Add Student</span>
             </button>
         </div>
     </form>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#addStudentForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var $submitBtn = $('#submitBtn');
+                var $submitBtnText = $('#submitBtnText');
+                var originalBtnText = $submitBtnText.text();
+
+                // Disable button and show loading state
+                $submitBtn.prop('disabled', true);
+                $submitBtnText.text('Adding...');
+
+                // Clear previous alerts
+                $('#alertContainer').empty();
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Show success message
+                            var successHtml = `
+                                <div class="flex w-full rounded-lg border border-green-500 bg-green-500/10 p-4">
+                                    <div class="flex w-full items-center justify-between">
+                                        <div class="flex items-center">
+                                            <svg class="mr-3 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <p class="text-sm font-medium text-green-500">${response.message}</p>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            $('#alertContainer').html(successHtml);
+
+                            // Clear form
+                            $form[0].reset();
+
+                            // Scroll to top to show message
+                            $('html, body').animate({ scrollTop: 0 }, 'fast');
+
+                            // Redirect after short delay
+                            setTimeout(function () {
+                                window.location.href = '/Student/Students';
+                            }, 1500);
+                        }
+                    },
+                    error: function (xhr) {
+                        var errorMessage = 'An error occurred while adding the student.';
+
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            // Handle validation errors
+                            if (xhr.responseJSON.errors) {
+                                var errors = xhr.responseJSON.errors;
+                                for (var field in errors) {
+                                    var fieldErrors = errors[field];
+                                    if (fieldErrors && fieldErrors.length > 0) {
+                                        var $field = $('[name="' + field + '"]');
+                                        var $errorSpan = $field.siblings('span[data-valmsg-for="' + field + '"]');
+                                        if ($errorSpan.length) {
+                                            $errorSpan.text(fieldErrors[0]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Show error message
+                        var errorHtml = `
+                            <div class="flex w-full rounded-lg border border-red-500 bg-red-500/10 p-4">
+                                <div class="flex w-full items-center justify-between">
+                                    <div class="flex items-center">
+                                        <svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                        <p class="text-sm font-medium text-red-500">${errorMessage}</p>
+                                    </div>
+                                </div>
+                            </div>`;
+                        $('#alertContainer').html(errorHtml);
+
+                        // Scroll to top to show message
+                        $('html, body').animate({ scrollTop: 0 }, 'fast');
+                    },
+                    complete: function () {
+                        // Re-enable button
+                        $submitBtn.prop('disabled', false);
+                        $submitBtnText.text(originalBtnText);
+                    }
+                });
+            });
+        });
+    </script>
 }

@@ -1,44 +1,26 @@
-﻿using AMS.Models;
-using AMS.Models.ViewModels;
+﻿
+using AMS.Models;
 using AMS.Models.Entities;
+using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace AMS.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class StudentController : Controller
     {
-
         private readonly ApplicationDbContext _context;
+
         public StudentController(ApplicationDbContext context)
         {
             _context = context;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
-
-        [Authorize(Roles = "Student")]
-        public IActionResult Dashboard()
-        {
-            if (HttpContext.Session.GetString("Role") != "Student")
-            {
-                return RedirectToAction("Login", "Auth");
-            }
-            ViewBag.User = HttpContext.Session.GetString("Username");
-            return View();
-        }
-
-
-
-        [Authorize(Roles = "Admin")]
+        // GET: Student/Students
         [HttpGet]
-        //filters
         public async Task<IActionResult> Students(StudentFilterViewModel filter)
         {
             var query = _context.Students
@@ -56,6 +38,7 @@ namespace AMS.Controllers
                     (s.LastName != null && s.LastName.Contains(filter.Name)) ||
                     (s.User != null && s.User.Username != null && s.User.Username.Contains(filter.Name)));
             }
+
             if (!string.IsNullOrEmpty(filter.RollNumber))
             {
                 query = query.Where(s => s.RollNumber != null && s.RollNumber.Contains(filter.RollNumber));
@@ -88,82 +71,55 @@ namespace AMS.Controllers
             return View(filter);
         }
 
-        [Authorize(Roles = "Admin   ")]
-        [HttpGet]
-        public IActionResult AddStudent()
-        { //insert batches in viewbag
-            ViewBag.Batches = _context.Batches
-          .Where(b => b.IsActive)
-          .Select(b => new SelectListItem
-          {
-              Value = b.BatchId.ToString(),
-              Text = $"{b.BatchName} {b.Year}"
-          })
-          .ToList();
-
-
-            return View();
-
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
-        public IActionResult AddStudent(AddStudentViewModel model)
+        // GET: Student/AddStudent
+        public async Task<IActionResult> AddStudent()
         {
+            var batches = await _context.Batches
+                .Where(b => b.IsActive == true)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BatchId.ToString(),
+                    Text = $"{b.BatchName} - {b.Year}"
+                })
+                .ToListAsync();
 
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Error = "Invalid data provided.";
-                return View(model);
-            }
-            //check for email, roll number or username duplicates here
-            var existingUser = _context.Users.FirstOrDefault(u => u.Email == model.Email || u.Username == model.Username);
-            if (existingUser != null)
-            {
-                ViewBag.Error = "A user with the same email or username already exists.";
-                return View(model);
-            }
-            var existingStudent = _context.Students.FirstOrDefault(s => s.RollNumber == model.RollNumber);
-            if (existingStudent != null)
-            {
-                ViewBag.Error = "A student with the same roll number already exists.";
-                return View(model);
-            }
-            //create user
-            var user = new User
-            {
-                Username = model.Username,
-                Email = model.Email,
-                PasswordHash = model.Password,
-                Role = "Student",
-                IsActive = true,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.Users.Add(user);
-            _context.SaveChanges();
-            //create student
-            var student = new Student
-            {
-                UserId = user.UserId,
-                RollNumber = model.RollNumber,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                BatchId = model.BatchId,
-                IsActive = true
-            };
-            _context.Students.Add(student);
-            _context.SaveChanges();
-
-            ViewData["success"] = "Student added successfully";
-
-            return RedirectToAction("Students");
-
+            ViewBag.Batches = batches;
+            return View();
         }
 
+        // POST: Student/AddStudent
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddStudent(Student model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Check if roll number already exists
+                var existingStudent = await _context.Students
+                    .FirstOrDefaultAsync(s => s.RollNumber == model.RollNumber);
 
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
+                if (existingStudent != null)
+                {
+                    return Conflict(new { success = false, message = "A student with this roll number already exists." });
+                }
+
+                model.IsActive = model.IsActive ?? true;
+                _context.Students.Add(model);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = $"Student '{model.FirstName} {model.LastName}' has been added successfully!" });
+            }
+
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+        }
+
+        // GET: Student/EditStudent/5
         public async Task<IActionResult> EditStudent(int? StudentId)
         {
             if (StudentId == null)
@@ -172,207 +128,114 @@ namespace AMS.Controllers
             }
 
             var student = await _context.Students
-                .Include(s => s.User)
                 .Include(s => s.Batch)
+                .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.StudentId == StudentId);
 
-            if (student == null || student.User == null)
+            if (student == null)
             {
-                TempData["error"] = "Student not found.";
-                return RedirectToAction("Students");
+                return NotFound();
             }
 
-            var model = new EditStudentViewModel
-            {
-                StudentId = student.StudentId,
-                UserId = student.User.UserId,
-                Username = student.User.Username,
-                Email = student.User.Email,
-                RollNumber = student.RollNumber ?? string.Empty,
-                FirstName = student.FirstName ?? string.Empty,
-                LastName = student.LastName ?? string.Empty,
-                BatchId = student.BatchId ?? 0,
-                IsActive = student.IsActive ?? true
-            };
-            ViewBag.Batches = await _context.Batches
-       .Where(b => b.IsActive)
-       .Select(b => new SelectListItem
-       {
-           Value = b.BatchId.ToString(),
-           Text = $"{b.BatchName} - {b.Year}"
-       })
-       .ToListAsync();
-
-            return View(model);
-        }
-
-
-        //edit post request
-
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
-        public async Task<IActionResult> EditStudent(EditStudentViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var student = await _context.Students
-                    .Include(s => s.User)
-                    .FirstOrDefaultAsync(s => s.StudentId == model.StudentId);
-
-                if (student == null || student.User == null)
-                {
-                    TempData["error"] = "Student not found.";
-                    return RedirectToAction(nameof(Students));
-                }
-
-                // Check if username is already taken by another user
-                var existingUser = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == model.Username && u.UserId != model.UserId);
-
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError("Username", "Username is already taken.");
-
-                    // Reload batches for dropdown
-                    ViewBag.Batches = await _context.Batches
-                        .Where(b => b.IsActive)
-                        .Select(b => new SelectListItem
-                        {
-                            Value = b.BatchId.ToString(),
-                            Text = $"{b.BatchName} - {b.Year}"
-                        })
-                        .ToListAsync();
-
-                    return View(model);
-                }
-                var existingEmail = await _context.Users
-           .FirstOrDefaultAsync(u => u.Email == model.Email && u.UserId != model.UserId);
-
-                if (existingEmail != null)
-                {
-                    ModelState.AddModelError("Email", "Email is already taken.");
-
-                    // Reload batches for dropdown
-                    ViewBag.Batches = await _context.Batches
-                        .Where(b => b.IsActive)
-                        .Select(b => new SelectListItem
-                        {
-                            Value = b.BatchId.ToString(),
-                            Text = $"{b.BatchName} - {b.Year}"
-                        })
-                        .ToListAsync();
-
-                    return View(model);
-                }
-                var existingRollNumber = await _context.Students
-                            .FirstOrDefaultAsync(s => s.RollNumber == model.RollNumber && s.StudentId != model.StudentId);
-
-                if (existingRollNumber != null)
-                {
-                    ModelState.AddModelError("RollNumber", "Roll number is already taken.");
-
-                    // Reload batches for dropdown
-                    ViewBag.Batches = await _context.Batches
-                        .Where(b => b.IsActive)
-                        .Select(b => new SelectListItem
-                        {
-                            Value = b.BatchId.ToString(),
-                            Text = $"{b.BatchName} - {b.Year}"
-                        })
-                        .ToListAsync();
-
-                    return View(model);
-                }
-                student.User.Username = model.Username;
-                student.User.Email = model.Email;
-                student.User.IsActive = model.IsActive;
-
-                // Update password only if provided
-                if (!string.IsNullOrWhiteSpace(model.Password))
-                {
-                    student.User.PasswordHash = model.Password;
-                }
-
-                // Update student information
-                student.RollNumber = model.RollNumber;
-                student.FirstName = model.FirstName;
-                student.LastName = model.LastName;
-                student.BatchId = model.BatchId;
-                student.IsActive = model.IsActive;
-
-                _context.Update(student);
-                await _context.SaveChangesAsync();
-                TempData["success"] = $"Student '{model.Username}' has been updated successfully!";
-                return RedirectToAction("Students");
-            }
-
-            // Reload batches for dropdown
-            ViewBag.Batches = await _context.Batches
-                .Where(b => b.IsActive)
+            var batches = await _context.Batches
+                .Where(b => b.IsActive == true)
                 .Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
                     Text = $"{b.BatchName} - {b.Year}"
                 })
                 .ToListAsync();
+            ViewBag.Batches = batches;
 
-            return View(model);
+            return View(student);
         }
 
-
-        [Authorize(Roles="Admin")]
+        // POST: Student/EditStudent/5
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditStudent(int StudentId, Student model)
+        {
+            if (StudentId != model.StudentId)
+            {
+                return NotFound(new { success = false, message = "Student not found." });
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Check if roll number already exists for another student
+                    var existingStudent = await _context.Students
+                        .FirstOrDefaultAsync(s => s.RollNumber == model.RollNumber && s.StudentId != StudentId);
+
+                    if (existingStudent != null)
+                    {
+                        return Conflict(new { success = false, message = "A student with this roll number already exists." });
+                    }
+
+                    _context.Update(model);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new { success = true, message = $"Student '{model.FirstName} {model.LastName}' has been updated successfully!" });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!StudentExists(model.StudentId))
+                    {
+                        return NotFound(new { success = false, message = "Student not found." });
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+        }
+
+        // POST: Student/DeleteStudent
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteStudent(int StudentId)
         {
             var student = await _context.Students
-                .Include(s => s.User)
                 .Include(s => s.Attendances)
                 .Include(s => s.Enrollments)
                 .FirstOrDefaultAsync(s => s.StudentId == StudentId);
 
             if (student == null)
             {
-                TempData["error"] = "Student not found.";
-                return RedirectToAction(nameof(Students));
+                return NotFound(new { success = false, message = "Student not found." });
             }
 
-            // Check if student has attendance records
+            // Check if student has attendances
             if (student.Attendances.Any())
             {
-                TempData["error"] = $"Cannot delete student '{student.User?.Username}' because they have {student.Attendances.Count} attendance record(s).";
-                return RedirectToAction(nameof(Students));
+                return BadRequest(new { success = false, message = $"Cannot delete student '{student.FirstName} {student.LastName}' because they have {student.Attendances.Count} attendance record(s)." });
             }
+
             // Check if student has enrollments
             if (student.Enrollments.Any())
             {
-                TempData["error"] = $"Cannot delete student '{student.User?.Username}' because they are enrolled in {student.Enrollments.Count} course(s).";
-                return RedirectToAction(nameof(Students));
+                return BadRequest(new { success = false, message = $"Cannot delete student '{student.FirstName} {student.LastName}' because they have {student.Enrollments.Count} enrollment(s)." });
             }
 
-            try
-            {
-                // Store username for success message
-                var username = student.User?.Username ?? "Student";
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
 
-                // Delete the student record first
-                _context.Students.Remove(student);
-
-                // Delete the associated user account
-                if (student.User != null)
-                {
-                    _context.Users.Remove(student.User);
-                }
-
-                await _context.SaveChangesAsync();
-                TempData["success"] = $"Student '{username}' has been deleted successfully!";
-            }
-            catch (Exception ex)
-            {
-                TempData["error"] = $"An error occurred while deleting the student: {ex.Message}";
-            }
-
-            return RedirectToAction("Students");
+            return Ok(new { success = true, message = $"Student '{student.FirstName} {student.LastName}' has been deleted successfully!" });
         }
 
+        private bool StudentExists(int id)
+        {
+            return _context.Students.Any(e => e.StudentId == id);
+        }
     }
 }

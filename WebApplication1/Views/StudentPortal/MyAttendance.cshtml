@@ -1,146 +1,131 @@
-﻿@model AMS.Models.ViewModels.StudentDashboardViewModel
+﻿@model AMS.Models.ViewModels.StudentAttendanceReportViewModel
 
 @{
-    ViewData["Title"] = "Student Dashboard";
+    ViewData["Title"] = "My Attendance";
 }
 
 <div class="p-4 sm:p-6 space-y-6">
-    <!-- Welcome Section -->
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                Welcome back, @Model.StudentName
-            </h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Roll No: @Model.RollNumber | Batch: @Model.BatchName
-            </p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Attendance</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Detailed attendance report for all courses</p>
         </div>
-        <div class="text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            @DateTime.Now.ToString("dddd, MMMM dd, yyyy")
-        </div>
+
+        <!-- Filter -->
+        <form method="get" class="flex items-center gap-2">
+            <select name="semesterId" asp-items="Model.SemesterList" onchange="this.form.submit()"
+                    class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">-- All Semesters --</option>
+            </select>
+        </form>
     </div>
 
-    <!-- Alerts Section -->
-    @if (Model.Alerts.Any())
-    {
-        <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r-lg">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
+    <!-- Course Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @foreach (var course in Model.Courses)
+        {
+            <div x-data="{ expanded: false }" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <!-- Card Header -->
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white line-clamp-1" title="@course.CourseName">@course.CourseName</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">@course.TeacherName</p>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-2xl font-bold @(course.Percentage >= 75 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400")">
+                                @course.Percentage.ToString("F1")%
+                            </span>
+                            <span class="text-xs text-gray-500">Attendance</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+                        <div class="h-2 rounded-full @(course.Percentage >= 75 ? "bg-green-500" : "bg-red-500")"
+                             style="width: @course.Percentage%"></div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                            <div class="font-semibold text-gray-900 dark:text-white">@course.TotalSessions</div>
+                            <div class="text-xs text-gray-500">Total</div>
+                        </div>
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+                            <div class="font-semibold text-green-700 dark:text-green-400">@course.PresentSessions</div>
+                            <div class="text-xs text-green-600 dark:text-green-500">Present</div>
+                        </div>
+                        <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+                            <div class="font-semibold text-red-700 dark:text-red-400">@course.AbsentSessions</div>
+                            <div class="text-xs text-red-600 dark:text-red-500">Absent</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Attention Needed</h3>
-                    <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                        <ul class="list-disc list-inside space-y-1">
-                            @foreach (var alert in Model.Alerts)
-                            {
-                                <li>@alert</li>
-                            }
-                        </ul>
+
+                <!-- Expandable History -->
+                <div class="border-t border-gray-200 dark:border-gray-700">
+                    <button @@click="expanded = !expanded"
+                            class="w-full px-6 py-3 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center justify-center gap-2 transition-colors">
+                        <span x-text="expanded ? 'Hide History' : 'View History'">View History</span>
+                        <svg class="w-4 h-4 transform transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <div x-show="expanded" x-collapse class="bg-gray-50 dark:bg-gray-900/50 max-h-64 overflow-y-auto">
+                        @if (course.History.Any())
+                        {
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-gray-500 uppercase bg-gray-100 dark:bg-gray-800 sticky top-0">
+                                    <tr>
+                                        <th class="px-6 py-3">Date</th>
+                                        <th class="px-6 py-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    @foreach (var record in course.History)
+                                    {
+                                        <tr class="bg-white dark:bg-gray-800">
+                                            <td class="px-6 py-3 font-medium text-gray-900 dark:text-white">
+                                                @record.Date.ToString("MMM dd, yyyy")
+                                                <span class="block text-xs text-gray-500 font-normal">@record.StartTime.ToString("HH:mm") - @record.EndTime.ToString("HH:mm")</span>
+                                            </td>
+                                            <td class="px-6 py-3">
+                                                @if (record.Status == "Present")
+                                                {
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                        Present
+                                                    </span>
+                                                }
+                                                else if (record.Status == "Absent")
+                                                {
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                        Absent
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                        @record.Status
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="p-6 text-center text-gray-500 dark:text-gray-400">
+                                No attendance records found.
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
-        </div>
-    }
-
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <!-- Overall Attendance -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overall Attendance</h3>
-                <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                </div>
-            </div>
-            <div class="flex items-baseline">
-                <span class="text-3xl font-bold text-gray-900 dark:text-white">@Model.OverallAttendancePercentage.ToString("F1")%</span>
-            </div>
-            <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                <div class="bg-blue-600 h-2.5 rounded-full" style="width: @Model.OverallAttendancePercentage%"></div>
-            </div>
-        </div>
-
-        <!-- Total Classes -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Classes</h3>
-                <div class="p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                </div>
-            </div>
-            <span class="text-3xl font-bold text-gray-900 dark:text-white">@Model.TotalClasses</span>
-        </div>
-
-        <!-- Present -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Present</h3>
-                <div class="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-            <span class="text-3xl font-bold text-green-600 dark:text-green-400">@Model.PresentClasses</span>
-        </div>
-
-        <!-- Absent -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Absent</h3>
-                <div class="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-            <span class="text-3xl font-bold text-red-600 dark:text-red-400">@Model.AbsentClasses</span>
-        </div>
-    </div>
-
-    <!-- Today's Schedule -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Today's Schedule</h2>
-            <a asp-action="MyTimetable" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">View Full Timetable &rarr;</a>
-        </div>
-        <div class="p-6">
-            @if (Model.TodayClasses.Any())
-            {
-                <div class="space-y-4">
-                    @foreach (var cls in Model.TodayClasses)
-                    {
-                        <div class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700">
-                            <div class="flex-shrink-0 w-16 text-center">
-                                <div class="text-sm font-bold text-gray-900 dark:text-white">@cls.StartTime.ToString("HH:mm")</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">@cls.EndTime.ToString("HH:mm")</div>
-                            </div>
-                            <div class="ml-4 flex-1 border-l-2 border-gray-200 dark:border-gray-600 pl-4">
-                                <h3 class="text-base font-semibold text-gray-900 dark:text-white">@cls.CourseName</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">@cls.TeacherName</p>
-                            </div>
-                            <div class="ml-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @cls.StatusColor">
-                                    @cls.Status
-                                </span>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>No classes scheduled for today.</p>
-                </div>
-            }
-        </div>
+        }
     </div>
 </div>

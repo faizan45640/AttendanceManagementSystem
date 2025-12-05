@@ -1,4 +1,4 @@
-﻿@model AMS.Models.ViewModels.EditStudentViewModel
+﻿@model AMS.Models.Entities.Student
 @{
     ViewData["Title"] = "Edit Student";
 }
@@ -11,55 +11,20 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Home</a>
+                <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-gray-500 hover:text-indigo-500 dark:text-gray-400">Home</a>
             </li>
             <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
             <li>
-                <a asp-controller="Student" asp-action="Students" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Students</a>
+                <a asp-controller="Student" asp-action="Students" class="text-sm font-medium text-gray-500 hover:text-indigo-500 dark:text-gray-400">Students</a>
             </li>
             <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
-            <li class="text-sm font-medium text-brand-500">Edit</li>
+            <li class="text-sm font-medium text-indigo-500">Edit</li>
         </ol>
     </nav>
 </div>
 
-<!-- Alerts -->
-@if (TempData["Success"] != null)
-{
-    <div class="mb-4 flex w-full rounded-lg border border-success-500 bg-success-500/10 p-4" x-data="{ show: true }" x-show="show">
-        <div class="flex w-full items-center justify-between">
-            <div class="flex items-center">
-                <svg class="mr-3 h-5 w-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <p class="text-sm font-medium text-success-500">@TempData["Success"]</p>
-            </div>
-            <button @@click="show = false" class="text-success-500 hover:text-success-600">
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-            </button>
-        </div>
-    </div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="mb-4 flex w-full rounded-lg border border-error-500 bg-error-500/10 p-4" x-data="{ show: true }" x-show="show">
-        <div class="flex w-full items-center justify-between">
-            <div class="flex items-center">
-                <svg class="mr-3 h-5 w-5 text-error-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                </svg>
-                <p class="text-sm font-medium text-error-500">@TempData["Error"]</p>
-            </div>
-            <button @@click="show = false" class="text-error-500 hover:text-error-600">
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-            </button@>
-        </div>
-    </div>
-}
+<!-- Alert Messages Container -->
+<div id="alertContainer" class="mb-4"></div>
 
 @if (Model == null)
 {
@@ -70,7 +35,7 @@
         <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">Student Not Found</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The student you're trying to edit could not be found.</p>
         <div class="mt-6">
-            <a asp-controller="Student" asp-action="Students" class="inline-flex items-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
+            <a asp-controller="Student" asp-action="Students" class="inline-flex items-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700">
                 Back to Students
             </a>
         </div>
@@ -87,61 +52,12 @@ else
         </div>
 
         <!-- Form -->
-        <form method="post" asp-action="EditStudent">
+        <form id="editStudentForm" method="post" asp-action="EditStudent">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="StudentId" />
             <input type="hidden" asp-for="UserId" />
 
             <div class="space-y-6 p-6">
-                <!-- Username -->
-                <div>
-                    <label asp-for="Username" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Username<span class="text-error-500">*</span>
-                    </label>
-                    <input asp-for="Username"
-                           type="text"
-                           placeholder="Enter username"
-                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
-                    <span asp-validation-for="Username" class="mt-1 block text-sm text-error-500"></span>
-                </div>
-
-                <!-- Email -->
-                <div>
-                    <label asp-for="Email" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Email<span class="text-error-500">*</span>
-                    </label>
-                    <input asp-for="Email"
-                           type="email"
-                           placeholder="student@example.com"
-                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
-                    <span asp-validation-for="Email" class="mt-1 block text-sm text-error-500"></span>
-                </div>
-
-                <!-- Password (Optional for Edit) -->
-                <div>
-                    <label asp-for="Password" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        New Password
-                        <span class="text-xs font-normal text-gray-500">(Leave blank to keep current password)</span>
-                    </label>
-                    <div x-data="{ showPassword: false }" class="relative">
-                        <input asp-for="Password"
-                               x-bind:type="showPassword ? 'text' : 'password'"
-                               placeholder="Enter new password (optional)"
-                               class="h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
-                        <span @@click="showPassword = !showPassword"
-                              class="absolute right-4 top-1/2 z-30 -translate-y-1/2 cursor-pointer text-gray-500 dark:text-gray-400">
-                            <svg x-show="!showPassword" class="h-5 w-5 fill-current" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 3C5.5 3 1.73 6.11 0 10c1.73 3.89 5.5 7 10 7s8.27-3.11 10-7c-1.73-3.89-5.5-7-10-7zm0 12a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z" />
-                            </svg>
-                            <svg x-show="showPassword" class="h-5 w-5 fill-current" viewBox="0 0 20 20">
-                                <path d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" />
-                            </svg>
-                        </span>
-                    </div>
-                    <span asp-validation-for="Password" class="mt-1 block text-sm text-error-500"></span>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Only fill this field if you want to change the password</p>
-                </div>
-
                 <!-- Roll Number -->
                 <div>
                     <label asp-for="RollNumber" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -150,7 +66,7 @@ else
                     <input asp-for="RollNumber"
                            type="text"
                            placeholder="Enter roll number"
-                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
                     <span asp-validation-for="RollNumber" class="mt-1 block text-sm text-error-500"></span>
                 </div>
 
@@ -162,8 +78,8 @@ else
                         </label>
                         <input asp-for="FirstName"
                                type="text"
-                               placeholder="John"
-                               class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                               placeholder="Enter first name"
+                               class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
                         <span asp-validation-for="FirstName" class="mt-1 block text-sm text-error-500"></span>
                     </div>
 
@@ -173,54 +89,58 @@ else
                         </label>
                         <input asp-for="LastName"
                                type="text"
-                               placeholder="Doe"
-                               class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
+                               placeholder="Enter last name"
+                               class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500" />
                         <span asp-validation-for="LastName" class="mt-1 block text-sm text-error-500"></span>
                     </div>
                 </div>
 
-                <!-- Batch Dropdown -->
+                <!-- Batch -->
                 <div>
                     <label asp-for="BatchId" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Batch<span class="text-error-500">*</span>
                     </label>
-                    <select asp-for="BatchId" asp-items="ViewBag.Batches"
-                            class="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    <select asp-for="BatchId"
+                            asp-items="@ViewBag.Batches"
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
                         <option value="">-- Select Batch --</option>
                     </select>
                     <span asp-validation-for="BatchId" class="mt-1 block text-sm text-error-500"></span>
                 </div>
 
-                <!-- Active Status -->
+                <!-- Status -->
                 <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         Status
                     </label>
-                    <div class="flex items-center">
-                        <input asp-for="IsActive" type="checkbox"
-                               class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900" />
-                        <label asp-for="IsActive" class="ml-2 text-sm text-gray-700 dark:text-gray-400">
-                            Active
+                    <div class="flex items-center gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" asp-for="IsActive" value="true" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Active</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" asp-for="IsActive" value="false" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Inactive</span>
                         </label>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Inactive students cannot login to the system
-                    </p>
                 </div>
             </div>
 
-            <!-- Card Footer -->
-            <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+            <!-- Form Footer -->
+            <div class="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-800">
                 <a asp-controller="Student" asp-action="Students"
-                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800">
+                   class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                     Cancel
                 </a>
-                <button type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="submit" id="submitBtn"
+                        class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    Update Student
+                    <span id="submitBtnText">Update Student</span>
                 </button>
             </div>
         </form>
@@ -228,5 +148,101 @@ else
 }
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#editStudentForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var $submitBtn = $('#submitBtn');
+                var $submitBtnText = $('#submitBtnText');
+                var originalBtnText = $submitBtnText.text();
+
+                // Disable button and show loading state
+                $submitBtn.prop('disabled', true);
+                $submitBtnText.text('Updating...');
+
+                // Clear previous alerts
+                $('#alertContainer').empty();
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Show success message
+                            var successHtml = `
+                                <div class="flex w-full rounded-lg border border-green-500 bg-green-500/10 p-4">
+                                    <div class="flex w-full items-center justify-between">
+                                        <div class="flex items-center">
+                                            <svg class="mr-3 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <p class="text-sm font-medium text-green-500">${response.message}</p>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            $('#alertContainer').html(successHtml);
+
+                            // Scroll to top to show message
+                            $('html, body').animate({ scrollTop: 0 }, 'fast');
+
+                            // Redirect after short delay
+                            setTimeout(function () {
+                                window.location.href = '/Student/Students';
+                            }, 1500);
+                        }
+                    },
+                    error: function (xhr) {
+                        var errorMessage = 'An error occurred while updating the student.';
+
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            // Handle validation errors
+                            if (xhr.responseJSON.errors) {
+                                var errors = xhr.responseJSON.errors;
+                                for (var field in errors) {
+                                    var fieldErrors = errors[field];
+                                    if (fieldErrors && fieldErrors.length > 0) {
+                                        var $field = $('[name="' + field + '"]');
+                                        var $errorSpan = $field.siblings('span[data-valmsg-for="' + field + '"]');
+                                        if ($errorSpan.length) {
+                                            $errorSpan.text(fieldErrors[0]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Show error message
+                        var errorHtml = `
+                            <div class="flex w-full rounded-lg border border-red-500 bg-red-500/10 p-4">
+                                <div class="flex w-full items-center justify-between">
+                                    <div class="flex items-center">
+                                        <svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                        <p class="text-sm font-medium text-red-500">${errorMessage}</p>
+                                    </div>
+                                </div>
+                            </div>`;
+                        $('#alertContainer').html(errorHtml);
+
+                        // Scroll to top to show message
+                        $('html, body').animate({ scrollTop: 0 }, 'fast');
+                    },
+                    complete: function () {
+                        // Re-enable button
+                        $submitBtn.prop('disabled', false);
+                        $submitBtnText.text(originalBtnText);
+                    }
+                });
+            });
+        });
+    </script>
 }

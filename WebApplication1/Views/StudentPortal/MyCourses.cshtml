@@ -1,0 +1,92 @@
+﻿@model List<AMS.Models.ViewModels.StudentCourseViewModel>
+
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Courses</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Enrolled courses and attendance overview</p>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var course in Model)
+            {
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-900 dark:text-white">@course.CourseName</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">@course.CourseCode</p>
+                        </div>
+                        <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <span>@course.TeacherName</span>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-600 dark:text-gray-400">Attendance</span>
+                                <span class="font-medium @(course.AttendancePercentage < 75 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400")">
+                                    @course.AttendancePercentage.ToString("F1")%
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="h-2 rounded-full @(course.AttendancePercentage < 75 ? "bg-red-500" : "bg-green-500")"
+                                     style="width: @course.AttendancePercentage%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Present: @course.PresentClasses</span>
+                                <span>Total: @course.TotalClasses</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Semester Progress</h4>
+                            <div class="grid grid-cols-3 gap-2 text-center">
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
+                                    <div class="text-lg font-bold text-gray-900 dark:text-white">@course.TotalClasses</div>
+                                    <div class="text-[10px] text-gray-500">Done</div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
+                                    <div class="text-lg font-bold text-gray-900 dark:text-white">@course.ClassesRemaining</div>
+                                    <div class="text-[10px] text-gray-500">Remaining</div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
+                                    <div class="text-lg font-bold text-gray-900 dark:text-white">@course.TotalSemesterClasses</div>
+                                    <div class="text-[10px] text-gray-500">Total</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">No Courses Found</h3>
+            <p class="mt-1 text-gray-500 dark:text-gray-400">You are not enrolled in any active courses.</p>
+        </div>
+    }
+</div>
