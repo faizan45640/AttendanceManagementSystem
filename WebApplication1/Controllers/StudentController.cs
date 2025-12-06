@@ -64,7 +64,7 @@ namespace AMS.Controllers
                 .Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
-                    Text = $"{b.BatchName} - {b.Year}"
+                    Text = $"{b.BatchName} ({b.Year})"
                 })
                 .ToListAsync();
 
@@ -79,7 +79,7 @@ namespace AMS.Controllers
                 .Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
-                    Text = $"{b.BatchName} - {b.Year}"
+                    Text = $"{b.BatchName} ({b.Year})"
                 })
                 .ToListAsync();
 
@@ -142,7 +142,7 @@ namespace AMS.Controllers
                 .Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
-                    Text = $"{b.BatchName} - {b.Year}"
+                    Text = $"{b.BatchName} ({b.Year})"
                 })
                 .ToListAsync();
             ViewBag.Batches = batches;

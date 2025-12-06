@@ -18,6 +18,9 @@ namespace AMS.Models.ViewModels
         [Display(Name = "Semester")]
         public int? SemesterId { get; set; }
 
+        [Display(Name = "Batch")]
+        public int? BatchId { get; set; }
+
         [Display(Name = "Status")]
         public string? Status { get; set; }
 
@@ -28,6 +31,7 @@ namespace AMS.Models.ViewModels
         public List<SelectListItem> Students { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> Courses { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> Semesters { get; set; } = new List<SelectListItem>();
+        public List<SelectListItem> Batches { get; set; } = new List<SelectListItem>();
     }
     public class AddEnrollmentViewModel
     {

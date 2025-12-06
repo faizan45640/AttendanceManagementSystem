@@ -3,134 +3,222 @@
     ViewData["Title"] = "Mark Attendance";
 }
 
-@if (TempData["success"] != null)
-{
-    <div class="mb-4 rounded-lg bg-success-50 p-4 text-sm text-success-800 dark:bg-gray-800 dark:text-success-400" role="alert">
-        <span class="font-medium">Success!</span> @TempData["success"]
+<div class="p-4 sm:p-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <a asp-controller="Attendance" asp-action="TeacherReport" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors" title="Back">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Mark Attendance</h1>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        @Model.CourseName • @Model.BatchName
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+                <div class="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                    <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span class="font-medium text-indigo-700 dark:text-indigo-300">@Model.Date.ToLongDateString()</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-gray-700 dark:text-gray-300">@Model.StartTime.ToString("hh:mm tt") - @Model.EndTime.ToString("hh:mm tt")</span>
+                </div>
+            </div>
+        </div>
     </div>
-}
 
-@if (TempData["error"] != null)
-{
-    <div class="mb-4 rounded-lg bg-error-50 p-4 text-sm text-error-800 dark:bg-gray-800 dark:text-error-400" role="alert">
-        <span class="font-medium">Error!</span> @TempData["error"]
-    </div>
-}
-
-<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                Mark Attendance
-            </h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                @Model.CourseName - @Model.BatchName
-            </p>
+    <!-- Alerts -->
+    @if (TempData["success"] != null)
+    {
+        <div class="mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4" role="alert">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-sm font-medium text-green-800 dark:text-green-200">@TempData["success"]</span>
+            </div>
         </div>
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                @Model.Date.ToLongDateString()
-            </span>
-            <span class="text-sm text-gray-500 dark:text-gray-400">
-                (@Model.StartTime - @Model.EndTime)
-            </span>
+    }
+
+    @if (TempData["error"] != null)
+    {
+        <div class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4" role="alert">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-red-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-sm font-medium text-red-800 dark:text-red-200">@TempData["error"]</span>
+            </div>
         </div>
-    </div>
+    }
 
-    <!-- Date Selection Form -->
-    <form asp-action="LoadByDate" method="post" class="mb-6 flex items-end gap-4">
-        <input type="hidden" asp-for="SlotId" />
-        <input type="hidden" asp-for="CourseAssignmentId" />
-        <input type="hidden" asp-for="StartTime" />
-        <input type="hidden" asp-for="EndTime" />
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <!-- Date Selection -->
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+            <form asp-action="LoadByDate" method="post" class="flex flex-col sm:flex-row sm:items-end gap-4">
+                <input type="hidden" asp-for="SlotId" />
+                <input type="hidden" asp-for="CourseAssignmentId" />
+                <input type="hidden" asp-for="StartTime" />
+                <input type="hidden" asp-for="EndTime" />
 
-        <div class="flex-1 max-w-xs">
-            <label asp-for="Date" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Select Date
-            </label>
-            <select asp-for="Date" class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-0 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-gray-500" onchange="this.form.submit()">
-                @foreach (var d in Model.ValidDates)
-                {
-                    <option value="@d.ToString("yyyy-MM-dd")" selected="@(d == Model.Date)">
-                        @d.ToLongDateString()
-                    </option>
-                }
-            </select>
-        </div>
-    </form>
+                <div class="flex-1 max-w-xs">
+                    <label asp-for="Date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Select Date
+                    </label>
+                    <select asp-for="Date"
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 dark:text-white"
+                            onchange="this.form.submit()">
+                        @foreach (var d in Model.ValidDates)
+                        {
+                            <option value="@d.ToString("yyyy-MM-dd")" selected="@(d == Model.Date)">
+                                @d.ToString("ddd, MMM dd, yyyy")
+                            </option>
+                        }
+                    </select>
+                </div>
 
-    <form asp-action="Save" method="post">
-        <input type="hidden" asp-for="SlotId" />
-        <input type="hidden" asp-for="CourseAssignmentId" />
-        <input type="hidden" asp-for="CourseName" />
-        <input type="hidden" asp-for="BatchName" />
-        <input type="hidden" asp-for="Date" />
-        <input type="hidden" asp-for="StartTime" />
-        <input type="hidden" asp-for="EndTime" />
-
-        <div class="mb-4 flex gap-2">
-            <button type="button" onclick="markAll('Present')" class="rounded-lg bg-success-50 px-3 py-1.5 text-xs font-medium text-success-700 hover:bg-success-100 dark:bg-success-900/20 dark:text-success-400">
-                Mark All Present
-            </button>
-            <button type="button" onclick="markAll('Absent')" class="rounded-lg bg-error-50 px-3 py-1.5 text-xs font-medium text-error-700 hover:bg-error-100 dark:bg-error-900/20 dark:text-error-400">
-                Mark All Absent
-            </button>
+                <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span><strong class="text-gray-900 dark:text-white">@Model.Students.Count</strong> students enrolled</span>
+                </div>
+            </form>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-[600px] border-collapse text-left">
-                <thead>
-                    <tr class="border-b border-gray-200 dark:border-gray-800">
-                        <th class="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Roll No</th>
-                        <th class="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Student Name</th>
-                        <th class="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (int i = 0; i < Model.Students.Count; i++)
-                    {
-                        <tr class="border-b border-gray-200 last:border-0 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                            <td class="px-4 py-3 text-sm text-gray-800 dark:text-white/90">
-                                @Model.Students[i].RollNumber
-                                <input type="hidden" asp-for="Students[i].StudentId" />
-                                <input type="hidden" asp-for="Students[i].StudentName" />
-                                <input type="hidden" asp-for="Students[i].RollNumber" />
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-800 dark:text-white/90">
-                                @Model.Students[i].StudentName
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                <div class="flex items-center gap-4">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" asp-for="Students[i].Status" value="Present" class="text-success-500 focus:ring-success-500" />
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Present</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" asp-for="Students[i].Status" value="Absent" class="text-error-500 focus:ring-error-500" />
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Absent</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" asp-for="Students[i].Status" value="Late" class="text-warning-500 focus:ring-warning-500" />
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Late</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" asp-for="Students[i].Status" value="Excused" class="text-blue-500 focus:ring-blue-500" />
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Excused</span>
-                                    </label>
-                                </div>
-                            </td>
+        <!-- Attendance Form -->
+        <form asp-action="Save" method="post">
+            <input type="hidden" asp-for="SlotId" />
+            <input type="hidden" asp-for="CourseAssignmentId" />
+            <input type="hidden" asp-for="CourseName" />
+            <input type="hidden" asp-for="BatchName" />
+            <input type="hidden" asp-for="Date" />
+            <input type="hidden" asp-for="StartTime" />
+            <input type="hidden" asp-for="EndTime" />
+
+            <!-- Quick Actions -->
+            <div class="px-5 py-3 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-2">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Quick Actions:</span>
+                <button type="button" onclick="markAll('Present')"
+                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors">
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    All Present
+                </button>
+                <button type="button" onclick="markAll('Absent')"
+                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors">
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    All Absent
+                </button>
+            </div>
+
+            <!-- Students Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-900/50">
+                        <tr>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Roll No</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Student Name</th>
+                            <th class="px-5 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for (int i = 0; i < Model.Students.Count; i++)
+                        {
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-5 py-4 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                    @Model.Students[i].RollNumber
+                                    <input type="hidden" asp-for="Students[i].StudentId" />
+                                    <input type="hidden" asp-for="Students[i].StudentName" />
+                                    <input type="hidden" asp-for="Students[i].RollNumber" />
+                                </td>
+                                <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
+                                    @Model.Students[i].StudentName
+                                </td>
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+                                        <label class="flex items-center gap-1.5 cursor-pointer group">
+                                            <input type="radio" asp-for="Students[i].Status" value="Present" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700" />
+                                            <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400">Present</span>
+                                        </label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer group">
+                                            <input type="radio" asp-for="Students[i].Status" value="Absent" class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500 dark:border-gray-600 dark:bg-gray-700" />
+                                            <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400">Absent</span>
+                                        </label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer group">
+                                            <input type="radio" asp-for="Students[i].Status" value="Late" class="w-4 h-4 text-yellow-600 border-gray-300 focus:ring-yellow-500 dark:border-gray-600 dark:bg-gray-700" />
+                                            <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-yellow-600 dark:group-hover:text-yellow-400">Late</span>
+                                        </label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer group">
+                                            <input type="radio" asp-for="Students[i].Status" value="Excused" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700" />
+                                            <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">Excused</span>
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="mt-6 flex justify-end">
-            <button type="submit" class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-600 active:bg-brand-700">
-                Save Attendance
-            </button>
-        </div>
-    </form>
+            <!-- Empty State -->
+            @if (!Model.Students.Any())
+            {
+                <div class="px-5 py-12 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No students found</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No students are enrolled in this class.</p>
+                </div>
+            }
+
+            <!-- Footer Actions -->
+            @if (Model.Students.Any())
+            {
+                <div class="px-5 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            <span class="text-gray-600 dark:text-gray-400">Present</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                            <span class="text-gray-600 dark:text-gray-400">Absent</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                            <span class="text-gray-600 dark:text-gray-400">Late</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                            <span class="text-gray-600 dark:text-gray-400">Excused</span>
+                        </div>
+                    </div>
+                    <button type="submit"
+                            class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Save Attendance
+                    </button>
+                </div>
+            }
+        </form>
+    </div>
 </div>
 
 @section Scripts {

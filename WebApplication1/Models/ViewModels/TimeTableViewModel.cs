@@ -30,8 +30,12 @@ namespace AMS.Models.ViewModels
         [Display(Name = "Batch")]
         public string? BatchName { get; set; }
 
+        public int? BatchYear { get; set; }
+
         [Display(Name = "Semester")]
         public string? SemesterName { get; set; }
+
+        public int? SemesterYear { get; set; }
 
         public bool IsActive { get; set; }
 
@@ -81,7 +85,8 @@ namespace AMS.Models.ViewModels
     }
     public class TimetableFilterViewModel
     {
-        public IEnumerable<Timetable> Timetables { get; set; } = new List<Timetable>();
+
+        public List<Timetable> Timetables { get; set; } = new List<Timetable>();
         public int? SemesterId { get; set; }
         public int? BatchId { get; set; }
         public string? Status { get; set; }

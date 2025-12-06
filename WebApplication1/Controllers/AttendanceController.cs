@@ -1,15 +1,18 @@
-﻿using AMS.Models.Entities;
+﻿using AMS.Models;
+using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Linq;
+using ClosedXML.Excel;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using AMS.Models;
-//rendering
-using Microsoft.AspNetCore.Mvc.Rendering;
+
 namespace AMS.Controllers
-    
 {
     [Authorize]
     public class AttendanceController : Controller
@@ -946,5 +949,587 @@ namespace AMS.Controllers
 
             return View(model);
         }
+
+        #region Student Report Export Methods
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> ExportStudentReportToExcel(int studentId, int? batchId, int? semesterId, int? courseId, string duration)
+        {
+            var student = await _context.Students
+                .Include(s => s.Batch)
+                .FirstOrDefaultAsync(s => s.StudentId == studentId);
+            if (student == null) return NotFound();
+
+            var courses = await GetStudentCourseAttendance(studentId, semesterId, courseId);
+
+            using var workbook = new XLWorkbook();
+            var ws = workbook.Worksheets.Add("Attendance Report");
+
+            // Title
+            ws.Cell(1, 1).Value = "Student Attendance Report";
+            ws.Cell(1, 1).Style.Font.Bold = true;
+            ws.Cell(1, 1).Style.Font.FontSize = 16;
+            ws.Range(1, 1, 1, 6).Merge();
+
+            // Student Info
+            ws.Cell(2, 1).Value = $"Student: {student.FirstName} {student.LastName}";
+            ws.Cell(3, 1).Value = $"Roll Number: {student.RollNumber}";
+            ws.Cell(4, 1).Value = $"Batch: {student.Batch?.BatchName ?? "N/A"}";
+            ws.Cell(5, 1).Value = $"Generated: {DateTime.Now:MMMM dd, yyyy}";
+
+            // Headers
+            var row = 7;
+            ws.Cell(row, 1).Value = "Course";
+            ws.Cell(row, 2).Value = "Semester";
+            ws.Cell(row, 3).Value = "Teacher";
+            ws.Cell(row, 4).Value = "Total";
+            ws.Cell(row, 5).Value = "Present";
+            ws.Cell(row, 6).Value = "Absent";
+            ws.Cell(row, 7).Value = "Percentage";
+            ws.Range(row, 1, row, 7).Style.Font.Bold = true;
+            ws.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            // Data
+            row++;
+            int totalClasses = 0, totalPresent = 0, totalAbsent = 0;
+            foreach (var course in courses)
+            {
+                ws.Cell(row, 1).Value = course.CourseName;
+                ws.Cell(row, 2).Value = course.SemesterName;
+                ws.Cell(row, 3).Value = course.TeacherName;
+                ws.Cell(row, 4).Value = course.TotalSessions;
+                ws.Cell(row, 5).Value = course.PresentSessions;
+                ws.Cell(row, 6).Value = course.AbsentSessions;
+                ws.Cell(row, 7).Value = $"{Math.Round(course.Percentage, 1)}%";
+                totalClasses += course.TotalSessions;
+                totalPresent += course.PresentSessions;
+                totalAbsent += course.AbsentSessions;
+                row++;
+            }
+
+            // Summary
+            row++;
+            ws.Cell(row, 1).Value = "Total";
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            ws.Cell(row, 4).Value = totalClasses;
+            ws.Cell(row, 5).Value = totalPresent;
+            ws.Cell(row, 6).Value = totalAbsent;
+            ws.Cell(row, 7).Value = totalClasses > 0 ? $"{Math.Round((double)totalPresent / totalClasses * 100, 1)}%" : "0%";
+            ws.Range(row, 1, row, 7).Style.Font.Bold = true;
+
+            ws.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+            var fileName = $"StudentAttendance_{student.RollNumber}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> ExportStudentReportToPdf(int studentId, int? batchId, int? semesterId, int? courseId, string duration)
+        {
+            var student = await _context.Students
+                .Include(s => s.Batch)
+                .FirstOrDefaultAsync(s => s.StudentId == studentId);
+            if (student == null) return NotFound();
+
+            var courses = await GetStudentCourseAttendance(studentId, semesterId, courseId);
+
+            using var stream = new MemoryStream();
+            var document = new Document(PageSize.A4, 40, 40, 40, 40);
+            var writer = PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            // Title
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+            var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+
+            document.Add(new Paragraph("Student Attendance Report", titleFont));
+            document.Add(new Paragraph(" "));
+            document.Add(new Paragraph($"Student: {student.FirstName} {student.LastName}", normalFont));
+            document.Add(new Paragraph($"Roll Number: {student.RollNumber}", normalFont));
+            document.Add(new Paragraph($"Batch: {student.Batch?.BatchName ?? "N/A"}", normalFont));
+            document.Add(new Paragraph($"Generated: {DateTime.Now:MMMM dd, yyyy}", normalFont));
+            document.Add(new Paragraph(" "));
+
+            // Table
+            var table = new PdfPTable(7) { WidthPercentage = 100 };
+            table.SetWidths(new float[] { 2f, 1.5f, 2f, 0.8f, 0.8f, 0.8f, 0.8f });
+
+            // Headers
+            string[] headers = { "Course", "Semester", "Teacher", "Total", "Present", "Absent", "%" };
+            foreach (var header in headers)
+            {
+                var cell = new PdfPCell(new Phrase(header, headerFont))
+                {
+                    BackgroundColor = new BaseColor(229, 231, 235),
+                    Padding = 5
+                };
+                table.AddCell(cell);
+            }
+
+            // Data
+            int totalClasses = 0, totalPresent = 0, totalAbsent = 0;
+            foreach (var course in courses)
+            {
+                table.AddCell(new PdfPCell(new Phrase(course.CourseName, normalFont)) { Padding = 4 });
+                table.AddCell(new PdfPCell(new Phrase(course.SemesterName, normalFont)) { Padding = 4 });
+                table.AddCell(new PdfPCell(new Phrase(course.TeacherName, normalFont)) { Padding = 4 });
+                table.AddCell(new PdfPCell(new Phrase(course.TotalSessions.ToString(), normalFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase(course.PresentSessions.ToString(), normalFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase(course.AbsentSessions.ToString(), normalFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase($"{Math.Round(course.Percentage, 1)}%", normalFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER });
+                totalClasses += course.TotalSessions;
+                totalPresent += course.PresentSessions;
+                totalAbsent += course.AbsentSessions;
+            }
+
+            // Summary row
+            table.AddCell(new PdfPCell(new Phrase("Total", headerFont)) { Padding = 4, BackgroundColor = new BaseColor(243, 244, 246) });
+            table.AddCell(new PdfPCell(new Phrase("", normalFont)) { Padding = 4, BackgroundColor = new BaseColor(243, 244, 246) });
+            table.AddCell(new PdfPCell(new Phrase("", normalFont)) { Padding = 4, BackgroundColor = new BaseColor(243, 244, 246) });
+            table.AddCell(new PdfPCell(new Phrase(totalClasses.ToString(), headerFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = new BaseColor(243, 244, 246) });
+            table.AddCell(new PdfPCell(new Phrase(totalPresent.ToString(), headerFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = new BaseColor(243, 244, 246) });
+            table.AddCell(new PdfPCell(new Phrase(totalAbsent.ToString(), headerFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = new BaseColor(243, 244, 246) });
+            var overallPct = totalClasses > 0 ? Math.Round((double)totalPresent / totalClasses * 100, 1) : 0;
+            table.AddCell(new PdfPCell(new Phrase($"{overallPct}%", headerFont)) { Padding = 4, HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = new BaseColor(243, 244, 246) });
+
+            document.Add(table);
+            document.Close();
+
+            var fileName = $"StudentAttendance_{student.RollNumber}_{DateTime.Now:yyyyMMdd}.pdf";
+            return File(stream.ToArray(), "application/pdf", fileName);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> ExportCourseAttendanceToPdf(int studentId, int courseId, int semesterId)
+        {
+            var student = await _context.Students
+                .Include(s => s.Batch)
+                .FirstOrDefaultAsync(s => s.StudentId == studentId);
+            if (student == null) return NotFound("Student not found");
+
+            var course = await _context.Courses.FindAsync(courseId);
+            if (course == null) return NotFound("Course not found");
+
+            var semester = await _context.Semesters.FindAsync(semesterId);
+            if (semester == null) return NotFound("Semester not found");
+
+            // Get all attendance records for this student, course, and semester
+            var attendanceRecords = await _context.Attendances
+                .Include(a => a.Session)
+                    .ThenInclude(s => s.CourseAssignment)
+                        .ThenInclude(ca => ca.Teacher)
+                .Where(a => a.StudentId == studentId
+                         && a.Session.CourseAssignment.CourseId == courseId
+                         && a.Session.CourseAssignment.SemesterId == semesterId)
+                .OrderByDescending(a => a.Session.SessionDate)
+                .ThenByDescending(a => a.Session.StartTime)
+                .ToListAsync();
+
+            if (!attendanceRecords.Any())
+                return NotFound("No attendance records found for this course");
+
+            var teacherName = attendanceRecords.FirstOrDefault()?.Session?.CourseAssignment?.Teacher != null
+                ? $"{attendanceRecords.First().Session.CourseAssignment.Teacher.FirstName} {attendanceRecords.First().Session.CourseAssignment.Teacher.LastName}"
+                : "N/A";
+
+            using var stream = new MemoryStream();
+            var document = new Document(PageSize.A4, 40, 40, 40, 40);
+            var writer = PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            // Fonts
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
+            var subtitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+            var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+            var presentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, new BaseColor(22, 163, 74)); // green
+            var absentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, new BaseColor(220, 38, 38)); // red
+
+            // Title
+            document.Add(new Paragraph("Course Attendance Report", titleFont));
+            document.Add(new Paragraph(" "));
+
+            // Student Info
+            document.Add(new Paragraph($"Student: {student.FirstName} {student.LastName}", normalFont));
+            document.Add(new Paragraph($"Roll Number: {student.RollNumber}", normalFont));
+            document.Add(new Paragraph($"Batch: {student.Batch?.BatchName ?? "N/A"}", normalFont));
+            document.Add(new Paragraph(" "));
+
+            // Course Info
+            document.Add(new Paragraph($"Course: {course.CourseName}", subtitleFont));
+            document.Add(new Paragraph($"Semester: {semester.SemesterName}", normalFont));
+            document.Add(new Paragraph($"Teacher: {teacherName}", normalFont));
+            document.Add(new Paragraph($"Generated: {DateTime.Now:MMMM dd, yyyy HH:mm}", normalFont));
+            document.Add(new Paragraph(" "));
+
+            // Summary
+            int totalSessions = attendanceRecords.Count();
+            int presentCount = attendanceRecords.Count(a => a.Status == "Present" || a.Status == "Late");
+            int absentCount = attendanceRecords.Count(a => a.Status == "Absent");
+            double percentage = totalSessions > 0 ? Math.Round((double)presentCount / totalSessions * 100, 1) : 0;
+
+            var summaryTable = new PdfPTable(4) { WidthPercentage = 100, SpacingBefore = 10, SpacingAfter = 10 };
+            summaryTable.SetWidths(new float[] { 1f, 1f, 1f, 1f });
+
+            var summaryCell1 = new PdfPCell(new Phrase($"Total Classes: {totalSessions}", headerFont)) { Padding = 8, BackgroundColor = new BaseColor(243, 244, 246), HorizontalAlignment = Element.ALIGN_CENTER };
+            var summaryCell2 = new PdfPCell(new Phrase($"Present: {presentCount}", headerFont)) { Padding = 8, BackgroundColor = new BaseColor(220, 252, 231), HorizontalAlignment = Element.ALIGN_CENTER };
+            var summaryCell3 = new PdfPCell(new Phrase($"Absent: {absentCount}", headerFont)) { Padding = 8, BackgroundColor = new BaseColor(254, 226, 226), HorizontalAlignment = Element.ALIGN_CENTER };
+            var summaryCell4 = new PdfPCell(new Phrase($"Attendance: {percentage}%", headerFont)) { Padding = 8, BackgroundColor = new BaseColor(243, 244, 246), HorizontalAlignment = Element.ALIGN_CENTER };
+
+            summaryTable.AddCell(summaryCell1);
+            summaryTable.AddCell(summaryCell2);
+            summaryTable.AddCell(summaryCell3);
+            summaryTable.AddCell(summaryCell4);
+
+            document.Add(summaryTable);
+
+            // Attendance Details Table
+            document.Add(new Paragraph("Date-wise Attendance", subtitleFont));
+            document.Add(new Paragraph(" "));
+
+            var table = new PdfPTable(5) { WidthPercentage = 100 };
+            table.SetWidths(new float[] { 1f, 1.5f, 1f, 1f, 1f });
+
+            // Headers
+            string[] headers = { "S.No", "Date", "Day", "Time", "Status" };
+            foreach (var header in headers)
+            {
+                var cell = new PdfPCell(new Phrase(header, headerFont))
+                {
+                    BackgroundColor = new BaseColor(229, 231, 235),
+                    Padding = 6,
+                    HorizontalAlignment = Element.ALIGN_CENTER
+                };
+                table.AddCell(cell);
+            }
+
+            // Data rows
+            int serialNo = 1;
+            foreach (var record in attendanceRecords)
+            {
+                var session = record.Session;
+                var date = session?.SessionDate ?? DateOnly.MinValue;
+                var dayName = date != DateOnly.MinValue ? date.DayOfWeek.ToString() : "N/A";
+                var startTime = session != null ? session.StartTime.ToString("hh:mm tt") : "N/A";
+                var endTime = session != null ? session.EndTime.ToString("hh:mm tt") : "N/A";
+                var timeRange = $"{startTime} - {endTime}";
+
+                table.AddCell(new PdfPCell(new Phrase(serialNo.ToString(), normalFont)) { Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase(date.ToString("MMM dd, yyyy"), normalFont)) { Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase(dayName, normalFont)) { Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase(timeRange, normalFont)) { Padding = 5, HorizontalAlignment = Element.ALIGN_CENTER });
+
+                // Status with color
+                var statusFont = record.Status == "Present" || record.Status == "Late" ? presentFont : absentFont;
+                var statusBgColor = record.Status == "Present" || record.Status == "Late"
+                    ? new BaseColor(220, 252, 231) // green-100
+                    : new BaseColor(254, 226, 226); // red-100
+                var statusCell = new PdfPCell(new Phrase(record.Status ?? "N/A", statusFont))
+                {
+                    Padding = 5,
+                    HorizontalAlignment = Element.ALIGN_CENTER,
+                    BackgroundColor = statusBgColor
+                };
+                table.AddCell(statusCell);
+
+                serialNo++;
+            }
+
+            document.Add(table);
+            document.Close();
+
+            var fileName = $"CourseAttendance_{student.RollNumber}_{course.CourseName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+            return File(stream.ToArray(), "application/pdf", fileName);
+        }
+
+        private async Task<List<StudentCourseAttendanceViewModel>> GetStudentCourseAttendance(int studentId, int? semesterId, int? courseId)
+        {
+            var query = _context.Attendances
+                .Include(a => a.Session)
+                    .ThenInclude(s => s.CourseAssignment)
+                        .ThenInclude(ca => ca.Course)
+                .Include(a => a.Session)
+                    .ThenInclude(s => s.CourseAssignment)
+                        .ThenInclude(ca => ca.Semester)
+                .Include(a => a.Session)
+                    .ThenInclude(s => s.CourseAssignment)
+                        .ThenInclude(ca => ca.Teacher)
+                .Where(a => a.StudentId == studentId);
+
+            if (semesterId.HasValue)
+                query = query.Where(a => a.Session.CourseAssignment.SemesterId == semesterId);
+            if (courseId.HasValue)
+                query = query.Where(a => a.Session.CourseAssignment.CourseId == courseId);
+
+            var records = await query.ToListAsync();
+
+            var grouped = records
+                .GroupBy(a => new { a.Session.CourseAssignment.CourseId, a.Session.CourseAssignment.SemesterId })
+                .Select(g => new StudentCourseAttendanceViewModel
+                {
+                    CourseId = g.Key.CourseId ?? 0,
+                    SemesterId = g.Key.SemesterId ?? 0,
+                    CourseName = g.First().Session.CourseAssignment.Course.CourseName,
+                    SemesterName = g.First().Session.CourseAssignment.Semester.SemesterName,
+                    TeacherName = g.First().Session.CourseAssignment.Teacher != null
+                        ? $"{g.First().Session.CourseAssignment.Teacher.FirstName} {g.First().Session.CourseAssignment.Teacher.LastName}"
+                        : "N/A",
+                    TotalSessions = g.Count(),
+                    PresentSessions = g.Count(a => a.Status == "Present" || a.Status == "Late"),
+                    AbsentSessions = g.Count(a => a.Status == "Absent"),
+                    Percentage = g.Any() ? (double)g.Count(a => a.Status == "Present" || a.Status == "Late") / g.Count() * 100 : 0,
+                    History = g.Select(a => new AttendanceRecordViewModel
+                    {
+                        Date = a.Session.SessionDate,
+                        StartTime = a.Session.StartTime,
+                        EndTime = a.Session.EndTime,
+                        Status = a.Status
+                    }).OrderByDescending(h => h.Date).ThenByDescending(h => h.StartTime).ToList()
+                })
+                .ToList();
+
+            return grouped;
+        }
+
+        #endregion
+
+        #region Teacher Report Export Methods
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> ExportTeacherReportToExcel(int? teacherId)
+        {
+            int actualTeacherId;
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                if (teacher == null) return NotFound();
+                actualTeacherId = teacher.TeacherId;
+            }
+            else
+            {
+                if (!teacherId.HasValue) return BadRequest("Teacher ID required");
+                actualTeacherId = teacherId.Value;
+            }
+
+            var teacherEntity = await _context.Teachers.FirstOrDefaultAsync(t => t.TeacherId == actualTeacherId);
+            if (teacherEntity == null) return NotFound();
+
+            var batches = await GetTeacherBatchesWithSessions(actualTeacherId);
+
+            using var workbook = new XLWorkbook();
+            var ws = workbook.Worksheets.Add("Teacher Report");
+
+            // Title
+            ws.Cell(1, 1).Value = "Teacher Attendance Report";
+            ws.Cell(1, 1).Style.Font.Bold = true;
+            ws.Cell(1, 1).Style.Font.FontSize = 16;
+            ws.Range(1, 1, 1, 7).Merge();
+
+            // Teacher Info
+            ws.Cell(2, 1).Value = $"Teacher: {teacherEntity.FirstName} {teacherEntity.LastName}";
+            ws.Cell(3, 1).Value = $"Generated: {DateTime.Now:MMMM dd, yyyy}";
+
+            int row = 5;
+
+            foreach (var batch in batches)
+            {
+                // Batch header
+                ws.Cell(row, 1).Value = $"{batch.BatchName} - {batch.SemesterName}";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                ws.Cell(row, 1).Style.Font.FontSize = 12;
+                ws.Range(row, 1, row, 7).Merge();
+                ws.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightSteelBlue;
+                row++;
+
+                // Headers
+                ws.Cell(row, 1).Value = "Date";
+                ws.Cell(row, 2).Value = "Day";
+                ws.Cell(row, 3).Value = "Course";
+                ws.Cell(row, 4).Value = "Time";
+                ws.Cell(row, 5).Value = "Status";
+                ws.Cell(row, 6).Value = "Present";
+                ws.Cell(row, 7).Value = "Total";
+                ws.Range(row, 1, row, 7).Style.Font.Bold = true;
+                ws.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightGray;
+                row++;
+
+                foreach (var session in batch.Sessions)
+                {
+                    ws.Cell(row, 1).Value = session.Date.ToString("MMM dd, yyyy");
+                    ws.Cell(row, 2).Value = session.Date.ToString("ddd");
+                    ws.Cell(row, 3).Value = session.CourseName;
+                    ws.Cell(row, 4).Value = $"{session.StartTime:hh\\:mm} - {session.EndTime:hh\\:mm}";
+                    ws.Cell(row, 5).Value = session.Status;
+                    ws.Cell(row, 6).Value = session.PresentCount;
+                    ws.Cell(row, 7).Value = session.TotalStudents;
+                    row++;
+                }
+
+                // Summary
+                var markedSessions = batch.Sessions.Where(s => s.Status == "Marked").ToList();
+                var pendingSessions = batch.Sessions.Where(s => s.Status == "Pending").ToList();
+                ws.Cell(row, 1).Value = $"Marked: {markedSessions.Count} | Pending: {pendingSessions.Count}";
+                ws.Cell(row, 1).Style.Font.Italic = true;
+                ws.Range(row, 1, row, 7).Merge();
+                row += 2;
+            }
+
+            ws.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+            var fileName = $"TeacherReport_{teacherEntity.FirstName}_{teacherEntity.LastName}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> ExportTeacherReportToPdf(int? teacherId)
+        {
+            int actualTeacherId;
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                if (teacher == null) return NotFound();
+                actualTeacherId = teacher.TeacherId;
+            }
+            else
+            {
+                if (!teacherId.HasValue) return BadRequest("Teacher ID required");
+                actualTeacherId = teacherId.Value;
+            }
+
+            var teacherEntity = await _context.Teachers.FirstOrDefaultAsync(t => t.TeacherId == actualTeacherId);
+            if (teacherEntity == null) return NotFound();
+
+            var batches = await GetTeacherBatchesWithSessions(actualTeacherId);
+
+            using var stream = new MemoryStream();
+            var document = new Document(PageSize.A4.Rotate(), 40, 40, 40, 40);
+            var writer = PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18);
+            var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9);
+            var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+
+            document.Add(new Paragraph("Teacher Attendance Report", titleFont));
+            document.Add(new Paragraph($"Teacher: {teacherEntity.FirstName} {teacherEntity.LastName}", normalFont));
+            document.Add(new Paragraph($"Generated: {DateTime.Now:MMMM dd, yyyy}", normalFont));
+            document.Add(new Paragraph(" "));
+
+            foreach (var batch in batches)
+            {
+                document.Add(new Paragraph($"{batch.BatchName} - {batch.SemesterName}", sectionFont));
+                document.Add(new Paragraph(" "));
+
+                var table = new PdfPTable(7) { WidthPercentage = 100 };
+                table.SetWidths(new float[] { 1.2f, 0.8f, 2f, 1.2f, 0.8f, 0.6f, 0.6f });
+
+                // Headers
+                string[] headers = { "Date", "Day", "Course", "Time", "Status", "Present", "Total" };
+                foreach (var header in headers)
+                {
+                    var cell = new PdfPCell(new Phrase(header, headerFont))
+                    {
+                        BackgroundColor = new BaseColor(229, 231, 235),
+                        Padding = 4
+                    };
+                    table.AddCell(cell);
+                }
+
+                foreach (var session in batch.Sessions)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(session.Date.ToString("MMM dd"), normalFont)) { Padding = 3 });
+                    table.AddCell(new PdfPCell(new Phrase(session.Date.ToString("ddd"), normalFont)) { Padding = 3 });
+                    table.AddCell(new PdfPCell(new Phrase(session.CourseName, normalFont)) { Padding = 3 });
+                    table.AddCell(new PdfPCell(new Phrase($"{session.StartTime:hh\\:mm}-{session.EndTime:hh\\:mm}", normalFont)) { Padding = 3 });
+
+                    var statusColor = session.Status == "Marked" ? new BaseColor(220, 252, 231) : new BaseColor(254, 249, 195);
+                    table.AddCell(new PdfPCell(new Phrase(session.Status, normalFont)) { Padding = 3, BackgroundColor = statusColor });
+
+                    table.AddCell(new PdfPCell(new Phrase(session.PresentCount.ToString(), normalFont)) { Padding = 3, HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(session.TotalStudents.ToString(), normalFont)) { Padding = 3, HorizontalAlignment = Element.ALIGN_CENTER });
+                }
+
+                document.Add(table);
+
+                var markedCount = batch.Sessions.Count(s => s.Status == "Marked");
+                var pendingCount = batch.Sessions.Count(s => s.Status == "Pending");
+                document.Add(new Paragraph($"Marked: {markedCount} | Pending: {pendingCount}", normalFont));
+                document.Add(new Paragraph(" "));
+            }
+
+            document.Close();
+
+            var fileName = $"TeacherReport_{teacherEntity.FirstName}_{teacherEntity.LastName}_{DateTime.Now:yyyyMMdd}.pdf";
+            return File(stream.ToArray(), "application/pdf", fileName);
+        }
+
+        private async Task<List<TeacherBatchAttendanceViewModel>> GetTeacherBatchesWithSessions(int teacherId)
+        {
+            var assignments = await _context.CourseAssignments
+                .Include(ca => ca.Course)
+                .Include(ca => ca.Batch)
+                .Include(ca => ca.Semester)
+                .Where(ca => ca.TeacherId == teacherId)
+                .ToListAsync();
+
+            var result = new List<TeacherBatchAttendanceViewModel>();
+
+            foreach (var grp in assignments.GroupBy(a => new { a.BatchId, a.SemesterId }))
+            {
+                var first = grp.First();
+                var batchModel = new TeacherBatchAttendanceViewModel
+                {
+                    BatchName = first.Batch?.BatchName ?? "Unknown",
+                    SemesterName = first.Semester?.SemesterName ?? "Unknown",
+                    Sessions = new List<TeacherSessionViewModel>()
+                };
+
+                // Get sessions
+                var assignmentIds = grp.Select(a => a.AssignmentId).ToList();
+                var sessions = await _context.Sessions
+                    .Include(s => s.CourseAssignment)
+                        .ThenInclude(ca => ca.Course)
+                    .Include(s => s.Attendances)
+                    .Where(s => s.CourseAssignmentId != null && assignmentIds.Contains(s.CourseAssignmentId.Value))
+                    .ToListAsync();
+
+                foreach (var sess in sessions)
+                {
+                    batchModel.Sessions.Add(new TeacherSessionViewModel
+                    {
+                        Date = sess.SessionDate,
+                        CourseName = sess.CourseAssignment?.Course?.CourseName ?? "Unknown",
+                        StartTime = sess.StartTime,
+                        EndTime = sess.EndTime,
+                        Status = "Marked",
+                        TotalStudents = sess.Attendances.Count,
+                        PresentCount = sess.Attendances.Count(a => a.Status == "Present" || a.Status == "Late"),
+                        SlotId = 0
+                    });
+                }
+
+                batchModel.Sessions = batchModel.Sessions.OrderByDescending(s => s.Date).ThenBy(s => s.StartTime).ToList();
+                result.Add(batchModel);
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }

@@ -1,11 +1,14 @@
 ﻿
-using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using ClosedXML.Excel;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -44,8 +47,17 @@ namespace AMS.Controllers
 
             filter.Timetables = await query.ToListAsync();
 
-            ViewBag.Semesters = new SelectList(await _context.Semesters.ToListAsync(), "SemesterId", "SemesterName");
-            ViewBag.Batches = new SelectList(await _context.Batches.ToListAsync(), "BatchId", "BatchName");
+            // Get semesters with formatted display name (SemesterName Year)
+            var semesters = await _context.Semesters
+                .Select(s => new { s.SemesterId, DisplayName = s.SemesterName + " " + s.Year })
+                .ToListAsync();
+            ViewBag.Semesters = new SelectList(semesters, "SemesterId", "DisplayName");
+
+            // Get batches with formatted display name (BatchName (Year))
+            var batches = await _context.Batches
+                .Select(b => new { b.BatchId, DisplayName = b.BatchName + " (" + b.Year + ")" })
+                .ToListAsync();
+            ViewBag.Batches = new SelectList(batches, "BatchId", "DisplayName");
 
             return View(filter);
         }
@@ -54,12 +66,18 @@ namespace AMS.Controllers
         public async Task<IActionResult> Create()
         {
             var model = new AddTimetableViewModel();
-            model.Batches = new SelectList(await _context.Batches.ToListAsync(), "BatchId", "BatchName");
-            // Assuming Semester has a Name or similar property. If not, I might need to construct it.
-            // Let's check Semester entity if possible, but for now I'll assume Name or construct one.
-            // Checking SemesterController earlier, it sorts by Year and StartDate.
-            var semesters = await _context.Semesters.Select(s => new { s.SemesterId, Name = s.Year + " - " + s.StartDate }).ToListAsync();
-            model.Semesters = new SelectList(semesters, "SemesterId", "Name");
+
+            // Get batches with formatted display name (BatchName (Year))
+            var batches = await _context.Batches
+                .Select(b => new { b.BatchId, DisplayName = b.BatchName + " (" + b.Year + ")" })
+                .ToListAsync();
+            model.Batches = new SelectList(batches, "BatchId", "DisplayName");
+
+            // Get semesters with formatted display name (SemesterName Year)
+            var semesters = await _context.Semesters
+                .Select(s => new { s.SemesterId, DisplayName = s.SemesterName + " " + s.Year })
+                .ToListAsync();
+            model.Semesters = new SelectList(semesters, "SemesterId", "DisplayName");
 
             return View(model);
         }
@@ -79,9 +97,15 @@ namespace AMS.Controllers
                 {
                     ModelState.AddModelError("", "A timetable already exists for this batch and semester. Please edit the existing one.");
 
-                    model.Batches = new SelectList(await _context.Batches.ToListAsync(), "BatchId", "BatchName");
-                    var sems = await _context.Semesters.Select(s => new { s.SemesterId, Name = s.Year + " - " + s.StartDate }).ToListAsync();
-                    model.Semesters = new SelectList(sems, "SemesterId", "Name");
+                    var batchList = await _context.Batches
+                        .Select(b => new { b.BatchId, DisplayName = b.BatchName + " (" + b.Year + ")" })
+                        .ToListAsync();
+                    model.Batches = new SelectList(batchList, "BatchId", "DisplayName");
+
+                    var semList = await _context.Semesters
+                        .Select(s => new { s.SemesterId, DisplayName = s.SemesterName + " " + s.Year })
+                        .ToListAsync();
+                    model.Semesters = new SelectList(semList, "SemesterId", "DisplayName");
                     return View(model);
                 }
 
@@ -97,9 +121,16 @@ namespace AMS.Controllers
                 return RedirectToAction(nameof(Edit), new { id = timetable.TimetableId });
             }
 
-            model.Batches = new SelectList(await _context.Batches.ToListAsync(), "BatchId", "BatchName");
-            var semesters = await _context.Semesters.Select(s => new { s.SemesterId, Name = s.Year + " - " + s.StartDate }).ToListAsync();
-            model.Semesters = new SelectList(semesters, "SemesterId", "Name");
+            // Re-populate dropdowns for validation failure
+            var batchesList = await _context.Batches
+                .Select(b => new { b.BatchId, DisplayName = b.BatchName + " (" + b.Year + ")" })
+                .ToListAsync();
+            model.Batches = new SelectList(batchesList, "BatchId", "DisplayName");
+
+            var semestersList = await _context.Semesters
+                .Select(s => new { s.SemesterId, DisplayName = s.SemesterName + " " + s.Year })
+                .ToListAsync();
+            model.Semesters = new SelectList(semestersList, "SemesterId", "DisplayName");
             return View(model);
         }
 
@@ -131,7 +162,9 @@ namespace AMS.Controllers
             {
                 TimetableId = timetable.TimetableId,
                 BatchName = timetable.Batch?.BatchName,
+                BatchYear = timetable.Batch?.Year,
                 SemesterName = timetable.Semester?.SemesterName ?? timetable.Semester?.Year.ToString(),
+                SemesterYear = timetable.Semester?.Year,
                 IsActive = timetable.IsActive ?? false,
                 Slots = timetable.TimetableSlots.Select(s => new TimetableSlotViewModel
                 {
@@ -429,6 +462,324 @@ namespace AMS.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Timetable/ExportToExcel - List export
+        [HttpGet]
+        public async Task<IActionResult> ExportToExcel(int? semesterId, int? batchId, string? status)
+        {
+            var query = _context.Timetables
+                .Include(t => t.Batch)
+                .Include(t => t.Semester)
+                .Include(t => t.TimetableSlots)
+                .AsQueryable();
+
+            if (semesterId.HasValue && semesterId.Value > 0)
+                query = query.Where(t => t.SemesterId == semesterId.Value);
+            if (batchId.HasValue && batchId.Value > 0)
+                query = query.Where(t => t.BatchId == batchId.Value);
+            if (!string.IsNullOrEmpty(status))
+            {
+                bool isActive = status == "Active";
+                query = query.Where(t => t.IsActive == isActive);
+            }
+
+            var timetables = await query.ToListAsync();
+
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Timetables");
+
+            worksheet.Cell(1, 1).Value = "Batch";
+            worksheet.Cell(1, 2).Value = "Semester";
+            worksheet.Cell(1, 3).Value = "Total Slots";
+            worksheet.Cell(1, 4).Value = "Status";
+
+            var headerRange = worksheet.Range(1, 1, 1, 4);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#4F46E5");
+            headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+
+            int row = 2;
+            foreach (var t in timetables)
+            {
+                worksheet.Cell(row, 1).Value = $"{t.Batch?.BatchName} ({t.Batch?.Year})";
+                worksheet.Cell(row, 2).Value = $"{t.Semester?.SemesterName} {t.Semester?.Year}";
+                worksheet.Cell(row, 3).Value = t.TimetableSlots?.Count ?? 0;
+                worksheet.Cell(row, 4).Value = t.IsActive == true ? "Active" : "Inactive";
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Timetables_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+
+        // GET: Timetable/ExportToPdf - List export
+        [HttpGet]
+        public async Task<IActionResult> ExportToPdf(int? semesterId, int? batchId, string? status)
+        {
+            var query = _context.Timetables
+                .Include(t => t.Batch)
+                .Include(t => t.Semester)
+                .Include(t => t.TimetableSlots)
+                .AsQueryable();
+
+            if (semesterId.HasValue && semesterId.Value > 0)
+                query = query.Where(t => t.SemesterId == semesterId.Value);
+            if (batchId.HasValue && batchId.Value > 0)
+                query = query.Where(t => t.BatchId == batchId.Value);
+            if (!string.IsNullOrEmpty(status))
+            {
+                bool isActive = status == "Active";
+                query = query.Where(t => t.IsActive == isActive);
+            }
+
+            var timetables = await query.ToListAsync();
+
+            using var stream = new MemoryStream();
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4);
+            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+            document.Add(new iTextSharp.text.Paragraph("Timetables Report", titleFont));
+            var smallFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+            document.Add(new iTextSharp.text.Paragraph($"Generated on: {DateTime.Now:MMMM dd, yyyy HH:mm}", smallFont));
+            document.Add(new iTextSharp.text.Paragraph($"Total Records: {timetables.Count}", smallFont));
+            document.Add(new iTextSharp.text.Paragraph(" "));
+
+            var table = new iTextSharp.text.pdf.PdfPTable(4);
+            table.WidthPercentage = 100;
+            table.SetWidths(new float[] { 30f, 30f, 20f, 20f });
+
+            var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10, iTextSharp.text.BaseColor.WHITE);
+            var headerBgColor = new iTextSharp.text.BaseColor(79, 70, 229);
+            string[] headers = { "Batch", "Semester", "Total Slots", "Status" };
+            foreach (var header in headers)
+            {
+                var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                cell.BackgroundColor = headerBgColor;
+                cell.Padding = 5;
+                table.AddCell(cell);
+            }
+
+            var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+            foreach (var t in timetables)
+            {
+                table.AddCell(new iTextSharp.text.Phrase($"{t.Batch?.BatchName} ({t.Batch?.Year})", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase($"{t.Semester?.SemesterName} {t.Semester?.Year}", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase((t.TimetableSlots?.Count ?? 0).ToString(), dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(t.IsActive == true ? "Active" : "Inactive", dataFont));
+            }
+
+            document.Add(table);
+            document.Close();
+
+            return File(stream.ToArray(), "application/pdf", $"Timetables_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+        }
+
+        // GET: Timetable/ExportTimetableToExcel/5 - Individual timetable export (actual schedule)
+        [HttpGet]
+        public async Task<IActionResult> ExportTimetableToExcel(int id)
+        {
+            var timetable = await _context.Timetables
+                .Include(t => t.Batch)
+                .Include(t => t.Semester)
+                .Include(t => t.TimetableSlots)
+                .ThenInclude(ts => ts.CourseAssignment)
+                .ThenInclude(ca => ca.Course)
+                .Include(t => t.TimetableSlots)
+                .ThenInclude(ts => ts.CourseAssignment)
+                .ThenInclude(ca => ca.Teacher)
+                .FirstOrDefaultAsync(t => t.TimetableId == id);
+
+            if (timetable == null) return NotFound();
+
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Timetable");
+
+            // Title
+            worksheet.Cell(1, 1).Value = $"Class Timetable - {timetable.Batch?.BatchName} ({timetable.Batch?.Year})";
+            worksheet.Range(1, 1, 1, 7).Merge();
+            worksheet.Cell(1, 1).Style.Font.Bold = true;
+            worksheet.Cell(1, 1).Style.Font.FontSize = 16;
+            worksheet.Cell(1, 1).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+            worksheet.Cell(2, 1).Value = $"Semester: {timetable.Semester?.SemesterName} {timetable.Semester?.Year}";
+            worksheet.Range(2, 1, 2, 7).Merge();
+            worksheet.Cell(2, 1).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+            // Days header (Monday to Sunday)
+            var days = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+            int col = 1;
+            foreach (var day in days)
+            {
+                worksheet.Cell(4, col).Value = day.ToString();
+                worksheet.Cell(4, col).Style.Font.Bold = true;
+                worksheet.Cell(4, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#4F46E5");
+                worksheet.Cell(4, col).Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+                worksheet.Cell(4, col).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                col++;
+            }
+
+            // Find max slots in any day to determine row count
+            int maxSlots = days.Max(d => timetable.TimetableSlots.Count(s => s.DayOfWeek == (int)d));
+            if (maxSlots == 0) maxSlots = 1;
+
+            // Fill in slots
+            for (int slotIndex = 0; slotIndex < maxSlots; slotIndex++)
+            {
+                int dataRow = 5 + slotIndex;
+                col = 1;
+                foreach (var day in days)
+                {
+                    var daySlots = timetable.TimetableSlots
+                        .Where(s => s.DayOfWeek == (int)day)
+                        .OrderBy(s => s.StartTime)
+                        .ToList();
+
+                    if (slotIndex < daySlots.Count)
+                    {
+                        var slot = daySlots[slotIndex];
+                        var slotText = $"{slot.StartTime?.ToString("hh:mm tt")} - {slot.EndTime?.ToString("hh:mm tt")}\n" +
+                                       $"{slot.CourseAssignment?.Course?.CourseName}\n" +
+                                       $"{slot.CourseAssignment?.Teacher?.FirstName} {slot.CourseAssignment?.Teacher?.LastName}";
+                        worksheet.Cell(dataRow, col).Value = slotText;
+                        worksheet.Cell(dataRow, col).Style.Alignment.WrapText = true;
+                        worksheet.Cell(dataRow, col).Style.Alignment.Vertical = ClosedXML.Excel.XLAlignmentVerticalValues.Top;
+                    }
+                    col++;
+                }
+                worksheet.Row(dataRow).Height = 60;
+            }
+
+            // Set column widths
+            for (int i = 1; i <= 7; i++)
+            {
+                worksheet.Column(i).Width = 20;
+            }
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            var fileName = $"Timetable_{timetable.Batch?.BatchName}_{timetable.Semester?.SemesterName}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        // GET: Timetable/ExportTimetableToPdf/5 - Individual timetable export (actual schedule)
+        [HttpGet]
+        public async Task<IActionResult> ExportTimetableToPdf(int id)
+        {
+            var timetable = await _context.Timetables
+                .Include(t => t.Batch)
+                .Include(t => t.Semester)
+                .Include(t => t.TimetableSlots)
+                .ThenInclude(ts => ts.CourseAssignment)
+                .ThenInclude(ca => ca.Course)
+                .Include(t => t.TimetableSlots)
+                .ThenInclude(ts => ts.CourseAssignment)
+                .ThenInclude(ca => ca.Teacher)
+                .FirstOrDefaultAsync(t => t.TimetableId == id);
+
+            if (timetable == null) return NotFound();
+
+            using var stream = new MemoryStream();
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 20, 20, 30, 30);
+            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            // Title
+            var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+            var title = new iTextSharp.text.Paragraph("Class Timetable", titleFont);
+            title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+            document.Add(title);
+
+            var subtitleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 12);
+            var subtitle = new iTextSharp.text.Paragraph($"{timetable.Batch?.BatchName} ({timetable.Batch?.Year}) - {timetable.Semester?.SemesterName} {timetable.Semester?.Year}", subtitleFont);
+            subtitle.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+            document.Add(subtitle);
+
+            document.Add(new iTextSharp.text.Paragraph(" "));
+
+            // Table with 7 columns for days
+            var table = new iTextSharp.text.pdf.PdfPTable(7);
+            table.WidthPercentage = 100;
+            table.SetWidths(new float[] { 1f, 1f, 1f, 1f, 1f, 1f, 1f });
+
+            // Header
+            var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10, iTextSharp.text.BaseColor.WHITE);
+            var headerBgColor = new iTextSharp.text.BaseColor(79, 70, 229);
+            var days = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+
+            foreach (var day in days)
+            {
+                var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(day.ToString(), headerFont));
+                cell.BackgroundColor = headerBgColor;
+                cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+                cell.Padding = 8;
+                table.AddCell(cell);
+            }
+
+            // Find max slots
+            int maxSlots = days.Max(d => timetable.TimetableSlots.Count(s => s.DayOfWeek == (int)d));
+            if (maxSlots == 0) maxSlots = 1;
+
+            var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8);
+            var timeFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 8, new iTextSharp.text.BaseColor(79, 70, 229));
+
+            // Data rows
+            for (int slotIndex = 0; slotIndex < maxSlots; slotIndex++)
+            {
+                foreach (var day in days)
+                {
+                    var daySlots = timetable.TimetableSlots
+                        .Where(s => s.DayOfWeek == (int)day)
+                        .OrderBy(s => s.StartTime)
+                        .ToList();
+
+                    var cell = new iTextSharp.text.pdf.PdfPCell();
+                    cell.MinimumHeight = 60;
+                    cell.Padding = 5;
+
+                    if (slotIndex < daySlots.Count)
+                    {
+                        var slot = daySlots[slotIndex];
+
+                        var timeText = new iTextSharp.text.Phrase($"{slot.StartTime?.ToString("hh:mm tt")} - {slot.EndTime?.ToString("hh:mm tt")}\n", timeFont);
+                        var courseText = new iTextSharp.text.Phrase($"{slot.CourseAssignment?.Course?.CourseName}\n", dataFont);
+                        var teacherText = new iTextSharp.text.Phrase($"{slot.CourseAssignment?.Teacher?.FirstName} {slot.CourseAssignment?.Teacher?.LastName}", dataFont);
+
+                        var paragraph = new iTextSharp.text.Paragraph();
+                        paragraph.Add(timeText);
+                        paragraph.Add(courseText);
+                        paragraph.Add(teacherText);
+                        cell.AddElement(paragraph);
+
+                        cell.BackgroundColor = new iTextSharp.text.BaseColor(249, 250, 251);
+                    }
+                    else
+                    {
+                        cell.AddElement(new iTextSharp.text.Paragraph("", dataFont));
+                    }
+
+                    table.AddCell(cell);
+                }
+            }
+
+            document.Add(table);
+
+            // Footer
+            document.Add(new iTextSharp.text.Paragraph(" "));
+            var footerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8, iTextSharp.text.BaseColor.GRAY);
+            var footer = new iTextSharp.text.Paragraph($"Generated on {DateTime.Now:MMMM dd, yyyy} at {DateTime.Now:hh:mm tt}", footerFont);
+            footer.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+            document.Add(footer);
+
+            document.Close();
+
+            var fileName = $"Timetable_{timetable.Batch?.BatchName}_{timetable.Semester?.SemesterName}_{DateTime.Now:yyyyMMdd}.pdf";
+            return File(stream.ToArray(), "application/pdf", fileName);
         }
     }
 }

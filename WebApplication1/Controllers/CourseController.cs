@@ -207,5 +207,117 @@ namespace AMS.Controllers
             TempData["success"] = $"Course '{course.CourseCode} - {course.CourseName}' has been deleted successfully!";
             return RedirectToAction(nameof(Courses));
         }
+
+        // GET: Course/ExportToExcel
+        [HttpGet]
+        public async Task<IActionResult> ExportToExcel(string? courseCode, string? courseName, string? status)
+        {
+            var query = _context.Courses.AsQueryable();
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(courseCode))
+                query = query.Where(c => c.CourseCode.Contains(courseCode));
+            if (!string.IsNullOrEmpty(courseName))
+                query = query.Where(c => c.CourseName.Contains(courseName));
+            if (!string.IsNullOrEmpty(status))
+            {
+                bool isActive = status == "Active";
+                query = query.Where(c => c.IsActive == isActive);
+            }
+
+            var courses = await query.OrderBy(c => c.CourseCode).ToListAsync();
+
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Courses");
+
+            // Header row
+            worksheet.Cell(1, 1).Value = "Course Code";
+            worksheet.Cell(1, 2).Value = "Course Name";
+            worksheet.Cell(1, 3).Value = "Credit Hours";
+            worksheet.Cell(1, 4).Value = "Status";
+
+            // Style header
+            var headerRange = worksheet.Range(1, 1, 1, 4);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#4F46E5");
+            headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+
+            // Data rows
+            int row = 2;
+            foreach (var c in courses)
+            {
+                worksheet.Cell(row, 1).Value = c.CourseCode ?? "";
+                worksheet.Cell(row, 2).Value = c.CourseName ?? "";
+                worksheet.Cell(row, 3).Value = c.CreditHours;
+                worksheet.Cell(row, 4).Value = c.IsActive == true ? "Active" : "Inactive";
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Courses_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+
+        // GET: Course/ExportToPdf
+        [HttpGet]
+        public async Task<IActionResult> ExportToPdf(string? courseCode, string? courseName, string? status)
+        {
+            var query = _context.Courses.AsQueryable();
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(courseCode))
+                query = query.Where(c => c.CourseCode.Contains(courseCode));
+            if (!string.IsNullOrEmpty(courseName))
+                query = query.Where(c => c.CourseName.Contains(courseName));
+            if (!string.IsNullOrEmpty(status))
+            {
+                bool isActive = status == "Active";
+                query = query.Where(c => c.IsActive == isActive);
+            }
+
+            var courses = await query.OrderBy(c => c.CourseCode).ToListAsync();
+
+            using var stream = new MemoryStream();
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4);
+            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+            document.Add(new iTextSharp.text.Paragraph("Courses Report", titleFont));
+            var smallFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+            document.Add(new iTextSharp.text.Paragraph($"Generated on: {DateTime.Now:MMMM dd, yyyy HH:mm}", smallFont));
+            document.Add(new iTextSharp.text.Paragraph(" "));
+
+            var table = new iTextSharp.text.pdf.PdfPTable(4);
+            table.WidthPercentage = 100;
+            table.SetWidths(new float[] { 20f, 40f, 20f, 20f });
+
+            var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10, iTextSharp.text.BaseColor.WHITE);
+            var headerBgColor = new iTextSharp.text.BaseColor(79, 70, 229);
+            string[] headers = { "Course Code", "Course Name", "Credit Hours", "Status" };
+            foreach (var header in headers)
+            {
+                var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                cell.BackgroundColor = headerBgColor;
+                cell.Padding = 5;
+                table.AddCell(cell);
+            }
+
+            var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+            foreach (var c in courses)
+            {
+                table.AddCell(new iTextSharp.text.Phrase(c.CourseCode ?? "", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(c.CourseName ?? "", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(c.CreditHours?.ToString() ?? "0", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(c.IsActive == true ? "Active" : "Inactive", dataFont));
+            }
+
+            document.Add(table);
+            document.Close();
+
+            return File(stream.ToArray(), "application/pdf", $"Courses_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+        }
     }
 }

@@ -3,118 +3,286 @@
     ViewData["Title"] = "Timetables";
 }
 
-<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Timetables
-        </h3>
-        <a asp-action="Create" class="flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 active:bg-brand-700">
-            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10.0002 4.16675C10.4604 4.16675 10.8335 4.53984 10.8335 5.00008V9.16675H15.0002C15.4604 9.16675 15.8335 9.53984 15.8335 10.0001C15.8335 10.4603 15.4604 10.8334 15.0002 10.8334H10.8335V15.0001C10.8335 15.4603 10.4604 15.8334 10.0002 15.8334C9.53993 15.8334 9.16683 15.4603 9.16683 15.0001V10.8334H5.00016C4.53993 10.8334 4.16683 10.4603 4.16683 10.0001C4.16683 9.53984 4.53993 9.16675 5.00016 9.16675H9.16683V5.00008C9.16683 4.53984 9.53993 4.16675 10.0002 4.16675Z" fill=""></path>
-            </svg>
-            Add Timetable
-        </a>
-    </div>
-
-    <!-- Filter -->
-    <form method="get" class="mt-6">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<div class="p-4 sm:p-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <label asp-for="SemesterId" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Semester
-                </label>
-                <select asp-for="SemesterId" asp-items="ViewBag.Semesters" class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-0 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-gray-500">
-                    <option value="">All Semesters</option>
-                </select>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Timetables</h1>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage class schedules for batches and semesters</p>
             </div>
-            <div>
-                <label asp-for="BatchId" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Batch
-                </label>
-                <select asp-for="BatchId" asp-items="ViewBag.Batches" class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-0 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-gray-500">
-                    <option value="">All Batches</option>
-                </select>
-            </div>
-            <div>
-                <label asp-for="Status" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Status
-                </label>
-                <select asp-for="Status" class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-0 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-gray-500">
-                    <option value="">All</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                </select>
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 active:bg-brand-700">
-                    <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M3.3335 9.16675C3.3335 5.48485 6.31826 2.50008 10.0002 2.50008C13.6821 2.50008 16.6668 5.48485 16.6668 9.16675C16.6668 12.8486 13.6821 15.8334 10.0002 15.8334C6.31826 15.8334 3.3335 12.8486 3.3335 9.16675ZM10.0002 1.25008C5.62793 1.25008 2.0835 4.7945 2.0835 9.16675C2.0835 13.539 5.62793 17.0834 10.0002 17.0834C14.3724 17.0834 17.9168 13.539 17.9168 9.16675C17.9168 4.7945 14.3724 1.25008 10.0002 1.25008ZM13.0164 11.95C13.3093 11.6571 13.3093 11.1822 13.0164 10.8893C12.7235 10.5964 12.2487 10.5964 11.9558 10.8893L9.32316 13.5219L8.04283 12.2416C7.74994 11.9487 7.27506 11.9487 6.98217 12.2416C6.68928 12.5345 6.68928 13.0094 6.98217 13.3023L8.79283 15.1129C8.93349 15.2536 9.12425 15.3326 9.32316 15.3326C9.52208 15.3326 9.71284 15.2536 9.8535 15.1129L13.0164 11.95Z" fill=""></path>
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Export Buttons -->
+                <button type="button" onclick="exportToExcel()" class="inline-flex items-center justify-center rounded-lg border border-green-600 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 transition-colors hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500/50 dark:border-green-500 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40">
+                    <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Filter
+                    Excel
                 </button>
+                <button type="button" onclick="exportToPDF()" class="inline-flex items-center justify-center rounded-lg border border-red-600 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500/50 dark:border-red-500 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40">
+                    <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    PDF
+                </button>
+                <a asp-action="Create"
+                   class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Timetable
+                </a>
             </div>
         </div>
-    </form>
+    </div>
 
-    <!-- Table -->
-    <div class="mt-6 overflow-x-auto">
-        <table class="w-full min-w-[600px] border-collapse text-left">
-            <thead>
-                <tr class="border-b border-gray-200 dark:border-gray-800">
-                    <th class="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Batch</th>
-                    <th class="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Semester</th>
-                    <th class="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
-                    <th class="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Timetables)
-                {
-                    <tr class="border-b border-gray-200 last:border-0 dark:border-gray-800">
-                        <td class="px-4 py-3 text-sm text-gray-800 dark:text-white/90">
-                            @item.Batch?.BatchName
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-800 dark:text-white/90">
-                            @item.Semester?.Year - @item.Semester?.StartDate
-                        </td>
-                        <td class="px-4 py-3 text-sm">
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="p-4 sm:p-6">
+            <form method="get" asp-action="Index">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Semester Filter -->
+                    <div>
+                        <label asp-for="SemesterId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Semester</label>
+                        <select asp-for="SemesterId" asp-items="ViewBag.Semesters"
+                                class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 dark:text-white">
+                            <option value="">All Semesters</option>
+                        </select>
+                    </div>
+
+                    <!-- Batch Filter -->
+                    <div>
+                        <label asp-for="BatchId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Batch</label>
+                        <select asp-for="BatchId" asp-items="ViewBag.Batches"
+                                class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 dark:text-white">
+                            <option value="">All Batches</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label asp-for="Status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                        <select asp-for="Status"
+                                class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 dark:text-white">
+                            <option value="">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="flex items-end gap-2">
+                        <button type="submit"
+                                class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                            </svg>
+                            Filter
+                        </button>
+                        <a href="@Url.Action("Index")"
+                           class="inline-flex items-center justify-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    @if (Model.Timetables.Any())
+    {
+        <div class="mb-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Showing <span class="font-semibold text-gray-900 dark:text-white">@Model.Timetables.Count</span> timetable(s)
+            </p>
+        </div>
+    }
+
+    <!-- Timetables Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @if (Model.Timetables.Any())
+        {
+            @foreach (var item in Model.Timetables)
+            {
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+                    <!-- Card Header -->
+                    <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-5 py-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-white">@item.Batch?.BatchName (@item.Batch?.Year)</h3>
+                                <p class="text-indigo-100 text-sm mt-0.5">@item.Semester?.SemesterName @item.Semester?.Year</p>
+                            </div>
                             @if (item.IsActive == true)
                             {
-                                <span class="inline-flex items-center rounded-full bg-success-50 px-2 py-1 text-xs font-medium text-success-500 dark:bg-success-500/15">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3"></circle>
+                                    </svg>
                                     Active
                                 </span>
                             }
                             else
                             {
-                                <span class="inline-flex items-center rounded-full bg-error-50 px-2 py-1 text-xs font-medium text-error-500 dark:bg-error-500/15">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3"></circle>
+                                    </svg>
                                     Inactive
                                 </span>
                             }
-                        </td>
-                        <td class="px-4 py-3 text-sm">
-                            <div class="flex items-center gap-2">
-                                <a asp-action="Details" asp-route-id="@item.TimetableId" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-500" title="View">
-                                    <svg class="fill-current" width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M10 4.16675C5.83333 4.16675 2.275 6.75841 0.833333 10.4167C2.275 14.0751 5.83333 16.6667 10 16.6667C14.1667 16.6667 17.725 14.0751 19.1667 10.4167C17.725 6.75841 14.1667 4.16675 10 4.16675ZM10 14.5834C7.69167 14.5834 5.83333 12.7251 5.83333 10.4167C5.83333 8.10841 7.69167 6.25008 10 6.25008C12.3083 6.25008 14.1667 8.10841 14.1667 10.4167C14.1667 12.7251 12.3083 14.5834 10 14.5834ZM10 7.91675C8.61667 7.91675 7.5 9.03341 7.5 10.4167C7.5 11.8001 8.61667 12.9167 10 12.9167C11.3833 12.9167 12.5 11.8001 12.5 10.4167C12.5 9.03341 11.3833 7.91675 10 7.91675Z" fill="" />
-                                    </svg>
-                                </a>
-                                <a asp-action="Edit" asp-route-id="@item.TimetableId" class="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-500" title="Edit">
-                                    <svg class="fill-current" width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M17.2583 5.92508L14.075 2.74175C13.9167 2.58341 13.7083 2.50008 13.5 2.50008C13.2917 2.50008 13.0833 2.58341 12.925 2.74175L11.0417 4.62508L15.375 8.95841L17.2583 7.07508C17.575 6.75841 17.575 6.24175 17.2583 5.92508ZM2.5 13.1667V17.5001H6.83333L14.1917 10.1417L9.85833 5.80841L2.5 13.1667Z" fill="" />
-                                    </svg>
-                                </a>
-                                <form asp-action="Delete" asp-route-id="@item.TimetableId" method="post" onsubmit="return confirm('Are you sure you want to delete this timetable?');" class="inline">
-                                    <button type="submit" class="text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-500" title="Delete">
-                                        <svg class="fill-current" width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.1667 4.16675H12.5V2.50008C12.5 1.58341 11.75 0.833415 10.8333 0.833415H9.16667C8.25 0.833415 7.5 1.58341 7.5 2.50008V4.16675H5.83333C5.375 4.16675 5 4.54175 5 5.00008C5 5.45841 5.375 5.83341 5.83333 5.83341H14.1667C14.625 5.83341 15 5.45841 15 5.00008C15 4.54175 14.625 4.16675 14.1667 4.16675ZM9.16667 2.50008H10.8333V4.16675H9.16667V2.50008ZM5.83333 7.50008V15.8334C5.83333 16.7501 6.58333 17.5001 7.5 17.5001H12.5C13.4167 17.5001 14.1667 16.7501 14.1667 15.8334V7.50008H5.83333ZM8.33333 9.16675C8.33333 8.70841 8.70833 8.33341 9.16667 8.33341C9.625 8.33341 10 8.70841 10 9.16675V14.1667C10 14.6251 9.625 15.0001 9.16667 15.0001C8.70833 15.0001 8.33333 14.6251 8.33333 14.1667V9.16675ZM12.5 8.33341C12.9583 8.33341 13.3333 8.70841 13.3333 9.16675V14.1667C13.3333 14.6251 12.9583 15.0001 12.5 15.0001C12.0417 15.0001 11.6667 14.6251 11.6667 14.1667V9.16675C11.6667 8.70841 12.0417 8.33341 12.5 8.33341Z" fill="" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-5">
+                        <div class="flex items-center text-gray-600 dark:text-gray-400 text-sm mb-4">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>@item.Semester?.StartDate.ToString("MMM dd") - @item.Semester?.EndDate.ToString("MMM dd, yyyy")</span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-2">
+                            <a asp-action="Details" asp-route-id="@item.TimetableId"
+                               class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+                               title="View Timetable">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                View
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.TimetableId"
+                               class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 text-sm font-medium rounded-lg transition-colors"
+                               title="Edit Timetable">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Edit
+                            </a>
+                            <button onclick="openDeleteModal(@item.TimetableId, '@item.Batch?.BatchName (@item.Batch?.Year)', '@item.Semester?.SemesterName @item.Semester?.Year')"
+                                    class="inline-flex items-center justify-center px-3 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg transition-colors"
+                                    title="Delete Timetable">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <!-- Empty State -->
+            <div class="col-span-full">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center py-12 px-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No timetables found</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new timetable.</p>
+                    <div class="mt-6">
+                        <a asp-action="Create"
+                           class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Timetable
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" onclick="closeDeleteModal()"></div>
+
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-5 sm:p-6">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full">
+                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+
+            <div class="mt-4 text-center">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Delete Timetable</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Are you sure you want to delete the timetable for <strong id="deleteBatchName" class="text-gray-900 dark:text-white"></strong> - <strong id="deleteSemesterName" class="text-gray-900 dark:text-white"></strong>?
+                    </p>
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-2">
+                        This will also delete all associated time slots. This action cannot be undone.
+                    </p>
+                </div>
+            </div>
+
+            <form id="deleteForm" method="post" class="mt-6 flex flex-col sm:flex-row-reverse gap-3">
+                @Html.AntiForgeryToken()
+                <button type="submit"
+                        class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    Delete
+                </button>
+                <button type="button" onclick="closeDeleteModal()"
+                        class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors duration-200">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openDeleteModal(timetableId, batchName, semesterName) {
+            document.getElementById('deleteBatchName').textContent = batchName;
+            document.getElementById('deleteSemesterName').textContent = semesterName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + timetableId;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeDeleteModal();
+            }
+        });
+
+        // Export Functions
+        function getFilterParams() {
+            const semesterId = document.querySelector('[name="SemesterId"]')?.value || '';
+            const batchId = document.querySelector('[name="BatchId"]')?.value || '';
+            const status = document.querySelector('[name="Status"]')?.value || '';
+
+            let params = [];
+            if (semesterId) params.push('semesterId=' + semesterId);
+            if (batchId) params.push('batchId=' + batchId);
+            if (status) params.push('status=' + encodeURIComponent(status));
+
+            return params.length > 0 ? '?' + params.join('&') : '';
+        }
+
+        function exportToExcel() {
+            const params = getFilterParams();
+            window.location.href = '@Url.Action("ExportToExcel", "Timetable")' + params;
+        }
+
+        function exportToPDF() {
+            const params = getFilterParams();
+            window.location.href = '@Url.Action("ExportToPdf", "Timetable")' + params;
+        }
+    </script>
+}

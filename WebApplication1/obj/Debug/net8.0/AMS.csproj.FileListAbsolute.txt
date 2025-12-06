@@ -167,3 +167,13 @@ C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\W
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\obj\Debug\net8.0\AMS.genruntimeconfig.cache
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\obj\Debug\net8.0\ref\AMS.dll
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\obj\Debug\net8.0\AMS.sourcelink.json
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\ClosedXML.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\ClosedXML.Parser.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\ExcelNumberFormat.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\itextsharp.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\RBush.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\SixLabors.Fonts.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\System.IO.Packaging.dll

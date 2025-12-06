@@ -68,6 +68,8 @@ namespace AMS.Models.ViewModels
 
     public class StudentCourseAttendanceViewModel
     {
+        public int CourseId { get; set; }
+        public int SemesterId { get; set; }
         public string CourseName { get; set; }
         public string SemesterName { get; set; }
         public string TeacherName { get; set; }

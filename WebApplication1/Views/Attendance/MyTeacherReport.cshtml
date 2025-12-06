@@ -4,155 +4,218 @@
     ViewData["Title"] = "Teacher Attendance Report";
 }
 
+<style>
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        .print-area, .print-area * {
+            visibility: visible;
+        }
+
+        .print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .print-break {
+            page-break-before: always;
+        }
+
+        @@page {
+            margin: 1cm;
+        }
+    }
+</style>
+
 <div class="space-y-8">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between no-print">
         <div>
             <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Teacher Attendance Report</h2>
             <p class="text-gray-500 dark:text-gray-400">Overview of classes and attendance status.</p>
         </div>
+        @if (Model.SelectedTeacherId.HasValue)
+        {
+            <div class="flex flex-wrap gap-2">
+                <a href="@Url.Action("ExportTeacherReportToExcel", new { teacherId = Model.SelectedTeacherId })" class="inline-flex items-center gap-2 rounded-lg border border-green-300 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 shadow-sm hover:bg-green-100 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Excel
+                </a>
+                <a href="@Url.Action("ExportTeacherReportToPdf", new { teacherId = Model.SelectedTeacherId })" class="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-100 dark:border-red-700 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    PDF
+                </a>
+            </div>
+        }
     </div>
 
     <!-- Teacher Selection -->
     @if (!User.IsInRole("Teacher"))
     {
-    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-        <form method="get" action="@Url.Action(" TeacherReport", "Attendance" )" class="flex items-end gap-4">
-            <div class="flex-1">
-                <label for="teacherId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Teacher</label>
-                <select name="teacherId" id="teacherId" onchange="this.form.submit()"
-                        class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                    <option value="">Select Teacher</option>
-                    @foreach (var item in Model.TeacherList)
-                    {
-                    <option value="@item.Value" selected="@item.Selected">@item.Text</option>
-                    }
-                </select>
-            </div>
-            <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                View Report
-            </button>
-        </form>
-    </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] no-print">
+            <form asp-controller="Attendance" asp-action="TeacherReport" method="get" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+                <div class="flex-1">
+                    <label for="teacherId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Teacher</label>
+                    <select name="teacherId" id="teacherId" onchange="this.form.submit()"
+                            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="">Select Teacher</option>
+                        @foreach (var item in Model.TeacherList)
+                        {
+                            if (item.Selected)
+                            {
+                                <option value="@item.Value" selected>@item.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                    View Report
+                </button>
+            </form>
+        </div>
     }
 
     @if (Model.SelectedTeacherId.HasValue)
     {
-    @if (!Model.Batches.Any())
-    {
-    <div class="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-            <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-            </svg>
-        </div>
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white">No classes found</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">This teacher doesn't have any active classes assigned for this semester.</p>
-    </div>
+        <div class="print-area">
+            <!-- Print Header (only visible when printing) -->
+            <div class="hidden print:block mb-6 text-center border-b pb-4">
+                <h1 class="text-xl font-bold">Teacher Attendance Report</h1>
+                <p class="text-sm text-gray-600">@Model.TeacherName • Generated on @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+            </div>
+
+            @if (!Model.Batches.Any())
+            {
+                <div class="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+                    <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                        <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">No classes found</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">This teacher doesn't have any active classes assigned for this semester.</p>
+                </div>
+            }
+            else
+            {
+                <div class="space-y-8">
+                    @foreach (var batch in Model.Batches)
+                    {
+                        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                            <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900 dark:text-white">@batch.BatchName</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@batch.SemesterName</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                            @batch.Sessions.Count(s => s.Status == "Marked") Marked
+                                        </span>
+                                        <span class="inline-flex items-center rounded-full bg-yellow-50 px-2.5 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                            @batch.Sessions.Count(s => s.Status == "Pending") Pending
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                                @if (!batch.Sessions.Any())
+                                {
+                                    <div class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        No sessions scheduled yet.
+                                    </div>
+                                }
+                                else
+                                {
+                                    @foreach (var session in batch.Sessions)
+                                    {
+                                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <div class="flex items-center gap-4">
+                                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                                    <span class="font-bold">@session.Date.Day</span>
+                                                    <span class="text-[10px] uppercase">@session.Date.ToString("MMM")</span>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-gray-900 dark:text-white">@session.CourseName</h4>
+                                                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                                        <span>@session.Date.ToString("dddd")</span>
+                                                        <span>&bull;</span>
+                                                        <span>@session.StartTime.ToString("HH:mm") - @session.EndTime.ToString("HH:mm")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center gap-4">
+                                                @if (session.Status == "Marked")
+                                                {
+                                                    <div class="hidden text-right sm:block">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                            @session.PresentCount / @session.TotalStudents Present
+                                                        </div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                            @((double)session.PresentCount / (session.TotalStudents == 0 ? 1 : session.TotalStudents) * 100)% Attendance
+                                                        </div>
+                                                    </div>
+                                                    <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString("yyyy-MM-dd")"
+                                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
+                                                        <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                        Edit
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString("yyyy-MM-dd")"
+                                                       class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                                                        Mark Attendance
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div> <!-- Close print-area -->
     }
     else
     {
-    <div class="space-y-8">
-        @foreach (var batch in Model.Batches)
-        {
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="font-semibold text-gray-900 dark:text-white">@batch.BatchName</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">@batch.SemesterName</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                            @batch.Sessions.Count(s => s.Status == "Marked") Marked
-                        </span>
-                        <span class="inline-flex items-center rounded-full bg-yellow-50 px-2.5 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                            @batch.Sessions.Count(s => s.Status == "Pending") Pending
-                        </span>
-                    </div>
-                </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-12 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
             </div>
-
-            <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                @if (!batch.Sessions.Any())
-                {
-                <div class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                    No sessions scheduled yet.
-                </div>
-                }
-                else
-                {
-                @foreach (var session in batch.Sessions)
-                {
-                <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <div class="flex items-center gap-4">
-                        <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                            <span class="font-bold">@session.Date.Day</span>
-                            <span class="text-[10px] uppercase">@session.Date.ToString("MMM")</span>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900 dark:text-white">@session.CourseName</h4>
-                            <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                <span>@session.Date.ToString("dddd")</span>
-                                <span>&bull;</span>
-                                <span>@session.StartTime.ToString("HH:mm") - @session.EndTime.ToString("HH:mm")</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-4">
-                        @if (session.Status == "Marked")
-                        {
-                        <div class="hidden text-right sm:block">
-                            <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                @session.PresentCount / @session.TotalStudents Present
-                            </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                @((double)session.PresentCount / (session.TotalStudents == 0 ? 1 : session.TotalStudents) * 100)% Attendance
-                            </div>
-                        </div>
-                        <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString(" yyyy-MM-dd")"
-                           class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
-                            <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Edit
-                        </a>
-                        }
-                        else
-                        {
-                        <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString(" yyyy-MM-dd")"
-                           class="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:bg-brand-500 dark:hover:bg-brand-400">
-                            Mark Attendance
-                        </a>
-                        }
-                    </div>
-                </div>
-                }
-                }
-            </div>
+            @if (User.IsInRole("Teacher"))
+            {
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">No Report Data</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Unable to load attendance report. Please ensure you are assigned to active courses.</p>
+            }
+            else
+            {
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">Select a Teacher</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Select a teacher from the list to view their attendance report.</p>
+            }
         </div>
-        }
-    </div>
-    }
-    }
-    else
-    {
-    <div class="rounded-2xl border border-gray-200 bg-white p-12 text-center dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-            <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-            </svg>
-        </div>
-        @if (User.IsInRole("Teacher"))
-        {
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white">No Report Data</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Unable to load attendance report. Please ensure you are assigned to active courses.</p>
-        }
-        else
-        {
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white">Select a Teacher</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Select a teacher from the list to view their attendance report.</p>
-        }
-    </div>
     }
 </div>

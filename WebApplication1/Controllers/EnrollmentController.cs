@@ -46,6 +46,11 @@ namespace AMS.Controllers
                 query = query.Where(e => e.SemesterId == filter.SemesterId.Value);
             }
 
+            if (filter.BatchId.HasValue && filter.BatchId.Value > 0)
+            {
+                query = query.Where(e => e.Student.BatchId == filter.BatchId.Value);
+            }
+
             if (!string.IsNullOrEmpty(filter.Status))
             {
                 query = query.Where(e => e.Status == filter.Status);
@@ -82,7 +87,16 @@ namespace AMS.Controllers
                 .Select(s => new SelectListItem
                 {
                     Value = s.SemesterId.ToString(),
-                    Text = $"{s.SemesterName} - {s.Year}"
+                    Text = $"{s.SemesterName} {s.Year}"
+                })
+                .ToListAsync();
+
+            filter.Batches = await _context.Batches
+                .Where(b => b.IsActive == true)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BatchId.ToString(),
+                    Text = $"{b.BatchName} ({b.Year})"
                 })
                 .ToListAsync();
 
@@ -292,7 +306,7 @@ namespace AMS.Controllers
                 .Select(s => new SelectListItem
                 {
                     Value = s.SemesterId.ToString(),
-                    Text = $"{s.SemesterName} - {s.Year}"
+                    Text = $"{s.SemesterName} {s.Year}"
                 })
                 .ToListAsync();
 
@@ -301,7 +315,7 @@ namespace AMS.Controllers
                 .Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
-                    Text = b.BatchName
+                    Text = $"{b.BatchName} ({b.Year})"
                 })
                 .ToListAsync();
         }
@@ -340,7 +354,7 @@ namespace AMS.Controllers
                 .Select(s => new
                 {
                     id = s.SemesterId,
-                    text = s.SemesterName + " - " + s.Year
+                    text = s.SemesterName + " " + s.Year
                 })
                 .OrderByDescending(s => s.text)
                 .ToList();
@@ -477,17 +491,158 @@ namespace AMS.Controllers
 
         private async Task LoadBulkEnrollDropdowns(BulkEnrollViewModel model)
         {
-            model.Batches = new SelectList(await _context.Batches.ToListAsync(), "BatchId", "BatchName");
+            model.Batches = new SelectList(await _context.Batches
+                .Select(b => new { b.BatchId, Name = b.BatchName + " (" + b.Year + ")" })
+                .ToListAsync(), "BatchId", "Name");
 
             model.Semesters = new SelectList(await _context.Semesters
                 .Where(s => s.IsActive == true)
-                .Select(s => new { s.SemesterId, Name = s.SemesterName + " - " + s.Year })
+                .Select(s => new { s.SemesterId, Name = s.SemesterName + " " + s.Year })
                 .ToListAsync(), "SemesterId", "Name");
 
             model.Courses = new SelectList(await _context.Courses
                 .Where(c => c.IsActive == true)
                 .Select(c => new { c.CourseId, Name = c.CourseCode + " - " + c.CourseName })
                 .ToListAsync(), "CourseId", "Name");
+        }
+
+        // GET: Enrollment/ExportToExcel
+        [HttpGet]
+        public async Task<IActionResult> ExportToExcel(int? studentId, int? courseId, int? semesterId, int? batchId, string? status)
+        {
+            var query = _context.Enrollments
+                .Include(e => e.Student).ThenInclude(s => s.Batch)
+                .Include(e => e.Course)
+                .Include(e => e.Semester)
+                .AsQueryable();
+
+            // Apply same filters as the list view
+            if (studentId.HasValue && studentId.Value > 0)
+                query = query.Where(e => e.StudentId == studentId.Value);
+            if (courseId.HasValue && courseId.Value > 0)
+                query = query.Where(e => e.CourseId == courseId.Value);
+            if (semesterId.HasValue && semesterId.Value > 0)
+                query = query.Where(e => e.SemesterId == semesterId.Value);
+            if (batchId.HasValue && batchId.Value > 0)
+                query = query.Where(e => e.Student.BatchId == batchId.Value);
+            if (!string.IsNullOrEmpty(status))
+                query = query.Where(e => e.Status == status);
+
+            var enrollments = await query.OrderBy(e => e.Student.FirstName).ToListAsync();
+
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Enrollments");
+
+            // Header row
+            worksheet.Cell(1, 1).Value = "Student Name";
+            worksheet.Cell(1, 2).Value = "Roll Number";
+            worksheet.Cell(1, 3).Value = "Batch";
+            worksheet.Cell(1, 4).Value = "Course Code";
+            worksheet.Cell(1, 5).Value = "Course Name";
+            worksheet.Cell(1, 6).Value = "Semester";
+            worksheet.Cell(1, 7).Value = "Status";
+
+            // Style header
+            var headerRange = worksheet.Range(1, 1, 1, 7);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#4F46E5");
+            headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+
+            // Data rows
+            int row = 2;
+            foreach (var e in enrollments)
+            {
+                worksheet.Cell(row, 1).Value = $"{e.Student?.FirstName} {e.Student?.LastName}";
+                worksheet.Cell(row, 2).Value = e.Student?.RollNumber ?? "";
+                worksheet.Cell(row, 3).Value = $"{e.Student?.Batch?.BatchName} ({e.Student?.Batch?.Year})";
+                worksheet.Cell(row, 4).Value = e.Course?.CourseCode ?? "";
+                worksheet.Cell(row, 5).Value = e.Course?.CourseName ?? "";
+                worksheet.Cell(row, 6).Value = $"{e.Semester?.SemesterName} {e.Semester?.Year}";
+                worksheet.Cell(row, 7).Value = e.Status ?? "";
+                row++;
+            }
+
+            // Auto-fit columns
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            var content = stream.ToArray();
+
+            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Enrollments_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+
+        // GET: Enrollment/ExportToPdf
+        [HttpGet]
+        public async Task<IActionResult> ExportToPdf(int? studentId, int? courseId, int? semesterId, int? batchId, string? status)
+        {
+            var query = _context.Enrollments
+                .Include(e => e.Student).ThenInclude(s => s.Batch)
+                .Include(e => e.Course)
+                .Include(e => e.Semester)
+                .AsQueryable();
+
+            // Apply same filters as the list view
+            if (studentId.HasValue && studentId.Value > 0)
+                query = query.Where(e => e.StudentId == studentId.Value);
+            if (courseId.HasValue && courseId.Value > 0)
+                query = query.Where(e => e.CourseId == courseId.Value);
+            if (semesterId.HasValue && semesterId.Value > 0)
+                query = query.Where(e => e.SemesterId == semesterId.Value);
+            if (batchId.HasValue && batchId.Value > 0)
+                query = query.Where(e => e.Student.BatchId == batchId.Value);
+            if (!string.IsNullOrEmpty(status))
+                query = query.Where(e => e.Status == status);
+
+            var enrollments = await query.OrderBy(e => e.Student.FirstName).ToListAsync();
+
+            using var stream = new MemoryStream();
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate());
+            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            // Title
+            var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+            document.Add(new iTextSharp.text.Paragraph("Enrollments Report", titleFont));
+            var smallFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+            document.Add(new iTextSharp.text.Paragraph($"Generated on: {DateTime.Now:MMMM dd, yyyy HH:mm}", smallFont));
+            document.Add(new iTextSharp.text.Paragraph($"Total Records: {enrollments.Count}", smallFont));
+            document.Add(new iTextSharp.text.Paragraph(" "));
+
+            // Table
+            var table = new iTextSharp.text.pdf.PdfPTable(7);
+            table.WidthPercentage = 100;
+            table.SetWidths(new float[] { 15f, 10f, 12f, 10f, 18f, 12f, 8f });
+
+            // Header
+            var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10, iTextSharp.text.BaseColor.WHITE);
+            var headerBgColor = new iTextSharp.text.BaseColor(79, 70, 229);
+            string[] headers = { "Student Name", "Roll Number", "Batch", "Course Code", "Course Name", "Semester", "Status" };
+            foreach (var header in headers)
+            {
+                var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                cell.BackgroundColor = headerBgColor;
+                cell.Padding = 5;
+                table.AddCell(cell);
+            }
+
+            // Data
+            var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+            foreach (var e in enrollments)
+            {
+                table.AddCell(new iTextSharp.text.Phrase($"{e.Student?.FirstName} {e.Student?.LastName}", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(e.Student?.RollNumber ?? "", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase($"{e.Student?.Batch?.BatchName} ({e.Student?.Batch?.Year})", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(e.Course?.CourseCode ?? "", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(e.Course?.CourseName ?? "", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase($"{e.Semester?.SemesterName} {e.Semester?.Year}", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(e.Status ?? "", dataFont));
+            }
+
+            document.Add(table);
+            document.Close();
+
+            return File(stream.ToArray(), "application/pdf", $"Enrollments_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
         }
     }
 }

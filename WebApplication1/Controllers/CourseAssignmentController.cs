@@ -89,7 +89,7 @@ namespace AMS.Controllers
                 .Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
-                    Text = $"{b.BatchName} - {b.Year}"
+                    Text = $"{b.BatchName} ({b.Year})"
                 })
                 .ToListAsync();
 
@@ -98,7 +98,7 @@ namespace AMS.Controllers
                 .Select(s => new SelectListItem
                 {
                     Value = s.SemesterId.ToString(),
-                    Text = $"{s.SemesterName} - {s.Year}"
+                    Text = $"{s.SemesterName} {s.Year}"
                 })
                 .ToListAsync();
 
@@ -324,7 +324,7 @@ namespace AMS.Controllers
                 .Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
-                    Text = $"{b.BatchName} - {b.Year}"
+                    Text = $"{b.BatchName} ({b.Year})"
                 })
                 .ToListAsync();
 
@@ -333,7 +333,7 @@ namespace AMS.Controllers
                 .Select(s => new SelectListItem
                 {
                     Value = s.SemesterId.ToString(),
-                    Text = $"{s.SemesterName} - {s.Year}"
+                    Text = $"{s.SemesterName} {s.Year}"
                 })
                 .ToListAsync();
         }
@@ -361,12 +361,12 @@ namespace AMS.Controllers
 
                 batches = await _context.Batches
                     .Where(b => b.IsActive == true)
-                    .Select(b => new { value = b.BatchId.ToString(), text = $"{b.BatchName} - {b.Year}" })
+                    .Select(b => new { value = b.BatchId.ToString(), text = $"{b.BatchName} ({b.Year})" })
                     .ToListAsync(),
 
                 semesters = await _context.Semesters
                     .Where(s => s.IsActive == true)
-                    .Select(s => new { value = s.SemesterId.ToString(), text = $"{s.SemesterName} - {s.Year}" })
+                    .Select(s => new { value = s.SemesterId.ToString(), text = $"{s.SemesterName} {s.Year}" })
                     .ToListAsync()
             };
 
@@ -424,6 +424,142 @@ namespace AMS.Controllers
             public int CourseId { get; set; }
             public int BatchId { get; set; }
             public int SemesterId { get; set; }
+        }
+
+        // GET: CourseAssignment/ExportToExcel
+        [HttpGet]
+        public async Task<IActionResult> ExportToExcel(int? teacherId, int? courseId, int? batchId, int? semesterId, string? status)
+        {
+            var query = _context.CourseAssignments
+                .Include(ca => ca.Teacher)
+                .Include(ca => ca.Course)
+                .Include(ca => ca.Batch)
+                .Include(ca => ca.Semester)
+                .AsQueryable();
+
+            // Apply filters
+            if (teacherId.HasValue && teacherId.Value > 0)
+                query = query.Where(ca => ca.TeacherId == teacherId.Value);
+            if (courseId.HasValue && courseId.Value > 0)
+                query = query.Where(ca => ca.CourseId == courseId.Value);
+            if (batchId.HasValue && batchId.Value > 0)
+                query = query.Where(ca => ca.BatchId == batchId.Value);
+            if (semesterId.HasValue && semesterId.Value > 0)
+                query = query.Where(ca => ca.SemesterId == semesterId.Value);
+            if (!string.IsNullOrEmpty(status))
+            {
+                bool isActive = status == "Active";
+                query = query.Where(ca => ca.IsActive == isActive);
+            }
+
+            var assignments = await query.OrderBy(ca => ca.Teacher.FirstName).ToListAsync();
+
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("CourseAssignments");
+
+            // Header row
+            worksheet.Cell(1, 1).Value = "Teacher";
+            worksheet.Cell(1, 2).Value = "Course Code";
+            worksheet.Cell(1, 3).Value = "Course Name";
+            worksheet.Cell(1, 4).Value = "Batch";
+            worksheet.Cell(1, 5).Value = "Semester";
+            worksheet.Cell(1, 6).Value = "Status";
+
+            // Style header
+            var headerRange = worksheet.Range(1, 1, 1, 6);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#4F46E5");
+            headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+
+            // Data rows
+            int row = 2;
+            foreach (var ca in assignments)
+            {
+                worksheet.Cell(row, 1).Value = $"{ca.Teacher?.FirstName} {ca.Teacher?.LastName}";
+                worksheet.Cell(row, 2).Value = ca.Course?.CourseCode ?? "";
+                worksheet.Cell(row, 3).Value = ca.Course?.CourseName ?? "";
+                worksheet.Cell(row, 4).Value = $"{ca.Batch?.BatchName} ({ca.Batch?.Year})";
+                worksheet.Cell(row, 5).Value = $"{ca.Semester?.SemesterName} {ca.Semester?.Year}";
+                worksheet.Cell(row, 6).Value = ca.IsActive == true ? "Active" : "Inactive";
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"CourseAssignments_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+
+        // GET: CourseAssignment/ExportToPdf
+        [HttpGet]
+        public async Task<IActionResult> ExportToPdf(int? teacherId, int? courseId, int? batchId, int? semesterId, string? status)
+        {
+            var query = _context.CourseAssignments
+                .Include(ca => ca.Teacher)
+                .Include(ca => ca.Course)
+                .Include(ca => ca.Batch)
+                .Include(ca => ca.Semester)
+                .AsQueryable();
+
+            // Apply filters
+            if (teacherId.HasValue && teacherId.Value > 0)
+                query = query.Where(ca => ca.TeacherId == teacherId.Value);
+            if (courseId.HasValue && courseId.Value > 0)
+                query = query.Where(ca => ca.CourseId == courseId.Value);
+            if (batchId.HasValue && batchId.Value > 0)
+                query = query.Where(ca => ca.BatchId == batchId.Value);
+            if (semesterId.HasValue && semesterId.Value > 0)
+                query = query.Where(ca => ca.SemesterId == semesterId.Value);
+            if (!string.IsNullOrEmpty(status))
+            {
+                bool isActive = status == "Active";
+                query = query.Where(ca => ca.IsActive == isActive);
+            }
+
+            var assignments = await query.OrderBy(ca => ca.Teacher.FirstName).ToListAsync();
+
+            using var stream = new MemoryStream();
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate());
+            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            document.Open();
+
+            var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
+            document.Add(new iTextSharp.text.Paragraph("Course Assignments Report", titleFont));
+            var smallFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10);
+            document.Add(new iTextSharp.text.Paragraph($"Generated on: {DateTime.Now:MMMM dd, yyyy HH:mm}", smallFont));
+            document.Add(new iTextSharp.text.Paragraph(" "));
+
+            var table = new iTextSharp.text.pdf.PdfPTable(6);
+            table.WidthPercentage = 100;
+            table.SetWidths(new float[] { 18f, 12f, 22f, 15f, 15f, 10f });
+
+            var headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 10, iTextSharp.text.BaseColor.WHITE);
+            var headerBgColor = new iTextSharp.text.BaseColor(79, 70, 229);
+            string[] headers = { "Teacher", "Course Code", "Course Name", "Batch", "Semester", "Status" };
+            foreach (var header in headers)
+            {
+                var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(header, headerFont));
+                cell.BackgroundColor = headerBgColor;
+                cell.Padding = 5;
+                table.AddCell(cell);
+            }
+
+            var dataFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 9);
+            foreach (var ca in assignments)
+            {
+                table.AddCell(new iTextSharp.text.Phrase($"{ca.Teacher?.FirstName} {ca.Teacher?.LastName}", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(ca.Course?.CourseCode ?? "", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(ca.Course?.CourseName ?? "", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase($"{ca.Batch?.BatchName} ({ca.Batch?.Year})", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase($"{ca.Semester?.SemesterName} {ca.Semester?.Year}", dataFont));
+                table.AddCell(new iTextSharp.text.Phrase(ca.IsActive == true ? "Active" : "Inactive", dataFont));
+            }
+
+            document.Add(table);
+            document.Close();
+
+            return File(stream.ToArray(), "application/pdf", $"CourseAssignments_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
         }
     }
 }

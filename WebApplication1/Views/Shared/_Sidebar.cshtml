@@ -300,13 +300,13 @@
                             </a>
                             <div x-show="openMenu === 'attendance'" x-collapse class="overflow-hidden">
                                 <ul class="mt-2 flex flex-col gap-1 pl-9">
-                                    @if (User.IsInRole("Student"))
-                                    {
-                                        <li><a asp-controller="StudentPortal" asp-action="MyAttendance" class="block rounded-lg px-4 py-2 text-sm font-medium hover:text-indigo-600 dark:hover:text-white" :class="window.location.pathname.includes('MyAttendance') ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'">My Attendance</a></li>
-                                    }
                                     @if (User.IsInRole("Teacher"))
                                     {
-                                        <li><a asp-controller="Timetable" asp-action="MyTimetable" class="block rounded-lg px-4 py-2 text-sm font-medium hover:text-indigo-600 dark:hover:text-white" :class="window.location.pathname.includes('/Timetable/MyTimetable') ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'">Mark Attendance</a></li>
+                                        <li><a asp-controller="TeacherPortal" asp-action="Dashboard" class="block rounded-lg px-4 py-2 text-sm font-medium hover:text-indigo-600 dark:hover:text-white" :class="window.location.pathname.includes('/TeacherPortal/Dashboard') ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'">Mark Attendance</a></li>
+                                    }
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li><a asp-controller="Timetable" asp-action="Index" class="block rounded-lg px-4 py-2 text-sm font-medium hover:text-indigo-600 dark:hover:text-white" :class="window.location.pathname.includes('/Attendance/Mark') ? 'text-indigo-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'">Mark Attendance</a></li>
                                     }
                                     @if (!User.IsInRole("Student"))
                                     {
