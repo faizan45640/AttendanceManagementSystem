@@ -1,6 +1,8 @@
-﻿
+﻿using AMS.Models;
+using AMS.Helpers;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
+using AMS.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -8,17 +10,20 @@ using System.Security.Claims;
 using ClosedXML.Excel;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using AMS.Models;
 
 namespace AMS.Controllers
 {
     public class TimetableController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IInstitutionService _institutionService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public TimetableController(ApplicationDbContext context)
+        public TimetableController(ApplicationDbContext context, IInstitutionService institutionService, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _institutionService = institutionService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Timetable
@@ -537,10 +542,12 @@ namespace AMS.Controllers
             }
 
             var timetables = await query.ToListAsync();
+            var institution = await _institutionService.GetInstitutionInfoAsync();
 
             using var stream = new MemoryStream();
-            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4);
-            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 40, 40, 70, 60);
+            var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            writer.PageEvent = new PdfHeaderFooter(institution, _webHostEnvironment);
             document.Open();
 
             var titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18);
@@ -684,9 +691,12 @@ namespace AMS.Controllers
 
             if (timetable == null) return NotFound();
 
+            var institution = await _institutionService.GetInstitutionInfoAsync();
+
             using var stream = new MemoryStream();
-            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 20, 20, 30, 30);
-            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 20, 20, 70, 60);
+            var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            writer.PageEvent = new PdfHeaderFooter(institution, _webHostEnvironment);
             document.Open();
 
             // Title

@@ -1,7 +1,9 @@
 ﻿
+using AMS.Helpers;
 using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
+using AMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,10 +15,14 @@ namespace AMS.Controllers
     public class EnrollmentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IInstitutionService _institutionService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public EnrollmentController(ApplicationDbContext context)
+        public EnrollmentController(ApplicationDbContext context, IInstitutionService institutionService, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _institutionService = institutionService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Enrollment/Enrollments
@@ -595,10 +601,12 @@ namespace AMS.Controllers
                 query = query.Where(e => e.Status == status);
 
             var enrollments = await query.OrderBy(e => e.Student.FirstName).ToListAsync();
+            var institution = await _institutionService.GetInstitutionInfoAsync();
 
             using var stream = new MemoryStream();
-            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate());
-            iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            var document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4.Rotate(), 40, 40, 70, 60);
+            var writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, stream);
+            writer.PageEvent = new PdfHeaderFooter(institution, _webHostEnvironment);
             document.Open();
 
             // Title

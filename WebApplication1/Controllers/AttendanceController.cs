@@ -1,6 +1,8 @@
 ﻿using AMS.Models;
+using AMS.Helpers;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
+using AMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,7 +12,6 @@ using System.Linq;
 using ClosedXML.Excel;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -18,10 +19,14 @@ namespace AMS.Controllers
     public class AttendanceController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IInstitutionService _institutionService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public AttendanceController(ApplicationDbContext context)
+        public AttendanceController(ApplicationDbContext context, IInstitutionService institutionService, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _institutionService = institutionService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Attendance/MyTeacherReport
@@ -487,6 +492,8 @@ namespace AMS.Controllers
             // Group by Course/Semester
             var grouped = attendances.GroupBy(a => new
             {
+                a.Session.CourseAssignment.CourseId,
+                a.Session.CourseAssignment.SemesterId,
                 a.Session.CourseAssignment.Course.CourseName,
                 a.Session.CourseAssignment.Semester.SemesterName,
                 a.Session.CourseAssignment.Teacher.FirstName,
@@ -494,13 +501,16 @@ namespace AMS.Controllers
             })
             .Select(g => new StudentCourseAttendanceViewModel
             {
+                CourseId = g.Key.CourseId ?? 0,
+                SemesterId = g.Key.SemesterId ?? 0,
                 CourseName = g.Key.CourseName,
                 SemesterName = g.Key.SemesterName,
                 TeacherName = g.Key.FirstName + " " + g.Key.LastName,
                 TotalSessions = g.Count(),
-                PresentSessions = g.Count(a => a.Status == "Present"),
+                PresentSessions = g.Count(a => a.Status == "Present" || a.Status == "Late"),
                 AbsentSessions = g.Count(a => a.Status == "Absent"),
-                Percentage = g.Count() > 0 ? (double)g.Count(a => a.Status == "Present") / g.Count() * 100 : 0,
+                LateSessions = g.Count(a => a.Status == "Late"),
+                Percentage = g.Count() > 0 ? (double)g.Count(a => a.Status == "Present" || a.Status == "Late") / g.Count() * 100 : 0,
                 History = g.Select(a => new AttendanceRecordViewModel
                 {
                     Date = a.Session.SessionDate,
@@ -733,11 +743,23 @@ namespace AMS.Controllers
                             else if (status == "Late") color = "text-yellow-700 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/20";
                             else if (status == "Excused") color = "text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20";
                         }
+                        else if (currentDate > todayDate)
+                        {
+                            // Future date - upcoming class
+                            status = "Upcoming";
+                            color = "text-indigo-700 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-900/20";
+                        }
                         else if (currentDate < todayDate)
                         {
                             // Past date with no attendance
                             status = "Pending";
-                            color = "text-yellow-700 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/20";
+                            color = "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/20";
+                        }
+                        else
+                        {
+                            // Today - not marked yet
+                            status = "Today";
+                            color = "text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20";
                         }
 
                         dayViewModel.Classes.Add(new ClassSessionViewModel
@@ -805,6 +827,20 @@ namespace AMS.Controllers
         // GET: Attendance/TeacherReport
         public async Task<IActionResult> TeacherReport(int? teacherId)
         {
+            // Auto-detect teacher if user is a Teacher and no teacherId provided
+            if (!teacherId.HasValue && User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var currentTeacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                    if (currentTeacher != null)
+                    {
+                        teacherId = currentTeacher.TeacherId;
+                    }
+                }
+            }
+
             var model = new TeacherAttendanceReportViewModel
             {
                 SelectedTeacherId = teacherId,
@@ -1037,10 +1073,15 @@ namespace AMS.Controllers
             if (student == null) return NotFound();
 
             var courses = await GetStudentCourseAttendance(studentId, semesterId, courseId);
+            var institution = await _institutionService.GetInstitutionInfoAsync();
 
             using var stream = new MemoryStream();
-            var document = new Document(PageSize.A4, 40, 40, 40, 40);
+            var document = new Document(PageSize.A4, 40, 40, 40, 60);
             var writer = PdfWriter.GetInstance(document, stream);
+
+            // Add page events for header/footer
+            writer.PageEvent = new PdfHeaderFooter(institution, _webHostEnvironment);
+
             document.Open();
 
             // Title
@@ -1139,9 +1180,14 @@ namespace AMS.Controllers
                 ? $"{attendanceRecords.First().Session.CourseAssignment.Teacher.FirstName} {attendanceRecords.First().Session.CourseAssignment.Teacher.LastName}"
                 : "N/A";
 
+            var institution = await _institutionService.GetInstitutionInfoAsync();
+
             using var stream = new MemoryStream();
-            var document = new Document(PageSize.A4, 40, 40, 40, 40);
+            var document = new Document(PageSize.A4, 40, 40, 70, 60);
             var writer = PdfWriter.GetInstance(document, stream);
+
+            // Add page events for header/footer
+            writer.PageEvent = new PdfHeaderFooter(institution, _webHostEnvironment);
             document.Open();
 
             // Fonts
@@ -1261,7 +1307,8 @@ namespace AMS.Controllers
                 .Include(a => a.Session)
                     .ThenInclude(s => s.CourseAssignment)
                         .ThenInclude(ca => ca.Teacher)
-                .Where(a => a.StudentId == studentId);
+                .Where(a => a.StudentId == studentId)
+                .Where(a => a.Session.CourseAssignment.CourseId != null && a.Session.CourseAssignment.SemesterId != null);
 
             if (semesterId.HasValue)
                 query = query.Where(a => a.Session.CourseAssignment.SemesterId == semesterId);
@@ -1271,19 +1318,23 @@ namespace AMS.Controllers
             var records = await query.ToListAsync();
 
             var grouped = records
-                .GroupBy(a => new { a.Session.CourseAssignment.CourseId, a.Session.CourseAssignment.SemesterId })
+                .GroupBy(a => new {
+                    CourseId = a.Session.CourseAssignment.CourseId!.Value,
+                    SemesterId = a.Session.CourseAssignment.SemesterId!.Value
+                })
                 .Select(g => new StudentCourseAttendanceViewModel
                 {
-                    CourseId = g.Key.CourseId ?? 0,
-                    SemesterId = g.Key.SemesterId ?? 0,
-                    CourseName = g.First().Session.CourseAssignment.Course.CourseName,
-                    SemesterName = g.First().Session.CourseAssignment.Semester.SemesterName,
+                    CourseId = g.Key.CourseId,
+                    SemesterId = g.Key.SemesterId,
+                    CourseName = g.First().Session.CourseAssignment.Course?.CourseName ?? "Unknown Course",
+                    SemesterName = g.First().Session.CourseAssignment.Semester?.SemesterName ?? "Unknown Semester",
                     TeacherName = g.First().Session.CourseAssignment.Teacher != null
                         ? $"{g.First().Session.CourseAssignment.Teacher.FirstName} {g.First().Session.CourseAssignment.Teacher.LastName}"
                         : "N/A",
                     TotalSessions = g.Count(),
                     PresentSessions = g.Count(a => a.Status == "Present" || a.Status == "Late"),
                     AbsentSessions = g.Count(a => a.Status == "Absent"),
+                    LateSessions = g.Count(a => a.Status == "Late"),
                     Percentage = g.Any() ? (double)g.Count(a => a.Status == "Present" || a.Status == "Late") / g.Count() * 100 : 0,
                     History = g.Select(a => new AttendanceRecordViewModel
                     {
@@ -1414,10 +1465,15 @@ namespace AMS.Controllers
             if (teacherEntity == null) return NotFound();
 
             var batches = await GetTeacherBatchesWithSessions(actualTeacherId);
+            var institution = await _institutionService.GetInstitutionInfoAsync();
 
             using var stream = new MemoryStream();
-            var document = new Document(PageSize.A4.Rotate(), 40, 40, 40, 40);
+            var document = new Document(PageSize.A4.Rotate(), 40, 40, 70, 60);
             var writer = PdfWriter.GetInstance(document, stream);
+
+            // Add page events for header/footer
+            writer.PageEvent = new PdfHeaderFooter(institution, _webHostEnvironment);
+
             document.Open();
 
             var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18);
@@ -1528,6 +1584,291 @@ namespace AMS.Controllers
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region Session Attendance Export (Mark Page)
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> ExportSessionAttendanceToPdf(int slotId, DateOnly date)
+        {
+            var slot = await _context.TimetableSlots
+                .Include(ts => ts.Timetable)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Course)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Batch)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Semester)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Teacher)
+                .FirstOrDefaultAsync(ts => ts.SlotId == slotId);
+
+            if (slot == null) return NotFound("Slot not found.");
+
+            // Security Check: If user is a Teacher, ensure they own this slot
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                if (teacher == null || slot.CourseAssignment.TeacherId != teacher.TeacherId)
+                {
+                    return Forbid();
+                }
+            }
+
+            var assignment = slot.CourseAssignment;
+            var slotBatchId = slot.Timetable?.BatchId ?? assignment.BatchId;
+
+            // Get students enrolled in this course/semester using same logic as Mark action
+            var enrollments = await _context.Enrollments
+                .Include(e => e.Student)
+                .Where(e => e.CourseId == assignment.CourseId && e.SemesterId == assignment.SemesterId && e.Status == "Active")
+                .ToListAsync();
+
+            // Filter enrollments based on the target batch (same logic as LoadAttendanceView)
+            var validEnrollments = enrollments.Where(e =>
+                (e.BatchId.HasValue && e.BatchId == slotBatchId) ||
+                (!e.BatchId.HasValue && e.Student.BatchId == slotBatchId)
+            ).ToList();
+
+            var students = validEnrollments
+                .Select(e => e.Student)
+                .Where(s => s != null)
+                .OrderBy(s => s.RollNumber)
+                .ToList();
+
+            var session = await _context.Sessions
+                .Include(s => s.Attendances)
+                .FirstOrDefaultAsync(s => s.CourseAssignmentId == slot.CourseAssignmentId && s.SessionDate == date && s.StartTime == slot.StartTime);
+
+            var attendanceData = new List<(Student Student, string Status)>();
+            foreach (var student in students)
+            {
+                var attendance = session?.Attendances.FirstOrDefault(a => a.StudentId == student.StudentId);
+                attendanceData.Add((student, attendance?.Status ?? "Not Marked"));
+            }
+
+            var institution = await _institutionService.GetInstitutionInfoAsync();
+
+            using var stream = new MemoryStream();
+            var document = new Document(PageSize.A4, 40, 40, 70, 60);
+            var writer = PdfWriter.GetInstance(document, stream);
+            writer.PageEvent = new PdfHeaderFooter(institution, _webHostEnvironment);
+
+            document.Open();
+
+            var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
+            var sectionFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11);
+            var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+            var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+
+            document.Add(new Paragraph("Class Attendance Report", titleFont));
+            document.Add(new Paragraph(" "));
+
+            // Class Info
+            document.Add(new Paragraph($"Course: {slot.CourseAssignment.Course?.CourseName ?? "N/A"}", sectionFont));
+            document.Add(new Paragraph($"Batch: {slot.CourseAssignment.Batch?.BatchName ?? "N/A"}", normalFont));
+            document.Add(new Paragraph($"Semester: {slot.CourseAssignment.Semester?.SemesterName ?? "N/A"}", normalFont));
+            document.Add(new Paragraph($"Teacher: {slot.CourseAssignment.Teacher?.FirstName} {slot.CourseAssignment.Teacher?.LastName}", normalFont));
+            document.Add(new Paragraph($"Date: {date.ToString("dddd, MMMM dd, yyyy")}", normalFont));
+            document.Add(new Paragraph($"Time: {slot.StartTime:hh\\:mm tt} - {slot.EndTime:hh\\:mm tt}", normalFont));
+            document.Add(new Paragraph(" "));
+
+            // Summary
+            var presentCount = attendanceData.Count(a => a.Status == "Present");
+            var absentCount = attendanceData.Count(a => a.Status == "Absent");
+            var lateCount = attendanceData.Count(a => a.Status == "Late");
+            var excusedCount = attendanceData.Count(a => a.Status == "Excused");
+            var notMarkedCount = attendanceData.Count(a => a.Status == "Not Marked");
+
+            document.Add(new Paragraph("Summary:", sectionFont));
+            document.Add(new Paragraph($"Present: {presentCount} | Absent: {absentCount} | Late: {lateCount} | Excused: {excusedCount} | Not Marked: {notMarkedCount}", normalFont));
+            document.Add(new Paragraph(" "));
+
+            // Table
+            var table = new PdfPTable(3) { WidthPercentage = 100 };
+            table.SetWidths(new float[] { 1.5f, 3f, 1.5f });
+
+            string[] headers = { "Roll No", "Student Name", "Status" };
+            foreach (var header in headers)
+            {
+                var cell = new PdfPCell(new Phrase(header, headerFont))
+                {
+                    BackgroundColor = new BaseColor(229, 231, 235),
+                    Padding = 6,
+                    HorizontalAlignment = Element.ALIGN_CENTER
+                };
+                table.AddCell(cell);
+            }
+
+            foreach (var (student, status) in attendanceData)
+            {
+                table.AddCell(new PdfPCell(new Phrase(student.RollNumber, normalFont)) { Padding = 5 });
+                table.AddCell(new PdfPCell(new Phrase($"{student.FirstName} {student.LastName}", normalFont)) { Padding = 5 });
+
+                var statusColor = status switch
+                {
+                    "Present" => new BaseColor(220, 252, 231),
+                    "Absent" => new BaseColor(254, 226, 226),
+                    "Late" => new BaseColor(254, 249, 195),
+                    "Excused" => new BaseColor(219, 234, 254),
+                    _ => new BaseColor(243, 244, 246)
+                };
+                table.AddCell(new PdfPCell(new Phrase(status, normalFont)) { Padding = 5, BackgroundColor = statusColor, HorizontalAlignment = Element.ALIGN_CENTER });
+            }
+
+            document.Add(table);
+            document.Close();
+
+            var courseName = slot.CourseAssignment.Course?.CourseName?.Replace(" ", "_") ?? "Course";
+            var fileName = $"Attendance_{courseName}_{date:yyyyMMdd}.pdf";
+            return File(stream.ToArray(), "application/pdf", fileName);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> ExportSessionAttendanceToExcel(int slotId, DateOnly date)
+        {
+            var slot = await _context.TimetableSlots
+                .Include(ts => ts.Timetable)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Course)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Batch)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Semester)
+                .Include(ts => ts.CourseAssignment)
+                    .ThenInclude(ca => ca.Teacher)
+                .FirstOrDefaultAsync(ts => ts.SlotId == slotId);
+
+            if (slot == null) return NotFound("Slot not found.");
+
+            // Security Check: If user is a Teacher, ensure they own this slot
+            if (User.IsInRole("Teacher"))
+            {
+                var userId = User.FindFirstValue("UserId");
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == int.Parse(userId));
+                if (teacher == null || slot.CourseAssignment.TeacherId != teacher.TeacherId)
+                {
+                    return Forbid();
+                }
+            }
+
+            var assignment = slot.CourseAssignment;
+            var slotBatchId = slot.Timetable?.BatchId ?? assignment.BatchId;
+
+            // Get students enrolled in this course/semester using same logic as Mark action
+            var enrollments = await _context.Enrollments
+                .Include(e => e.Student)
+                .Where(e => e.CourseId == assignment.CourseId && e.SemesterId == assignment.SemesterId && e.Status == "Active")
+                .ToListAsync();
+
+            // Filter enrollments based on the target batch (same logic as LoadAttendanceView)
+            var validEnrollments = enrollments.Where(e =>
+                (e.BatchId.HasValue && e.BatchId == slotBatchId) ||
+                (!e.BatchId.HasValue && e.Student.BatchId == slotBatchId)
+            ).ToList();
+
+            var students = validEnrollments
+                .Select(e => e.Student)
+                .Where(s => s != null)
+                .OrderBy(s => s.RollNumber)
+                .ToList();
+
+            var session = await _context.Sessions
+                .Include(s => s.Attendances)
+                .FirstOrDefaultAsync(s => s.CourseAssignmentId == slot.CourseAssignmentId && s.SessionDate == date && s.StartTime == slot.StartTime);
+
+            using var workbook = new XLWorkbook();
+            var ws = workbook.Worksheets.Add("Class Attendance");
+
+            // Title
+            ws.Cell(1, 1).Value = "Class Attendance Report";
+            ws.Cell(1, 1).Style.Font.Bold = true;
+            ws.Cell(1, 1).Style.Font.FontSize = 16;
+            ws.Range(1, 1, 1, 3).Merge();
+
+            // Class Info
+            ws.Cell(3, 1).Value = $"Course: {slot.CourseAssignment.Course?.CourseName ?? "N/A"}";
+            ws.Cell(4, 1).Value = $"Batch: {slot.CourseAssignment.Batch?.BatchName ?? "N/A"}";
+            ws.Cell(5, 1).Value = $"Semester: {slot.CourseAssignment.Semester?.SemesterName ?? "N/A"}";
+            ws.Cell(6, 1).Value = $"Teacher: {slot.CourseAssignment.Teacher?.FirstName} {slot.CourseAssignment.Teacher?.LastName}";
+            ws.Cell(7, 1).Value = $"Date: {date.ToString("dddd, MMMM dd, yyyy")}";
+            ws.Cell(8, 1).Value = $"Time: {slot.StartTime:hh\\:mm tt} - {slot.EndTime:hh\\:mm tt}";
+
+            // Headers
+            var row = 10;
+            ws.Cell(row, 1).Value = "Roll No";
+            ws.Cell(row, 2).Value = "Student Name";
+            ws.Cell(row, 3).Value = "Status";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+            ws.Range(row, 1, row, 3).Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            // Data
+            row++;
+            int presentCount = 0, absentCount = 0, lateCount = 0, excusedCount = 0;
+            foreach (var student in students)
+            {
+                var attendance = session?.Attendances.FirstOrDefault(a => a.StudentId == student.StudentId);
+                var status = attendance?.Status ?? "Not Marked";
+
+                ws.Cell(row, 1).Value = student.RollNumber;
+                ws.Cell(row, 2).Value = $"{student.FirstName} {student.LastName}";
+                ws.Cell(row, 3).Value = status;
+
+                // Color coding
+                var color = status switch
+                {
+                    "Present" => XLColor.LightGreen,
+                    "Absent" => XLColor.LightPink,
+                    "Late" => XLColor.LightYellow,
+                    "Excused" => XLColor.LightBlue,
+                    _ => XLColor.LightGray
+                };
+                ws.Cell(row, 3).Style.Fill.BackgroundColor = color;
+
+                if (status == "Present") presentCount++;
+                else if (status == "Absent") absentCount++;
+                else if (status == "Late") lateCount++;
+                else if (status == "Excused") excusedCount++;
+
+                row++;
+            }
+
+            // Summary
+            row += 2;
+            ws.Cell(row, 1).Value = "Summary";
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            row++;
+            ws.Cell(row, 1).Value = "Present:";
+            ws.Cell(row, 2).Value = presentCount;
+            row++;
+            ws.Cell(row, 1).Value = "Absent:";
+            ws.Cell(row, 2).Value = absentCount;
+            row++;
+            ws.Cell(row, 1).Value = "Late:";
+            ws.Cell(row, 2).Value = lateCount;
+            row++;
+            ws.Cell(row, 1).Value = "Excused:";
+            ws.Cell(row, 2).Value = excusedCount;
+            row++;
+            ws.Cell(row, 1).Value = "Total:";
+            ws.Cell(row, 2).Value = students.Count;
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            ws.Cell(row, 2).Style.Font.Bold = true;
+
+            ws.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var courseName = slot.CourseAssignment.Course?.CourseName?.Replace(" ", "_") ?? "Course";
+            var fileName = $"Attendance_{courseName}_{date:yyyyMMdd}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         #endregion

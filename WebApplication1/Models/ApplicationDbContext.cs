@@ -25,7 +25,7 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Batch> Batches { get; set; }
 
     public virtual DbSet<Course> Courses { get; set; }
-    
+
 
     public virtual DbSet<CourseAssignment> CourseAssignments { get; set; }
 
@@ -45,8 +45,10 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<SystemSetting> SystemSettings { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=desktop-mdfvllc\\sqlexpress;Initial Catalog=AMS;Integrated Security=True;Encrypt=False");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -257,6 +259,19 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Role).HasMaxLength(20);
             entity.Property(e => e.Username).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<SystemSetting>(entity =>
+        {
+            entity.HasKey(e => e.SettingId);
+
+            entity.HasIndex(e => e.SettingKey, "UQ_SystemSettings_SettingKey").IsUnique();
+
+            entity.Property(e => e.SettingKey).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.SettingType).HasMaxLength(50);
+            entity.Property(e => e.Category).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.IsEditable).HasDefaultValue(true);
         });
 
         OnModelCreatingPartial(modelBuilder);

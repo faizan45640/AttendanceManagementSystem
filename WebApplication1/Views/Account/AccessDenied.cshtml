@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_LayoutAuth";
+}
+
+<div class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div class="w-full max-w-md text-center">
+        <!-- Icon -->
+        <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+            <svg class="h-10 w-10 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+        </div>
+
+        <!-- Title -->
+        <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+            Access Denied
+        </h1>
+
+        <!-- Message -->
+        <p class="mb-8 text-gray-600 dark:text-gray-400">
+            Sorry, you don't have permission to access this page. Please contact your administrator if you believe this is an error.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <a asp-controller="Home" asp-action="Index"
+               class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Go to Dashboard
+            </a>
+            <a asp-controller="Auth" asp-action="Logout"
+               class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500/50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Sign Out
+            </a>
+        </div>
+
+        <!-- Help Text -->
+        <p class="mt-8 text-sm text-gray-500 dark:text-gray-500">
+            Error Code: 403 Forbidden
+        </p>
+    </div>
+</div>

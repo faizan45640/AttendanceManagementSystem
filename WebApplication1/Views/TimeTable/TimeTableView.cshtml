@@ -6,12 +6,12 @@
     // Define a palette of stronger, more visible colors for course cards
     var colorPalette = new[]
     {
-        new { Bg = "bg-blue-100 dark:bg-blue-900/40", Border = "border-blue-200 dark:border-blue-700", Text = "text-blue-900 dark:text-blue-100", Subtext = "text-blue-700 dark:text-blue-300", Icon = "text-blue-600 dark:text-blue-400" },
-        new { Bg = "bg-purple-100 dark:bg-purple-900/40", Border = "border-purple-200 dark:border-purple-700", Text = "text-purple-900 dark:text-purple-100", Subtext = "text-purple-700 dark:text-purple-300", Icon = "text-purple-600 dark:text-purple-400" },
-        new { Bg = "bg-emerald-100 dark:bg-emerald-900/40", Border = "border-emerald-200 dark:border-emerald-700", Text = "text-emerald-900 dark:text-emerald-100", Subtext = "text-emerald-700 dark:text-emerald-300", Icon = "text-emerald-600 dark:text-emerald-400" },
-        new { Bg = "bg-amber-100 dark:bg-amber-900/40", Border = "border-amber-200 dark:border-amber-700", Text = "text-amber-900 dark:text-amber-100", Subtext = "text-amber-700 dark:text-amber-300", Icon = "text-amber-600 dark:text-amber-400" },
-        new { Bg = "bg-rose-100 dark:bg-rose-900/40", Border = "border-rose-200 dark:border-rose-700", Text = "text-rose-900 dark:text-rose-100", Subtext = "text-rose-700 dark:text-rose-300", Icon = "text-rose-600 dark:text-rose-400" },
-        new { Bg = "bg-cyan-100 dark:bg-cyan-900/40", Border = "border-cyan-200 dark:border-cyan-700", Text = "text-cyan-900 dark:text-cyan-100", Subtext = "text-cyan-700 dark:text-cyan-300", Icon = "text-cyan-600 dark:text-cyan-400" },
+        new { Bg = "bg-blue-100 dark:bg-blue-900/40", Border = "border-blue-200 dark:border-blue-700", Text = "text-blue-900 dark:text-blue-100", Subtext = "text-blue-700 dark:text-blue-300", Icon = "text-blue-600 dark:text-blue-400", PrintBg = "#dbeafe" },
+        new { Bg = "bg-purple-100 dark:bg-purple-900/40", Border = "border-purple-200 dark:border-purple-700", Text = "text-purple-900 dark:text-purple-100", Subtext = "text-purple-700 dark:text-purple-300", Icon = "text-purple-600 dark:text-purple-400", PrintBg = "#f3e8ff" },
+        new { Bg = "bg-emerald-100 dark:bg-emerald-900/40", Border = "border-emerald-200 dark:border-emerald-700", Text = "text-emerald-900 dark:text-emerald-100", Subtext = "text-emerald-700 dark:text-emerald-300", Icon = "text-emerald-600 dark:text-emerald-400", PrintBg = "#d1fae5" },
+        new { Bg = "bg-amber-100 dark:bg-amber-900/40", Border = "border-amber-200 dark:border-amber-700", Text = "text-amber-900 dark:text-amber-100", Subtext = "text-amber-700 dark:text-amber-300", Icon = "text-amber-600 dark:text-amber-400", PrintBg = "#fef3c7" },
+        new { Bg = "bg-rose-100 dark:bg-rose-900/40", Border = "border-rose-200 dark:border-rose-700", Text = "text-rose-900 dark:text-rose-100", Subtext = "text-rose-700 dark:text-rose-300", Icon = "text-rose-600 dark:text-rose-400", PrintBg = "#ffe4e6" },
+        new { Bg = "bg-cyan-100 dark:bg-cyan-900/40", Border = "border-cyan-200 dark:border-cyan-700", Text = "text-cyan-900 dark:text-cyan-100", Subtext = "text-cyan-700 dark:text-cyan-300", Icon = "text-cyan-600 dark:text-cyan-400", PrintBg = "#cffafe" },
     };
 
     dynamic GetColor(string name)
@@ -22,9 +22,110 @@
     }
 }
 
+<style>
+    @@media print {
+        /* Hide non-printable elements */
+        .no-print, .no-print * {
+            display: none !important;
+        }
+        /* Reset page margins */
+        @@page {
+            margin: 0.4in;
+            size: landscape;
+        }
+
+        body {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        /* Print header styling */
+        .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+
+            .print-header h1 {
+                font-size: 20px;
+                margin: 0;
+            }
+
+            .print-header p {
+                font-size: 12px;
+                margin: 3px 0;
+            }
+        /* Grid layout for print */
+        .timetable-grid {
+            display: grid !important;
+            grid-template-columns: repeat(7, 1fr) !important;
+            gap: 8px !important;
+        }
+
+        .day-column {
+            break-inside: avoid;
+            border: 1px solid #ccc;
+            padding: 6px;
+            border-radius: 6px;
+        }
+
+        .day-header {
+            font-weight: bold;
+            font-size: 11px;
+            text-align: center;
+            padding: 4px;
+            background-color: #f3f4f6 !important;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        /* Course card styling for print */
+        .course-card {
+            padding: 6px !important;
+            margin-bottom: 6px !important;
+            border-radius: 4px !important;
+            font-size: 9px !important;
+        }
+
+            .course-card h5 {
+                font-size: 10px !important;
+                font-weight: bold !important;
+            }
+
+            .course-card p {
+                font-size: 8px !important;
+                margin-top: 2px !important;
+            }
+
+        .time-badge {
+            font-size: 8px !important;
+            padding: 2px 4px !important;
+        }
+        /* Hide attendance buttons in print */
+        .attendance-btn {
+            display: none !important;
+        }
+        /* Empty slot styling */
+        .empty-slot {
+            height: 40px !important;
+        }
+    }
+
+    /* Hide print header in normal view */
+    .print-header {
+        display: none;
+    }
+</style>
+
 <div class="space-y-8">
+    <!-- Print Header (only visible when printing) -->
+    <div class="print-header">
+        <h1>Weekly Schedule</h1>
+        <p>@Model.BatchName &bull; @Model.SemesterName</p>
+    </div>
+
     <!-- Header -->
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between no-print">
         <div>
             <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                 Weekly Schedule
@@ -33,7 +134,15 @@
                 @Model.BatchName &bull; @Model.SemesterName
             </p>
         </div>
-        <div>
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="window.print()"
+                    class="inline-flex items-center justify-center px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    title="Print Timetable">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print
+            </button>
             @if (Model.IsActive)
             {
                 <span class="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-500/30">
@@ -51,21 +160,21 @@
     </div>
 
     <!-- Timetable Grid -->
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+    <div class="timetable-grid grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         @foreach (var day in days)
         {
             var daySlots = Model.Slots.Where(s => s.DayOfWeek == (int)day).OrderBy(s => s.StartTime).ToList();
             var isToday = DateTime.Now.DayOfWeek == day;
 
-            <div class="flex flex-col overflow-hidden rounded-2xl border @(isToday ? "border-brand-200 ring-4 ring-brand-50 dark:border-brand-700 dark:ring-brand-900/20" : "border-gray-200 dark:border-gray-800") bg-white shadow-sm transition-all hover:shadow-md dark:bg-gray-900">
-                <div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+            <div class="day-column flex flex-col overflow-hidden rounded-2xl border @(isToday ? "border-brand-200 ring-4 ring-brand-50 dark:border-brand-700 dark:ring-brand-900/20" : "border-gray-200 dark:border-gray-800") bg-white shadow-sm transition-all hover:shadow-md dark:bg-gray-900">
+                <div class="day-header border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
                     <div class="flex items-center justify-between">
                         <h4 class="font-bold @(isToday ? "text-brand-600 dark:text-brand-400" : "text-gray-900 dark:text-white")">
                             @day
                         </h4>
                         @if (isToday)
                         {
-                            <span class="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">Today</span>
+                            <span class="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 no-print">Today</span>
                         }
                     </div>
                 </div>
@@ -77,10 +186,10 @@
                         {
                             var color = GetColor(slot.CourseName);
 
-                            <div class="group relative flex flex-col gap-1 rounded-xl border @color.Border @color.Bg p-4 transition-all hover:scale-[1.02]">
+                            <div class="course-card group relative flex flex-col gap-1 rounded-xl border @color.Border @color.Bg p-4 transition-all hover:scale-[1.02]" style="--print-bg: @color.PrintBg;">
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="@color.Icon h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <div class="time-badge flex items-center gap-1.5">
+                                        <svg class="@color.Icon h-4 w-4 no-print" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         <span class="text-xs font-bold uppercase tracking-wide @color.Subtext">
@@ -93,7 +202,7 @@
                                         @if (slot.AttendanceStatus == "Marked")
                                         {
                                             <a asp-controller="Attendance" asp-action="Mark" asp-route-slotId="@slot.SlotId"
-                                               class="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700 shadow-sm transition-colors hover:bg-green-200 dark:bg-green-900/50 dark:text-green-400 dark:hover:bg-green-900/70"
+                                               class="attendance-btn flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700 shadow-sm transition-colors hover:bg-green-200 dark:bg-green-900/50 dark:text-green-400 dark:hover:bg-green-900/70"
                                                title="Attendance Marked (Click to Edit)">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -103,7 +212,7 @@
                                         else
                                         {
                                             <a asp-controller="Attendance" asp-action="Mark" asp-route-slotId="@slot.SlotId"
-                                               class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm transition-colors hover:bg-brand-500 hover:text-white dark:bg-gray-800 dark:hover:bg-brand-500"
+                                               class="attendance-btn flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm transition-colors hover:bg-brand-500 hover:text-white dark:bg-gray-800 dark:hover:bg-brand-500"
                                                title="Mark Attendance">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -126,13 +235,13 @@
                     }
                     else
                     {
-                        <div class="flex h-32 flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50/50 text-center dark:border-gray-800 dark:bg-gray-800/30">
-                            <div class="rounded-full bg-gray-100 p-2 dark:bg-gray-800">
+                        <div class="empty-slot flex h-32 flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50/50 text-center dark:border-gray-800 dark:bg-gray-800/30">
+                            <div class="rounded-full bg-gray-100 p-2 dark:bg-gray-800 no-print">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                                 </svg>
                             </div>
-                            <p class="mt-2 text-xs font-medium text-gray-400">No classes scheduled</p>
+                            <p class="mt-2 text-xs font-medium text-gray-400">No classes</p>
                         </div>
                     }
                 </div>

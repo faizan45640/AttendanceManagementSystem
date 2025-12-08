@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using AMS.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using AMS.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
        
        // options.AccessDeniedPath = "/Account/AccessDenied";
     });
+builder.Services.AddScoped<IInstitutionService, InstitutionService>();
 
 var app = builder.Build();
 

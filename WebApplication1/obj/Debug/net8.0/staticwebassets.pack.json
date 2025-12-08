@@ -57,6 +57,10 @@
       "PackagePath": "staticwebassets\\images\\grid-image\\image-06.png"
     },
     {
+      "Id": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\images\\login-bg.jpg",
+      "PackagePath": "staticwebassets\\images\\login-bg.jpg"
+    },
+    {
       "Id": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\images\\logo\\auth-logo.svg",
       "PackagePath": "staticwebassets\\images\\logo\\auth-logo.svg"
     },
@@ -423,6 +427,10 @@
     {
       "Id": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\uploads\\branding\\logo_20251208145601.png",
+      "PackagePath": "staticwebassets\\uploads\\branding\\logo_20251208145601.png"
     },
     {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.AMS.Microsoft.AspNetCore.StaticWebAssets.props",

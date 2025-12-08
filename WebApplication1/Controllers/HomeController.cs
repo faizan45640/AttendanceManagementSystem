@@ -15,7 +15,22 @@ namespace WebApplication1.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            // Redirect to appropriate dashboard based on role
+            if (User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Dashboard", "Admin");
+            }
+            else if (User.IsInRole("Teacher"))
+            {
+                return RedirectToAction("Dashboard", "TeacherPortal");
+            }
+            else if (User.IsInRole("Student"))
+            {
+                return RedirectToAction("Dashboard", "StudentPortal");
+            }
+
+            // Fallback to login if no role
+            return RedirectToAction("Login", "Auth");
         }
 
         public IActionResult Privacy()

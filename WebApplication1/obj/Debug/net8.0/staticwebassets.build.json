@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "zf530F+dDoa21YEZOMQOwUcga8Q8eGHCYkF/75qQBAU=",
+  "Hash": "3Xzn/eOWKbDLG2WwM+M7uoO5PEYUDhEA6DOnNJJtHwM=",
   "Source": "AMS",
   "BasePath": "_content/AMS",
   "Mode": "Default",
@@ -300,6 +300,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\grid-image\\image-06.png"
+    },
+    {
+      "Identity": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\images\\login-bg.jpg",
+      "SourceId": "AMS",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\",
+      "BasePath": "_content/AMS",
+      "RelativePath": "images/login-bg.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\login-bg.jpg"
     },
     {
       "Identity": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\images\\logo\\auth-logo.svg",
@@ -2048,6 +2067,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
+    },
+    {
+      "Identity": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\uploads\\branding\\logo_20251208145601.png",
+      "SourceId": "AMS",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\wwwroot\\",
+      "BasePath": "_content/AMS",
+      "RelativePath": "uploads/branding/logo_20251208145601.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\branding\\logo_20251208145601.png"
     }
   ]
 }

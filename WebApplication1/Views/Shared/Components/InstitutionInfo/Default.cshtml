@@ -1,0 +1,17 @@
+﻿@model AMS.Services.InstitutionInfo
+
+<a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
+    @if (!string.IsNullOrEmpty(Model.Logo))
+    {
+        <img src="@Model.Logo" alt="@Model.Name" class="h-10 w-10 rounded-lg object-contain" />
+    }
+    else
+    {
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-xl">
+            @Model.Initials
+        </div>
+    }
+    <span class="text-xl font-bold text-slate-800 dark:text-white" :class="sidebarToggle ? 'hidden' : ''">
+        @Model.Name
+    </span>
+</a>

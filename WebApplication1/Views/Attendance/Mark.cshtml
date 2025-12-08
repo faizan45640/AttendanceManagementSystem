@@ -3,9 +3,107 @@
     ViewData["Title"] = "Mark Attendance";
 }
 
-<div class="p-4 sm:p-6">
+<style>
+    @@media print {
+        /* Hide non-printable elements */
+        .no-print, .no-print * {
+            display: none !important;
+        }
+        /* Show print-only elements */
+        .print-status-text {
+            display: inline !important;
+            font-weight: 500;
+        }
+        /* Reset page margins */
+        @@page {
+            margin: 0.5in;
+        }
+
+        body {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        /* Make content full width */
+        .print-full-width {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        /* Print header styling */
+        .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+            .print-header h1 {
+                font-size: 18px;
+                margin: 0;
+            }
+
+            .print-header p {
+                font-size: 12px;
+                margin: 5px 0;
+            }
+        /* Table styling for print */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e5e7eb !important;
+            font-weight: bold;
+        }
+        /* Status colors for print */
+        .status-present {
+            background-color: #dcfce7 !important;
+        }
+
+        .status-absent {
+            background-color: #fee2e2 !important;
+        }
+
+        .status-late {
+            background-color: #fef9c3 !important;
+        }
+
+        .status-excused {
+            background-color: #dbeafe !important;
+        }
+        /* Center status column */
+        .print-status-cell {
+            text-align: center !important;
+        }
+    }
+
+    /* Hide print header and status text in normal view */
+    .print-header {
+        display: none;
+    }
+
+    .print-status-text {
+        display: none;
+    }
+</style>
+
+<div class="p-4 sm:p-6 print-full-width">
+    <!-- Print Header (only visible when printing) -->
+    <div class="print-header">
+        <h1>Class Attendance Report</h1>
+        <p><strong>@Model.CourseName</strong> • @Model.BatchName</p>
+        <p>Date: @Model.Date.ToLongDateString() | Time: @Model.StartTime.ToString("hh:mm tt") - @Model.EndTime.ToString("hh:mm tt")</p>
+    </div>
+
     <!-- Header -->
-    <div class="mb-6">
+    <div class="mb-6 no-print">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-center gap-4">
                 <a asp-controller="Attendance" asp-action="TeacherReport" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors" title="Back">
@@ -20,19 +118,49 @@
                     </p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 text-sm">
-                <div class="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                    <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span class="font-medium text-indigo-700 dark:text-indigo-300">@Model.Date.ToLongDateString()</span>
+            <div class="flex items-center gap-2">
+                <!-- Export Buttons -->
+                <div class="flex items-center gap-2">
+                    <a asp-action="ExportSessionAttendanceToPdf" asp-route-slotId="@Model.SlotId" asp-route-date="@Model.Date.ToString("yyyy-MM-dd")"
+                       class="inline-flex items-center justify-center px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                       title="Export to PDF">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">PDF</span>
+                    </a>
+                    <a asp-action="ExportSessionAttendanceToExcel" asp-route-slotId="@Model.SlotId" asp-route-date="@Model.Date.ToString("yyyy-MM-dd")"
+                       class="inline-flex items-center justify-center px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                       title="Export to Excel">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Excel</span>
+                    </a>
+                    <button type="button" onclick="window.print()"
+                            class="inline-flex items-center justify-center px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            title="Print">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Print</span>
+                    </button>
                 </div>
-                <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span class="text-gray-700 dark:text-gray-300">@Model.StartTime.ToString("hh:mm tt") - @Model.EndTime.ToString("hh:mm tt")</span>
-                </div>
+            </div>
+        </div>
+        <!-- Date and Time badges -->
+        <div class="flex items-center gap-2 text-sm mt-4">
+            <div class="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="font-medium text-indigo-700 dark:text-indigo-300">@Model.Date.ToLongDateString()</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-gray-700 dark:text-gray-300">@Model.StartTime.ToString("hh:mm tt") - @Model.EndTime.ToString("hh:mm tt")</span>
             </div>
         </div>
     </div>
@@ -64,7 +192,7 @@
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <!-- Date Selection -->
-        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 no-print">
             <form asp-action="LoadByDate" method="post" class="flex flex-col sm:flex-row sm:items-end gap-4">
                 <input type="hidden" asp-for="SlotId" />
                 <input type="hidden" asp-for="CourseAssignmentId" />
@@ -107,7 +235,7 @@
             <input type="hidden" asp-for="EndTime" />
 
             <!-- Quick Actions -->
-            <div class="px-5 py-3 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-2">
+            <div class="px-5 py-3 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-2 no-print">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Quick Actions:</span>
                 <button type="button" onclick="markAll('Present')"
                         class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors">
@@ -127,7 +255,7 @@
 
             <!-- Students Table -->
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full" id="attendanceTable">
                     <thead class="bg-gray-50 dark:bg-gray-900/50">
                         <tr>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Roll No</th>
@@ -138,7 +266,16 @@
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @for (int i = 0; i < Model.Students.Count; i++)
                         {
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            var currentStatus = Model.Students[i].Status ?? "Not Marked";
+                            var statusClass = currentStatus switch
+                            {
+                                "Present" => "status-present",
+                                "Absent" => "status-absent",
+                                "Late" => "status-late",
+                                "Excused" => "status-excused",
+                                _ => ""
+                            };
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" data-status="@currentStatus">
                                 <td class="px-5 py-4 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                     @Model.Students[i].RollNumber
                                     <input type="hidden" asp-for="Students[i].StudentId" />
@@ -148,8 +285,9 @@
                                 <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
                                     @Model.Students[i].StudentName
                                 </td>
-                                <td class="px-5 py-4">
-                                    <div class="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+                                <td class="px-5 py-4 print-status-cell @statusClass">
+                                    <!-- Radio buttons (hidden when printing) -->
+                                    <div class="flex items-center justify-center gap-2 sm:gap-4 flex-wrap no-print">
                                         <label class="flex items-center gap-1.5 cursor-pointer group">
                                             <input type="radio" asp-for="Students[i].Status" value="Present" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700" />
                                             <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400">Present</span>
@@ -167,6 +305,8 @@
                                             <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">Excused</span>
                                         </label>
                                     </div>
+                                    <!-- Status text (shown when printing) -->
+                                    <span class="print-status-text hidden">@currentStatus</span>
                                 </td>
                             </tr>
                         }
@@ -189,7 +329,7 @@
             <!-- Footer Actions -->
             @if (Model.Students.Any())
             {
-                <div class="px-5 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="px-5 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
                     <div class="flex items-center gap-4 text-sm">
                         <div class="flex items-center gap-1.5">
                             <span class="w-3 h-3 rounded-full bg-green-500"></span>

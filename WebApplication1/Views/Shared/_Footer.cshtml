@@ -1,8 +1,12 @@
+@inject AMS.Services.IInstitutionService InstitutionService
+@{
+    var institution = await InstitutionService.GetInstitutionInfoAsync();
+}
 <footer class="app-footer">
     <div class="float-end d-none d-sm-inline">Version 1.0.0</div>
     <strong>
-        Copyright &copy; @DateTime.Now.Year 
-        <a href="#" class="text-decoration-none">Attendance Management System</a>.
+        Copyright &copy; @DateTime.Now.Year
+        <a href="#" class="text-decoration-none">@institution.Name</a>.
     </strong>
     All rights reserved.
 </footer>

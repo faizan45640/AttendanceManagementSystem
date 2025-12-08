@@ -36,6 +36,18 @@
 </style>
 
 <div class="space-y-6">
+    @if (TempData["error"] != null)
+    {
+        <div class="rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30">
+            <div class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-sm font-medium text-red-700 dark:text-red-400">@TempData["error"]</p>
+            </div>
+        </div>
+    }
+
     <!-- Header with Title and Actions -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between no-print">
         <div>
@@ -277,18 +289,55 @@
             </div>
         </div>
 
-        <!-- Filter Controls -->
-        <div class="flex justify-end">
-            <div class="inline-flex rounded-md shadow-sm" role="group">
-                <a href="@Url.Action("StudentReport", new { duration = "week", studentId = Model.SelectedStudentId, batchId = Model.SelectedBatchId, semesterId = Model.SelectedSemesterId, courseId = Model.SelectedCourseId, rollNumber = Model.SearchRollNumber })" class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white @(Model.Duration == "week" || string.IsNullOrEmpty(Model.Duration) ? "bg-gray-100 text-blue-700 dark:bg-gray-600" : "")">
-                    Weekly
-                </a>
-                <a href="@Url.Action("StudentReport", new { duration = "month", studentId = Model.SelectedStudentId, batchId = Model.SelectedBatchId, semesterId = Model.SelectedSemesterId, courseId = Model.SelectedCourseId, rollNumber = Model.SearchRollNumber })" class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white @(Model.Duration == "month" ? "bg-gray-100 text-blue-700 dark:bg-gray-600" : "")">
-                    Monthly
-                </a>
-                <a href="@Url.Action("StudentReport", new { duration = "all", studentId = Model.SelectedStudentId, batchId = Model.SelectedBatchId, semesterId = Model.SelectedSemesterId, courseId = Model.SelectedCourseId, rollNumber = Model.SearchRollNumber })" class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white @(Model.Duration == "all" ? "bg-gray-100 text-blue-700 dark:bg-gray-600" : "")">
-                    All Time
-                </a>
+        <!-- Duration Filter & Legend -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h4 class="font-semibold text-gray-800 dark:text-white/90">Attendance History</h4>
+                    <p class="text-sm text-gray-500">View class schedule and attendance status</p>
+                </div>
+                <div class="inline-flex rounded-lg border border-gray-200 p-1 dark:border-gray-700" role="group">
+                    <a href="@Url.Action("StudentReport", new { duration = "week", studentId = Model.SelectedStudentId, batchId = Model.SelectedBatchId, semesterId = Model.SelectedSemesterId, courseId = Model.SelectedCourseId, rollNumber = Model.SearchRollNumber })"
+                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors @(Model.Duration == "week" || string.IsNullOrEmpty(Model.Duration) ? "bg-indigo-600 text-white" : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700")">
+                        This Week
+                    </a>
+                    <a href="@Url.Action("StudentReport", new { duration = "month", studentId = Model.SelectedStudentId, batchId = Model.SelectedBatchId, semesterId = Model.SelectedSemesterId, courseId = Model.SelectedCourseId, rollNumber = Model.SearchRollNumber })"
+                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors @(Model.Duration == "month" ? "bg-indigo-600 text-white" : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700")">
+                        This Month
+                    </a>
+                    <a href="@Url.Action("StudentReport", new { duration = "all", studentId = Model.SelectedStudentId, batchId = Model.SelectedBatchId, semesterId = Model.SelectedSemesterId, courseId = Model.SelectedCourseId, rollNumber = Model.SearchRollNumber })"
+                       class="px-4 py-2 text-sm font-medium rounded-md transition-colors @(Model.Duration == "all" ? "bg-indigo-600 text-white" : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700")">
+                        All Time
+                    </a>
+                </div>
+            </div>
+
+            <!-- Status Legend -->
+            <div class="mt-4 flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <span class="inline-flex items-center gap-1.5 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                    <span class="text-gray-600 dark:text-gray-400">Present</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                    <span class="text-gray-600 dark:text-gray-400">Absent</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                    <span class="text-gray-600 dark:text-gray-400">Late</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    <span class="text-gray-600 dark:text-gray-400">Today/Excused</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    <span class="text-gray-600 dark:text-gray-400">Upcoming</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+                    <span class="text-gray-600 dark:text-gray-400">Pending (Not Marked)</span>
+                </span>
             </div>
         </div>
 
@@ -301,51 +350,109 @@
                     </svg>
                 </div>
                 <h3 class="text-sm font-medium text-gray-900 dark:text-white">No schedule found</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No active timetable or attendance records found.</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No active timetable or attendance records found for this period.</p>
             </div>
         }
         else
         {
-            <div class="space-y-8">
+            <div class="space-y-6">
                 @foreach (var week in Model.Weeks)
                 {
                     <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
-                        <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+                        <div class="border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 dark:border-gray-800 dark:from-indigo-900/20 dark:to-purple-900/20">
                             <h4 class="font-semibold text-gray-800 dark:text-white/90">
-                                Week of @week.WeekRange
+                                <svg class="inline-block w-5 h-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                @week.WeekRange
                             </h4>
                         </div>
-                        <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                            @foreach (var day in week.Days)
-                            {
-                                <div class="p-6">
-                                    <div class="mb-4 flex items-center gap-2">
-                                        <span class="font-medium text-gray-900 dark:text-white">@day.Date.ToString("dddd")</span>
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">@day.Date.ToString("MMM dd")</span>
-                                    </div>
-                                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+                        <!-- Table-based layout for cleaner view -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 w-32">Date</th>
+                                        <th scope="col" class="px-4 py-3">Course</th>
+                                        <th scope="col" class="px-4 py-3">Teacher</th>
+                                        <th scope="col" class="px-4 py-3 text-center">Time</th>
+                                        <th scope="col" class="px-4 py-3 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                    @foreach (var day in week.Days)
+                                    {
+                                        var isToday = day.Date == DateOnly.FromDateTime(DateTime.Now);
+                                        var isPast = day.Date < DateOnly.FromDateTime(DateTime.Now);
+                                        var isFuture = day.Date > DateOnly.FromDateTime(DateTime.Now);
+                                        var dayRowCount = day.Classes.Count;
+                                        var firstClass = true;
+
                                         @foreach (var cls in day.Classes)
                                         {
-                                            <div class="relative flex flex-col rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                                                <div class="mb-2 flex items-center justify-between">
-                                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                        @cls.StartTime.ToString("HH:mm") - @cls.EndTime.ToString("HH:mm")
+                                            <tr class="@(isToday ? "bg-blue-50/50 dark:bg-blue-900/10" : "") hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                @if (firstClass)
+                                                {
+                                                    <td rowspan="@dayRowCount" class="px-4 py-3 align-top border-r border-gray-100 dark:border-gray-700">
+                                                        <div class="@(isToday ? "text-indigo-600 dark:text-indigo-400 font-semibold" : "text-gray-900 dark:text-white") font-medium">
+                                                            @day.Date.ToString("ddd")
+                                                        </div>
+                                                        <div class="text-xs @(isToday ? "text-indigo-500" : "text-gray-500")">
+                                                            @day.Date.ToString("MMM dd")
+                                                        </div>
+                                                        @if (isToday)
+                                                        {
+                                                            <span class="mt-1 inline-block text-[10px] font-medium text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded dark:bg-indigo-900/30 dark:text-indigo-400">TODAY</span>
+                                                        }
+                                                    </td>
+                                                    firstClass = false;
+                                                }
+                                                <td class="px-4 py-3">
+                                                    <span class="font-medium text-gray-900 dark:text-white">@cls.CourseName</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                                                    @cls.TeacherName
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                        @cls.StartTime.ToString("hh:mm tt") - @cls.EndTime.ToString("hh:mm tt")
                                                     </span>
-                                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium @cls.StatusColor">
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium @cls.StatusColor">
+                                                        @if (cls.Status == "Present")
+                                                        {
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                                        }
+                                                        else if (cls.Status == "Absent")
+                                                        {
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                                        }
+                                                        else if (cls.Status == "Upcoming")
+                                                        {
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
+                                                        }
+                                                        else if (cls.Status == "Late")
+                                                        {
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
+                                                        }
+                                                        else if (cls.Status == "Today")
+                                                        {
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                                                        }
+                                                        else
+                                                        {
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                                        }
                                                         @cls.Status
                                                     </span>
-                                                </div>
-                                                <h5 class="font-medium text-gray-900 dark:text-white">
-                                                    @cls.CourseName
-                                                </h5>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                    @cls.TeacherName
-                                                </p>
-                                            </div>
+                                                </td>
+                                            </tr>
                                         }
-                                    </div>
-                                </div>
-                            }
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 }
