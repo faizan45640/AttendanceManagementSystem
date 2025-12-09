@@ -68,8 +68,8 @@ namespace AMS.Models.ViewModels
 
     public class StudentCourseAttendanceViewModel
     {
-        public int LateSessions { get; set; }
         public int CourseId { get; set; }
+        public int AssignmentId { get; set; }
         public int SemesterId { get; set; }
         public string CourseName { get; set; }
         public string SemesterName { get; set; }
@@ -77,6 +77,8 @@ namespace AMS.Models.ViewModels
         public int TotalSessions { get; set; }
         public int PresentSessions { get; set; }
         public int AbsentSessions { get; set; }
+        public int LateSessions { get; set; }
+        public int ExcusedSessions { get; set; }
         public double Percentage { get; set; }
         public List<AttendanceRecordViewModel> History { get; set; } = new List<AttendanceRecordViewModel>();
     }
