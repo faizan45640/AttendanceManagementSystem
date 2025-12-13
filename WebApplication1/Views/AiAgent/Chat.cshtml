@@ -1,0 +1,184 @@
+﻿@{
+    ViewData["Title"] = "AI Agent Chat";
+}
+
+<div class="p-4 sm:p-6 space-y-6" x-data="aiChatApp()">
+    <div class="flex flex-col gap-1">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">AI Agent Chat</h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Ask attendance questions or request attendance marking (teacher only).</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div class="text-sm font-medium text-gray-700 dark:text-gray-200">Conversation</div>
+            <button type="button" @@click="reset()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">Clear</button>
+        </div>
+
+        <div class="p-4 space-y-3 max-h-[60vh] overflow-y-auto" x-ref="scroll">
+            <template x-if="messages.length === 0">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Try:
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>"Who was absent last week?"</li>
+                        <li>"Show my attendance summary for this month"</li>
+                        <li>"Mark student 123 absent" (teacher; will ask confirmation)</li>
+                    </ul>
+                </div>
+            </template>
+
+            <template x-for="(m, idx) in messages" :key="idx">
+                <div class="flex" :class="m.role === 'user' ? 'justify-end' : 'justify-start'">
+                    <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap"
+                         :class="m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'"
+                         x-text="m.content"></div>
+                </div>
+            </template>
+
+            <template x-if="pending">
+                <div class="flex justify-start">
+                    <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                        Thinking...
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="requiresConfirmation">
+                <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-900/20 p-4">
+                    <div class="text-sm font-medium text-amber-800 dark:text-amber-200">Confirmation required</div>
+                    <div class="text-sm text-amber-700 dark:text-amber-300 mt-1" x-text="confirmationPrompt"></div>
+                    <div class="mt-3 flex gap-2">
+                        <button type="button" @@click="confirmLast()" :disabled="pending"
+                                class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium disabled:opacity-50">
+                            Confirm
+                        </button>
+                        <button type="button" @@click="cancelConfirmation()" :disabled="pending"
+                                class="px-4 py-2 rounded-lg border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-sm font-medium disabled:opacity-50">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="proposedSql">
+                <div class="mt-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+                    <div class="text-sm font-medium text-gray-800 dark:text-gray-200">SQL (read-only, audited)</div>
+                    <pre class="mt-2 text-xs overflow-x-auto p-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200" x-text="proposedSql"></pre>
+                </div>
+            </template>
+        </div>
+
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex gap-2">
+                <input type="text" x-model="draft" @@keydown.enter.prevent="send(false)"
+                       placeholder="Type your question..."
+                       class="flex-1 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                <button type="button" @@click="send(false)" :disabled="pending || !draft"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium disabled:opacity-50">
+                    Send
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Pilot: writes are mocked and require confirmation.</p>
+        </div>
+    </div>
+</div>
+
+<form id="__AjaxAntiForgeryForm" asp-antiforgery="true" style="display:none;"></form>
+
+@section Scripts {
+    <script>
+function aiChatApp() {
+    return {
+        messages: [],
+        draft: '',
+        pending: false,
+        requiresConfirmation: false,
+        confirmationPrompt: '',
+        proposedSql: '',
+        lastUserMessageForConfirmation: '',
+
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const el = this.$refs.scroll;
+                if (el) el.scrollTop = el.scrollHeight;
+            });
+        },
+
+        reset() {
+            this.messages = [];
+            this.draft = '';
+            this.pending = false;
+            this.requiresConfirmation = false;
+            this.confirmationPrompt = '';
+            this.proposedSql = '';
+            this.lastUserMessageForConfirmation = '';
+        },
+
+        cancelConfirmation() {
+            this.requiresConfirmation = false;
+            this.confirmationPrompt = '';
+        },
+
+        confirmLast() {
+            if (!this.lastUserMessageForConfirmation) return;
+            this.send(true, this.lastUserMessageForConfirmation);
+        },
+
+        async send(confirmed, overrideMessage) {
+            const message = (overrideMessage ?? this.draft ?? '').trim();
+            if (!message) return;
+
+            // If this is a new user send, append it.
+            if (!overrideMessage) {
+                this.messages.push({ role: 'user', content: message });
+                this.draft = '';
+            }
+
+            this.pending = true;
+            this.requiresConfirmation = false;
+            this.confirmationPrompt = '';
+            this.proposedSql = '';
+            this.scrollToBottom();
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const res = await fetch('@Url.Action("Send", "AiAgent")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        message,
+                        confirmed,
+                        history: this.messages.slice(-20)
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.assistantMessage) {
+                    this.messages.push({ role: 'assistant', content: data.assistantMessage });
+                } else if (!data.success) {
+                    this.messages.push({ role: 'assistant', content: data.message || 'Request failed.' });
+                }
+
+                if (data.requiresConfirmation) {
+                    this.requiresConfirmation = true;
+                    this.confirmationPrompt = data.confirmationPrompt || 'Confirm to proceed.';
+                    this.lastUserMessageForConfirmation = message;
+                }
+
+                if (data.proposedSql) {
+                    this.proposedSql = data.proposedSql;
+                }
+            } catch (e) {
+                this.messages.push({ role: 'assistant', content: 'Network error. Please try again.' });
+            } finally {
+                this.pending = false;
+                this.scrollToBottom();
+            }
+        }
+    }
+}
+    </script>
+}

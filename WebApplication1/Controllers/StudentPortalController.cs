@@ -1,6 +1,5 @@
-﻿
+﻿using AMS.Models;
 using AMS.Helpers;
-using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using AMS.Services;
@@ -327,84 +326,7 @@ namespace AMS.Controllers
             return View(slots.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime).ToList());
         }
 
-        public async Task<IActionResult> MyCourses()
-        {
-            var student = await GetCurrentStudentAsync();
-            if (student == null) return RedirectToAction("Login", "Auth");
-
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            var currentSemester = await _context.Semesters
-                .FirstOrDefaultAsync(s => s.StartDate <= today && s.EndDate >= today && s.IsActive == true);
-
-            var model = new List<StudentCourseViewModel>();
-
-            if (currentSemester != null)
-            {
-                // Get Enrollments
-                var enrollments = await _context.Enrollments
-                    .Include(e => e.Course)
-                    .Where(e => e.StudentId == student.StudentId && e.Status == "Active")
-                    .ToListAsync();
-
-                foreach (var enrollment in enrollments)
-                {
-                    var targetBatchId = enrollment.BatchId ?? student.BatchId;
-
-                    // Find Assignment
-                    var assignment = await _context.CourseAssignments
-                        .Include(ca => ca.Teacher)
-                        .FirstOrDefaultAsync(ca => ca.CourseId == enrollment.CourseId &&
-                                                   ca.BatchId == targetBatchId &&
-                                                   ca.SemesterId == currentSemester.SemesterId);
-
-                    if (assignment != null)
-                    {
-                        // Calculate Attendance
-                        var attendances = await _context.Attendances
-                            .Include(a => a.Session)
-                            .Where(a => a.StudentId == student.StudentId &&
-                                        a.Session.CourseAssignmentId == assignment.AssignmentId)
-                            .ToListAsync();
-
-                        var total = attendances.Count;
-                        var present = attendances.Count(a => a.Status == "Present");
-                        var percentage = total > 0 ? (double)present / total * 100 : 0;
-
-                        // Calculate Remaining Classes
-                        int remaining = 0;
-                        var slots = await _context.TimetableSlots
-                             .Include(ts => ts.Timetable)
-                             .Where(ts => ts.CourseAssignmentId == assignment.AssignmentId && ts.Timetable.IsActive == true)
-                             .ToListAsync();
-
-                        if (currentSemester.EndDate != default)
-                        {
-                            var checkDate = today.AddDays(1); // Start from tomorrow
-                            while (checkDate <= currentSemester.EndDate)
-                            {
-                                int dow = (int)checkDate.DayOfWeek;
-                                remaining += slots.Count(s => s.DayOfWeek == dow);
-                                checkDate = checkDate.AddDays(1);
-                            }
-                        }
-
-                        model.Add(new StudentCourseViewModel
-                        {
-                            CourseName = enrollment.Course.CourseName,
-                            CourseCode = enrollment.Course.CourseCode,
-                            TeacherName = assignment.Teacher != null ? $"{assignment.Teacher.FirstName} {assignment.Teacher.LastName}" : "N/A",
-                            TotalClasses = total,
-                            PresentClasses = present,
-                            AttendancePercentage = percentage,
-                            ClassesRemaining = remaining,
-                            TotalSemesterClasses = total + remaining
-                        });
-                    }
-                }
-            }
-
-            return View(model);
-        }
+        // NOTE: MyCourses is implemented in the Student Self-Enrollment section below.
 
         // ============== PDF EXPORT METHODS ==============
 
@@ -1261,5 +1183,452 @@ namespace AMS.Controllers
                 _ => ""
             };
         }
+
+        #region Student Self-Enrollment
+
+        /// <summary>
+        /// Display My Courses page with enrolled and available courses
+        /// </summary>
+        [HttpGet]
+        public IActionResult MyCourses()
+        {
+            // Client-side page; data loads from GetMyCoursesJson
+            return View();
+        }
+
+        /// <summary>
+        /// Enroll student in a course
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EnrollInCourse(int courseId, int semesterId, int? batchId)
+        {
+            var student = await GetCurrentStudentAsync();
+            if (student == null)
+                return Json(new { success = false, message = "Student not found" });
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            // Validate semester is active and current
+            var semester = await _context.Semesters.FindAsync(semesterId);
+            if (semester == null || semester.IsActive != true)
+                return Json(new { success = false, message = "Invalid semester" });
+
+            if (semester.EndDate < today)
+                return Json(new { success = false, message = "Cannot enroll: Semester has ended" });
+
+            // Check enrollment deadline (halfway through semester)
+            if (semester.StartDate != default && semester.EndDate != default)
+            {
+                var totalDays = semester.EndDate.DayNumber - semester.StartDate.DayNumber;
+                if (totalDays >= 0)
+                {
+                    var enrollmentDeadline = semester.StartDate.AddDays(totalDays / 2);
+                    if (today > enrollmentDeadline)
+                        return Json(new { success = false, message = "Enrollment period has ended. Contact admin for late enrollment." });
+                }
+            }
+
+            // Check if already enrolled
+            var existingEnrollment = await _context.Enrollments
+                .FirstOrDefaultAsync(e => e.StudentId == student.StudentId &&
+                                         e.CourseId == courseId &&
+                                         e.SemesterId == semesterId);
+
+            if (existingEnrollment != null)
+                return Json(new { success = false, message = "You are already enrolled in this course" });
+
+            // Check for timetable conflicts
+            var courseAssignment = await _context.CourseAssignments
+                .Include(ca => ca.TimetableSlots)
+                .FirstOrDefaultAsync(ca => ca.CourseId == courseId &&
+                                          ca.SemesterId == semesterId &&
+                                          ca.IsActive == true);
+
+            if (courseAssignment == null)
+                return Json(new { success = false, message = "Course is not available this semester" });
+
+            // Get student's current schedule
+            var studentEnrollments = await _context.Enrollments
+                .Where(e => e.StudentId == student.StudentId && e.SemesterId == semesterId && e.Status == "Active")
+                .Select(e => e.CourseId)
+                .ToListAsync();
+
+            var studentSlots = await _context.TimetableSlots
+                .Include(ts => ts.CourseAssignment)
+                .Where(ts => studentEnrollments.Contains(ts.CourseAssignment.CourseId) &&
+                            ts.CourseAssignment.SemesterId == semesterId &&
+                            ts.CourseAssignment.IsActive == true)
+                .ToListAsync();
+
+            // Check for conflicts
+            foreach (var newSlot in courseAssignment.TimetableSlots)
+            {
+                if (!newSlot.DayOfWeek.HasValue || !newSlot.StartTime.HasValue || !newSlot.EndTime.HasValue)
+                    continue;
+
+                foreach (var existingSlot in studentSlots)
+                {
+                    if (!existingSlot.DayOfWeek.HasValue || !existingSlot.StartTime.HasValue || !existingSlot.EndTime.HasValue)
+                        continue;
+
+                    if (existingSlot.DayOfWeek.Value == newSlot.DayOfWeek.Value)
+                    {
+                        // Check time overlap
+                        if (newSlot.StartTime.Value < existingSlot.EndTime.Value &&
+                            newSlot.EndTime.Value > existingSlot.StartTime.Value)
+                        {
+                            var conflictCourse = await _context.Courses.FindAsync(existingSlot.CourseAssignment?.CourseId);
+                            return Json(new
+                            {
+                                success = false,
+                                message = $"Schedule conflict with {conflictCourse?.CourseName ?? "another course"} on {GetDayName(newSlot.DayOfWeek.Value)}"
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Create enrollment
+            var enrollment = new Enrollment
+            {
+                StudentId = student.StudentId,
+                CourseId = courseId,
+                SemesterId = semesterId,
+                BatchId = batchId ?? courseAssignment.BatchId,
+                Status = "Active"
+            };
+
+            _context.Enrollments.Add(enrollment);
+            await _context.SaveChangesAsync();
+
+            var course = await _context.Courses.FindAsync(courseId);
+            return Json(new { success = true, message = $"Successfully enrolled in {course?.CourseName}" });
+        }
+
+        /// <summary>
+        /// Unenroll student from a course
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnenrollFromCourse(int enrollmentId)
+        {
+            var student = await GetCurrentStudentAsync();
+            if (student == null)
+                return Json(new { success = false, message = "Student not found" });
+
+            var enrollment = await _context.Enrollments
+                .Include(e => e.Course)
+                .Include(e => e.Semester)
+                .FirstOrDefaultAsync(e => e.EnrollmentId == enrollmentId && e.StudentId == student.StudentId);
+
+            if (enrollment == null)
+                return Json(new { success = false, message = "Enrollment not found" });
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            // Check if semester has ended
+            if (enrollment.Semester?.EndDate < today)
+                return Json(new { success = false, message = "Cannot unenroll: Semester has ended" });
+
+            // Check if any attendance has been marked
+            var hasAttendance = await _context.Attendances
+                .Include(a => a.Session)
+                .ThenInclude(s => s.CourseAssignment)
+                .AnyAsync(a => a.StudentId == student.StudentId &&
+                              a.Session.CourseAssignment.CourseId == enrollment.CourseId &&
+                              a.Session.CourseAssignment.SemesterId == enrollment.SemesterId);
+
+            if (hasAttendance)
+                return Json(new { success = false, message = "Cannot unenroll: Attendance records exist for this course" });
+
+            // Remove enrollment
+            _context.Enrollments.Remove(enrollment);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = $"Successfully unenrolled from {enrollment.Course?.CourseName}" });
+        }
+
+        /// <summary>
+        /// Get course details for enrollment modal (JSON API)
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetCourseDetails(int assignmentId)
+        {
+            var assignment = await _context.CourseAssignments
+                .Include(ca => ca.Course)
+                .Include(ca => ca.Teacher)
+                .Include(ca => ca.Batch)
+                .Include(ca => ca.Semester)
+                .Include(ca => ca.TimetableSlots)
+                .FirstOrDefaultAsync(ca => ca.AssignmentId == assignmentId);
+
+            if (assignment == null)
+                return Json(new { success = false, message = "Course not found" });
+
+            return Json(new
+            {
+                success = true,
+                course = new
+                {
+                    assignmentId = assignment.AssignmentId,
+                    courseId = assignment.CourseId,
+                    courseCode = assignment.Course?.CourseCode,
+                    courseName = assignment.Course?.CourseName,
+                    creditHours = assignment.Course?.CreditHours,
+                    teacherName = assignment.Teacher != null ? $"{assignment.Teacher.FirstName} {assignment.Teacher.LastName}" : "TBA",
+                    batchName = assignment.Batch?.BatchName,
+                    batchId = assignment.BatchId,
+                    semesterId = assignment.SemesterId,
+                    semesterName = assignment.Semester != null ? $"{assignment.Semester.SemesterName} {assignment.Semester.Year}" : "",
+                    schedule = assignment.TimetableSlots?.Select(ts => new
+                    {
+                        dayOfWeek = ts.DayOfWeek,
+                        dayName = GetDayName(ts.DayOfWeek ?? 0),
+                        startTime = ts.StartTime?.ToString("h:mm tt"),
+                        endTime = ts.EndTime?.ToString("h:mm tt")
+                    }).OrderBy(s => s.dayOfWeek).ToList()
+                }
+            });
+        }
+
+        /// <summary>
+        /// Get all enrollment data as JSON for client-side rendering
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetMyCoursesJson(int? semesterId)
+        {
+            var student = await GetCurrentStudentAsync();
+            if (student == null)
+                return Json(new { success = false, message = "Student not found" });
+
+            var batch = await _context.Batches.FindAsync(student.BatchId);
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            // Get current semester
+            var currentSemester = await _context.Semesters
+                .FirstOrDefaultAsync(s => s.StartDate <= today && s.EndDate >= today && s.IsActive == true);
+
+            var selectedSemesterId = semesterId ?? currentSemester?.SemesterId;
+
+            // Get semesters list
+            var semesters = await _context.Semesters
+                .Where(s => s.IsActive == true)
+                .OrderByDescending(s => s.StartDate)
+                .Select(s => new { s.SemesterId, semesterName = $"{s.SemesterName} {s.Year}" })
+                .ToListAsync();
+
+            // Get enrolled courses
+            var enrollments = await _context.Enrollments
+                .Include(e => e.Course)
+                .Include(e => e.Semester)
+                .Where(e => e.StudentId == student.StudentId &&
+                           (selectedSemesterId == null || e.SemesterId == selectedSemesterId))
+                .ToListAsync();
+
+            var enrolledCourses = new List<object>();
+            foreach (var enrollment in enrollments)
+            {
+                var targetBatchId = enrollment.BatchId ?? student.BatchId;
+                var assignment = await _context.CourseAssignments
+                    .Include(ca => ca.Teacher)
+                    .Include(ca => ca.Batch)
+                    .Include(ca => ca.TimetableSlots)
+                    .FirstOrDefaultAsync(ca => ca.CourseId == enrollment.CourseId &&
+                                              ca.SemesterId == enrollment.SemesterId &&
+                                              ca.BatchId == targetBatchId &&
+                                              ca.IsActive == true);
+
+                var attendanceQuery = await _context.Attendances
+                    .Include(a => a.Session)
+                    .ThenInclude(s => s.CourseAssignment)
+                    .Where(a => a.StudentId == student.StudentId &&
+                               a.Session.CourseAssignment.CourseId == enrollment.CourseId &&
+                               a.Session.CourseAssignment.SemesterId == enrollment.SemesterId)
+                    .ToListAsync();
+
+                var totalSessions = attendanceQuery.Count;
+                var presentSessions = attendanceQuery.Count(a => a.Status == "Present" || a.Status == "Late" || a.Status == "Excused");
+
+                var semester = await _context.Semesters.FindAsync(enrollment.SemesterId);
+                bool canUnenroll = totalSessions == 0 && (semester == null || semester.EndDate >= today);
+                string unenrollBlockedReason = totalSessions > 0
+                    ? $"Cannot unenroll: {totalSessions} attendance record(s) exist"
+                    : (semester?.EndDate < today ? "Cannot unenroll: Semester has ended" : "");
+
+                enrolledCourses.Add(new
+                {
+                    enrollmentId = enrollment.EnrollmentId,
+                    courseId = enrollment.CourseId ?? 0,
+                    courseCode = enrollment.Course?.CourseCode ?? "",
+                    courseName = enrollment.Course?.CourseName ?? "",
+                    creditHours = enrollment.Course?.CreditHours ?? 0,
+                    teacherName = assignment?.Teacher != null ? $"{assignment.Teacher.FirstName} {assignment.Teacher.LastName}" : "TBA",
+                    batchId = assignment?.BatchId ?? (targetBatchId ?? 0),
+                    batchName = assignment?.Batch?.BatchName ?? "",
+                    batchYear = assignment?.Batch?.Year,
+                    semesterName = semester != null ? $"{semester.SemesterName} {semester.Year}" : "",
+                    semesterId = enrollment.SemesterId ?? 0,
+                    status = enrollment.Status ?? "Active",
+                    totalSessions,
+                    presentSessions,
+                    attendancePercentage = totalSessions > 0 ? Math.Round((double)presentSessions / totalSessions * 100, 0) : 0,
+                    canUnenroll,
+                    unenrollBlockedReason,
+                    schedule = assignment?.TimetableSlots == null
+                        ? new List<object>()
+                        : assignment.TimetableSlots
+                            .Select(ts => new
+                            {
+                                dayOfWeek = ts.DayOfWeek ?? 0,
+                                dayName = GetDayName(ts.DayOfWeek ?? 0),
+                                startTime = ts.StartTime?.ToString("h:mm tt") ?? "",
+                                endTime = ts.EndTime?.ToString("h:mm tt") ?? ""
+                            })
+                            .OrderBy(s => s.dayOfWeek)
+                            .Select(s => (object)s)
+                            .ToList()
+                });
+            }
+
+            // Get available courses (only for current semester)
+            var availableCourses = new List<object>();
+            if (currentSemester != null && selectedSemesterId == currentSemester.SemesterId)
+            {
+                var enrolledCourseIds = enrollments
+                    .Where(e => e.SemesterId == currentSemester.SemesterId)
+                    .Select(e => e.CourseId)
+                    .ToList();
+
+                // Get student's schedule for conflict detection
+                var studentSlots = await _context.TimetableSlots
+                    .Include(ts => ts.CourseAssignment)
+                    .Where(ts => enrolledCourseIds.Contains(ts.CourseAssignment.CourseId) &&
+                                ts.CourseAssignment.SemesterId == currentSemester.SemesterId &&
+                                ts.CourseAssignment.IsActive == true)
+                    .ToListAsync();
+
+                var availableAssignments = await _context.CourseAssignments
+                    .Include(ca => ca.Course)
+                    .Include(ca => ca.Teacher)
+                    .Include(ca => ca.Batch)
+                    .Include(ca => ca.TimetableSlots)
+                    .Where(ca => ca.SemesterId == currentSemester.SemesterId && ca.IsActive == true)
+                    .ToListAsync();
+
+                // Check enrollment deadline (halfway through semester)
+                bool enrollmentOpen = true;
+                string deadlineMessage = "";
+                if (currentSemester.StartDate != default && currentSemester.EndDate != default)
+                {
+                    var totalDays = currentSemester.EndDate.DayNumber - currentSemester.StartDate.DayNumber;
+                    if (totalDays >= 0)
+                    {
+                        var enrollmentDeadline = currentSemester.StartDate.AddDays(totalDays / 2);
+                        if (today > enrollmentDeadline)
+                        {
+                            enrollmentOpen = false;
+                            deadlineMessage = "Enrollment period has ended";
+                        }
+                    }
+                }
+
+                foreach (var assignment in availableAssignments)
+                {
+                    if (enrolledCourseIds.Contains(assignment.CourseId))
+                        continue;
+
+                    bool canEnroll = enrollmentOpen;
+                    string blockReason = deadlineMessage;
+
+                    // Check for schedule conflicts
+                    if (canEnroll)
+                    {
+                        foreach (var slot in assignment.TimetableSlots)
+                        {
+                            if (!slot.DayOfWeek.HasValue || !slot.StartTime.HasValue || !slot.EndTime.HasValue)
+                                continue;
+
+                            foreach (var existing in studentSlots)
+                            {
+                                if (!existing.DayOfWeek.HasValue || !existing.StartTime.HasValue || !existing.EndTime.HasValue)
+                                    continue;
+
+                                if (existing.DayOfWeek.Value == slot.DayOfWeek.Value)
+                                {
+                                    if (slot.StartTime.Value < existing.EndTime.Value && slot.EndTime.Value > existing.StartTime.Value)
+                                    {
+                                        canEnroll = false;
+                                        blockReason = "Schedule conflict with existing course";
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!canEnroll) break;
+                        }
+                    }
+
+                    availableCourses.Add(new
+                    {
+                        courseAssignmentId = assignment.AssignmentId,
+                        courseId = assignment.CourseId ?? 0,
+                        courseCode = assignment.Course?.CourseCode ?? "",
+                        courseName = assignment.Course?.CourseName ?? "",
+                        creditHours = assignment.Course?.CreditHours ?? 0,
+                        teacherName = assignment.Teacher != null ? $"{assignment.Teacher.FirstName} {assignment.Teacher.LastName}" : "TBA",
+                        batchName = assignment.Batch?.BatchName ?? "",
+                        batchYear = assignment.Batch?.Year,
+                        batchId = assignment.BatchId ?? 0,
+                        semesterId = currentSemester.SemesterId,
+                        semesterName = $"{currentSemester.SemesterName} {currentSemester.Year}",
+                        isOwnBatch = assignment.BatchId == student.BatchId,
+                        canEnroll,
+                        enrollBlockedReason = blockReason,
+                        schedule = assignment.TimetableSlots == null
+                            ? new List<object>()
+                            : assignment.TimetableSlots
+                                .Select(ts => new
+                                {
+                                    dayOfWeek = ts.DayOfWeek ?? 0,
+                                    dayName = GetDayName(ts.DayOfWeek ?? 0),
+                                    startTime = ts.StartTime?.ToString("h:mm tt") ?? "",
+                                    endTime = ts.EndTime?.ToString("h:mm tt") ?? ""
+                                })
+                                .OrderBy(s => s.dayOfWeek)
+                                .Select(s => (object)s)
+                                .ToList()
+                    });
+                }
+
+                // Sort: own batch first
+                availableCourses = availableCourses
+                    .OrderByDescending(c => ((dynamic)c).isOwnBatch)
+                    .ThenBy(c => ((dynamic)c).courseName)
+                    .ToList();
+            }
+
+            return Json(new
+            {
+                success = true,
+                studentName = $"{student.FirstName} {student.LastName}",
+                rollNumber = student.RollNumber,
+                batchName = batch?.BatchName ?? "N/A",
+                batchId = student.BatchId,
+                currentSemesterId = currentSemester?.SemesterId,
+                currentSemesterName = currentSemester != null ? $"{currentSemester.SemesterName} {currentSemester.Year}" : "N/A",
+                selectedSemesterId,
+                semesters,
+                enrolledCourses,
+                availableCourses,
+                stats = new
+                {
+                    enrolledCount = enrolledCourses.Count,
+                    totalCredits = enrolledCourses.Sum(c => (int)((dynamic)c).creditHours),
+                    availableCount = availableCourses.Count
+                }
+            });
+        }
+
+        #endregion
     }
 }

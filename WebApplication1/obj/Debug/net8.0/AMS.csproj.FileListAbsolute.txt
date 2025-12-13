@@ -177,3 +177,17 @@ C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\W
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\RBush.dll
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\SixLabors.Fonts.dll
 C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\System.IO.Packaging.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.Bcl.HashCode.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.Extensions.AI.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.Extensions.AI.Abstractions.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.Extensions.AI.OpenAI.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.Extensions.VectorData.Abstractions.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.SemanticKernel.Abstractions.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.SemanticKernel.Connectors.Google.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.SemanticKernel.Connectors.OpenAI.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\Microsoft.SemanticKernel.Core.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\OpenAI.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\System.Linq.AsyncEnumerable.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\System.Net.ServerSentEvents.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\System.Numerics.Tensors.dll
+C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\bin\Debug\net8.0\System.Threading.Channels.dll
