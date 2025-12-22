@@ -36,16 +36,15 @@ public sealed class AiAgentController : Controller
 
         var result = await _attendanceHybridService.ChatAsync(User, req, cancellationToken);
 
+        // Hide SQL queries and raw data from all users (security: no one sees generated SQL)
         return Json(new
         {
             success = result.Success,
             message = result.Message,
             assistantMessage = result.AssistantMessage,
             requiresConfirmation = result.RequiresConfirmation,
-            confirmationPrompt = result.ConfirmationPrompt,
-            auditDecision = result.AuditDecision,
-            proposedSql = result.ProposedSql,
-            rowsPreview = result.RowsPreview
+            confirmationPrompt = result.ConfirmationPrompt
+            // SQL, audit decision, and raw rows are intentionally hidden from all users
         });
     }
 }

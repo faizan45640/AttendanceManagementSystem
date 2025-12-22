@@ -19,9 +19,30 @@
                 <div class="text-sm text-gray-500 dark:text-gray-400">
                     Try:
                     <ul class="list-disc pl-5 mt-2 space-y-1">
-                        <li>"Who was absent last week?"</li>
-                        <li>"Show my attendance summary for this month"</li>
-                        <li>"Mark student 123 absent" (teacher; will ask confirmation)</li>
+                        @if (User.IsInRole("Teacher"))
+                        {
+                            <li>"Show attendance summary for my courses this week"</li>
+                            <li>"Which students were absent in CS101 last week?"</li>
+                            <li>"Mark student 123 absent" (will ask confirmation)</li>
+                        }
+                        else if (User.IsInRole("Student"))
+                        {
+                            <li>"Show my attendance summary for this month"</li>
+                            <li>"Which courses am I low in attendance?"</li>
+                            <li>"How many classes are remaining this semester?"</li>
+                        }
+                        else if (User.IsInRole("Admin"))
+                        {
+                            <li>"Show attendance summary for this semester"</li>
+                            <li>"Which courses have the highest absentee rate?"</li>
+                            <li>"List inactive students and their batches"</li>
+                        }
+                        else
+                        {
+                            <li>"Show attendance summary"</li>
+                            <li>"Which students were absent last week?"</li>
+                            <li>"Show timetable for this semester"</li>
+                        }
                     </ul>
                 </div>
             </template>

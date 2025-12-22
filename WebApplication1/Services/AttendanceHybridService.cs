@@ -50,6 +50,50 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
 {
     private const int DefaultRowLimit = 200;
 
+    // Heuristic intent detection keywords (kept minimal + safe).
+    private static readonly string[] DomainKeywords =
+    [
+        "attendance",
+        "present",
+        "absent",
+        "late",
+        "course",
+        "courses",
+        "enroll",
+        "enrolled",
+        "enrollment",
+        "semester",
+        "session",
+        "classes",
+        "class",
+        "timetable",
+        "teacher",
+        "teachers",
+        "student",
+        "students",
+        "batch",
+        "roll",
+        "report",
+        "percentage",
+        "%"
+    ];
+
+    private static readonly string[] SmallTalkKeywords =
+    [
+        "hi",
+        "hello",
+        "hey",
+        "good morning",
+        "good afternoon",
+        "good evening",
+        "how are you",
+        "what's up",
+        "whats up",
+        "thanks",
+        "thank you",
+        "bye"
+    ];
+
     private readonly ApplicationDbContext _db;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AttendanceHybridService> _logger;
@@ -107,6 +151,11 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         // Strategy selection (explicit classification is acceptable per requirements).
         var intent = ClassifyIntent(request.Message);
 
+        if (intent == HybridIntent.SmallTalk)
+        {
+            return await RunSmallTalkAsync(actor, request, cancellationToken);
+        }
+
         if (intent == HybridIntent.Write)
         {
             if (!actor.IsTeacher)
@@ -130,6 +179,39 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
 
         // Read/query path
         return await RunSqlWriterAuditorFlowAsync(actor, request, cancellationToken);
+    }
+
+    private async Task<AttendanceHybridChatResponse> RunSmallTalkAsync(ActorContext actor, AttendanceHybridChatRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var kernel = CreateKernel(includeWritePlugin: false);
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+
+            var roleContext = actor.IsStudent ? "You are chatting with a STUDENT."
+                            : actor.IsTeacher ? "You are chatting with a TEACHER."
+                            : actor.IsAdmin ? "You are chatting with an ADMIN."
+                            : "You are chatting with a user.";
+
+            var history = BuildChatHistory(request.History);
+            history.AddSystemMessage(
+                "You are a friendly attendance assistant inside an academic management system.\n" +
+                $"{roleContext}\n" +
+                "Rules:\n" +
+                "- This message is NOT a database query. Do NOT generate or mention SQL.\n" +
+                "- Reply naturally and briefly.\n" +
+                "- If the user asks for attendance/courses/teachers later, you can help with that.\n"
+            );
+            history.AddUserMessage(request.Message);
+
+            var assistant = await chat.GetChatMessageContentAsync(history, new PromptExecutionSettings(), kernel, cancellationToken);
+            return new AttendanceHybridChatResponse(true, "OK", AssistantMessage: assistant.Content ?? "Hello! How can I help you today?");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "AI small-talk flow failed.");
+            return new AttendanceHybridChatResponse(true, "OK", AssistantMessage: "Hi! How can I help you with attendance or courses?");
+        }
     }
 
     private async Task<AttendanceHybridChatResponse> RunManagerAgentForWriteAsync(ActorContext actor, AttendanceHybridChatRequest request, CancellationToken cancellationToken)
@@ -222,12 +304,19 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         var kernel = CreateKernel(includeWritePlugin: false);
         var chat = kernel.GetRequiredService<IChatCompletionService>();
 
-        var schema = GetAttendanceSchemaSummary();
+        var schema = GetAttendanceSchemaSummary(actor);
         var requiredFilters = GetRequiredSqlFilters(actor);
+
+        // Tell the LLM who is asking
+        var roleLabel = actor.IsStudent ? "STUDENT"
+                      : actor.IsTeacher ? "TEACHER"
+                      : actor.IsAdmin ? "ADMIN"
+                      : "USER";
 
         var history = BuildChatHistory(request.History);
         history.AddSystemMessage(
             "You are SqlWriterAgent. You MUST output ONLY a single SQL SELECT statement for SQL Server.\n" +
+            $"The current user is a {roleLabel}.\n" +
             "Rules:\n" +
             "- Output ONLY SQL text. No markdown, no explanations.\n" +
             "- Must be read-only: SELECT (optionally WITH CTE).\n" +
@@ -306,13 +395,20 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
             .Select(r => string.Join(", ", r.Select(kv => $"{kv.Key}={kv.Value}")))
             .ToList();
 
+        // Determine user role for personalized responses
+        var roleContext = actor.IsStudent ? "You are chatting with a STUDENT. Use 'you/your' when referring to their data (your courses, your attendance, your teachers)."
+                        : actor.IsTeacher ? "You are chatting with a TEACHER. Use 'you/your' when referring to their data (your courses, your students, your sessions)."
+                        : actor.IsAdmin ? "You are chatting with an ADMIN who has full system access."
+                        : "You are chatting with a user.";
+
         var history = BuildChatHistory(request.History);
         history.AddSystemMessage(
             "You are a helpful attendance assistant. Summarize the query results in plain language.\n" +
             "Rules:\n" +
             "- Keep it short.\n" +
             "- If there are 0 rows, say so and suggest a follow-up filter.\n" +
-            "- Do not output SQL.\n"
+            "- Do not output SQL.\n" +
+            $"- {roleContext}\n"
         );
 
         history.AddUserMessage(
@@ -330,7 +426,6 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         var modelId = _configuration["Gemini:ModelId"];
         if (string.IsNullOrWhiteSpace(modelId))
         {
-            modelId = "gemini-2.0-flash";
         }
 
         var apiKey = _configuration["Gemini:ApiKey"];
@@ -379,6 +474,15 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
     {
         var m = message.ToLowerInvariant();
 
+        // Small-talk intent: greetings/pleasantries with no attendance-domain terms.
+        // Keeps UX responsive and avoids running SQL for casual chat.
+        var hasDomain = DomainKeywords.Any(k => m.Contains(k));
+        var hasSmallTalk = SmallTalkKeywords.Any(k => m.Contains(k));
+        if (hasSmallTalk && !hasDomain)
+        {
+            return HybridIntent.SmallTalk;
+        }
+
         // Write intent: explicit verbs + attendance status terms.
         if (m.Contains("mark") && m.Contains("attendance")) return HybridIntent.Write;
         if (m.Contains("mark") && (m.Contains("present") || m.Contains("absent") || m.Contains("late"))) return HybridIntent.Write;
@@ -388,42 +492,112 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         return HybridIntent.Read;
     }
 
-    private static string GetAttendanceSchemaSummary()
+    private static string GetAttendanceSchemaSummary(ActorContext actor)
     {
-        // Keep this intentionally short + allowlisted.
-        return string.Join("\n", new[]
+        // IMPORTANT: This is a static schema prompt for the AI pilot.
+        // It is intentionally limited to the tables allowed by SqlSafetyAuditor.AllowedTables.
+        // Keeping it static avoids querying INFORMATION_SCHEMA on every LLM call.
+
+        var sb = new StringBuilder();
+
+        sb.AppendLine("=== AI PILOT ALLOWED SCHEMA (SQL Server) ===");
+        sb.AppendLine("Use ONLY the tables/columns listed below. Do NOT invent table names.");
+        sb.AppendLine("You may use WITH (CTEs) for calculations, but CTEs must be built ONLY from these real tables.");
+        sb.AppendLine();
+
+        // These columns are aligned to the user's DB schema dump.
+        sb.AppendLine("TABLES:");
+        sb.AppendLine("- Attendance(AttendanceId, MarkedBy, SessionId, Status, StudentId)");
+        sb.AppendLine("- Sessions(CourseAssignmentId, CreatedBy, EndTime, SessionDate, SessionId, StartTime)");
+        sb.AppendLine("- Courses(CourseCode, CourseId, CourseName, CreditHours, IsActive)");
+        sb.AppendLine("- CourseAssignments(AssignmentId, BatchId, CourseId, IsActive, SemesterId, TeacherId)");
+        sb.AppendLine("- Enrollments(BatchId, CourseId, EnrollmentId, SemesterId, Status, StudentId)");
+        sb.AppendLine("- Semesters(EndDate, IsActive, SemesterId, SemesterName, StartDate, Year)");
+        sb.AppendLine("- Students(BatchId, FirstName, IsActive, LastName, RollNumber, StudentId, UserId)");
+        sb.AppendLine("- Teachers(FirstName, IsActive, LastName, TeacherId, UserId)");
+        sb.AppendLine("- Timetables(BatchId, IsActive, SemesterId, TimetableId)");
+        sb.AppendLine("- TimetableSlots(CourseAssignmentId, DayOfWeek, EndTime, SlotId, StartTime, TimetableId)");
+        sb.AppendLine();
+
+        if (actor.IsStudent)
         {
-            "- Sessions(SessionId, CourseAssignmentId, SessionDate, StartTime)",
-            "- Attendance(AttendanceId, SessionId, StudentId, Status)",
-            "- Students(StudentId, UserId, FirstName, LastName, RollNumber, BatchId)",
-            "- Teachers(TeacherId, UserId, FirstName, LastName)",
-            "- CourseAssignments(AssignmentId, CourseId, TeacherId, SemesterId, BatchId)",
-            "- Courses(CourseId, CourseName, CourseCode, CreditHours)",
-            "- Semesters(SemesterId, SemesterName, StartDate, EndDate)",
-            "- Enrollments(EnrollmentId, StudentId, CourseId, SemesterId, BatchId, Status)",
-        });
+            sb.AppendLine("ROLE: STUDENT");
+            sb.AppendLine("- You can query your own data only.");
+            sb.AppendLine("- You may see teacher names ONLY for the courses you are enrolled in.");
+            sb.AppendLine();
+            sb.AppendLine("STUDENT JOIN PATTERNS (must include @studentId):");
+            sb.AppendLine("- Your courses: Enrollments e WHERE e.StudentId=@studentId JOIN Courses c ON c.CourseId=e.CourseId");
+            sb.AppendLine("- Your teachers: Enrollments e WHERE e.StudentId=@studentId");
+            sb.AppendLine("  JOIN CourseAssignments ca ON ca.CourseId=e.CourseId AND ca.BatchId=e.BatchId AND ca.SemesterId=e.SemesterId");
+            sb.AppendLine("  JOIN Teachers t ON t.TeacherId=ca.TeacherId");
+            sb.AppendLine("- Your attendance per course: Attendance a WHERE a.StudentId=@studentId");
+            sb.AppendLine("  JOIN Sessions s ON s.SessionId=a.SessionId");
+            sb.AppendLine("  JOIN CourseAssignments ca ON ca.AssignmentId=s.CourseAssignmentId");
+            sb.AppendLine("  JOIN Courses c ON c.CourseId=ca.CourseId");
+            sb.AppendLine();
+            sb.AppendLine("COMMON CALCULATIONS:");
+            sb.AppendLine("- Attendance % per course: SUM(CASE WHEN a.Status='Present' THEN 1 ELSE 0 END) / COUNT(*)");
+            sb.AppendLine("- Remaining sessions (future): COUNT(*) WHERE s.SessionDate > CAST(GETDATE() AS date)");
+        }
+        else if (actor.IsTeacher)
+        {
+            sb.AppendLine("ROLE: TEACHER");
+            sb.AppendLine("- You can query ONLY your own courses/students/sessions.");
+            sb.AppendLine("- Always scope through CourseAssignments.TeacherId=@teacherId.");
+            sb.AppendLine();
+            sb.AppendLine("TEACHER JOIN PATTERNS (must include @teacherId):");
+            sb.AppendLine("- Your courses: CourseAssignments ca WHERE ca.TeacherId=@teacherId JOIN Courses c ON c.CourseId=ca.CourseId");
+            sb.AppendLine("- Your students: CourseAssignments ca WHERE ca.TeacherId=@teacherId");
+            sb.AppendLine("  JOIN Enrollments e ON e.CourseId=ca.CourseId AND e.BatchId=ca.BatchId AND e.SemesterId=ca.SemesterId");
+            sb.AppendLine("  JOIN Students s ON s.StudentId=e.StudentId");
+            sb.AppendLine("- Attendance for your sessions: Attendance a JOIN Sessions se ON se.SessionId=a.SessionId");
+            sb.AppendLine("  JOIN CourseAssignments ca ON ca.AssignmentId=se.CourseAssignmentId WHERE ca.TeacherId=@teacherId");
+        }
+        else
+        {
+            sb.AppendLine("ROLE: ADMIN");
+            sb.AppendLine("- Full access within these pilot tables.");
+        }
+
+        return sb.ToString();
     }
 
     private static string GetRequiredSqlFilters(ActorContext actor)
     {
         if (actor.IsStudent && actor.StudentId.HasValue)
         {
-            return "Include WHERE Attendance.StudentId = @studentId (or Students.StudentId = @studentId).";
+            return "CRITICAL RULES FOR STUDENT:\n" +
+                   "- You MUST include WHERE with StudentId = @studentId (via Enrollments.StudentId or Attendance.StudentId).\n" +
+                   "- You CAN see teacher names for YOUR enrolled courses by joining: Enrollments -> CourseAssignments -> Teachers.\n" +
+                   "- You CANNOT see other students' data - only your own attendance, timetable, courses.\n" +
+                   "- Always scope through Enrollments with @studentId to ensure proper access control.";
         }
 
         if (actor.IsTeacher && actor.TeacherId.HasValue)
         {
-            return "Include WHERE CourseAssignments.TeacherId = @teacherId.";
+            return "CRITICAL RULES FOR TEACHER:\n" +
+                   "- You MUST include WHERE CourseAssignments.TeacherId = @teacherId in EVERY query.\n" +
+                   "- For Students: JOIN through CourseAssignments WHERE TeacherId = @teacherId -> Enrollments -> Students.\n" +
+                   "- For Attendance: JOIN Sessions -> CourseAssignments WHERE TeacherId = @teacherId.\n" +
+                   "- For Teachers table: Only query WHERE Teachers.TeacherId = @teacherId (your own record).\n" +
+                   "- You CANNOT see other teachers' courses, students, or attendance data.\n" +
+                   "- NEVER query Teachers table without TeacherId = @teacherId filter.";
         }
 
-        return "Do not access outside attendance domain.";
+        return "Admin: full access to attendance domain tables.";
     }
 
     private async Task<IReadOnlyList<IDictionary<string, object?>>> ExecuteReadOnlySqlAsync(string sql, IReadOnlyDictionary<string, object?> parameters, CancellationToken cancellationToken)
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection")
+        // Important: Use the same DB connection string EF Core is using.
+        // This avoids mismatches between appsettings.json and ApplicationDbContext.OnConfiguring hardcoded values.
+        var connectionString = _db.Database.GetDbConnection().ConnectionString;
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = _configuration.GetConnectionString("DefaultConnection")
                                ?? _configuration["ConnectionStrings:DefaultConnection"]
                                ?? string.Empty;
+        }
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -432,6 +606,10 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
 
         await using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync(cancellationToken);
+
+        // Preflight: if the query references tables that don't exist in the current database,
+        // return a clearer error than "Invalid object name".
+        await EnsureTablesExistAsync(conn, sql, cancellationToken);
 
         await using var cmd = conn.CreateCommand();
         cmd.CommandType = CommandType.Text;
@@ -459,6 +637,42 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         }
 
         return rows;
+    }
+
+    private static async Task EnsureTablesExistAsync(SqlConnection conn, string sql, CancellationToken cancellationToken)
+    {
+        var lowered = (sql ?? string.Empty).ToLowerInvariant();
+        var mentioned = SqlSafetyAuditor.ExtractTableLikeTokens(lowered);
+        if (mentioned.Count == 0) return;
+
+        var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var check = conn.CreateCommand())
+        {
+            check.CommandType = CommandType.Text;
+            check.CommandText = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo'";
+            await using var reader = await check.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                var name = reader.GetString(0);
+                existing.Add(name);
+            }
+        }
+
+        var missing = mentioned.Where(t => !existing.Contains(t)).ToList();
+        if (missing.Count == 0) return;
+
+        string dbName;
+        await using (var dbCmd = conn.CreateCommand())
+        {
+            dbCmd.CommandType = CommandType.Text;
+            dbCmd.CommandText = "SELECT DB_NAME()";
+            dbName = (string?)await dbCmd.ExecuteScalarAsync(cancellationToken) ?? "(unknown)";
+        }
+
+        throw new InvalidOperationException(
+            $"Database '{dbName}' is missing required tables for this query: {string.Join(", ", missing)}. " +
+            "Check that your ConnectionStrings:DefaultConnection points to the AMS database and that the Attendance tables exist."
+        );
     }
 
     private async Task<ActorContext> ResolveActorAsync(ClaimsPrincipal user, CancellationToken cancellationToken)
@@ -499,6 +713,8 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
     {
         Read,
         Write
+        ,
+        SmallTalk
     }
 
     private sealed record ActorContext(
@@ -534,8 +750,13 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
             "courseassignments",
             "courses",
             "semesters",
-            "enrollments"
+            "enrollments",
+            "timetableslots",
+            "timetables"
         ];
+
+        // Tables that students are NOT allowed to query (empty for now - all access is scoped via @studentId)
+        private static readonly string[] StudentBlockedTables = [];
 
         public static SqlAuditResult Evaluate(ActorContext actor, string sql, int requiredTop)
         {
@@ -588,12 +809,36 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
             // Allowlist tables by basic token scan.
             var lowered = trimmed.ToLowerInvariant();
             var tableMentions = ExtractTableLikeTokens(lowered);
+
+            // Extract CTE names - these are not real tables, just query aliases
+            var cteNames = ExtractCteNames(lowered);
+
             foreach (var table in tableMentions)
             {
+                // Skip CTE names - they're not real tables
+                if (cteNames.Contains(table))
+                {
+                    continue;
+                }
+
                 if (!AllowedTables.Contains(table))
                 {
                     issues.Add($"Table '{table}' is not allowed in the pilot.");
                 }
+            }
+
+            // Students are blocked from querying certain tables
+            if (actor.IsStudent)
+            {
+                foreach (var blocked in StudentBlockedTables)
+                {
+                    if (tableMentions.Contains(blocked))
+                    {
+                        issues.Add($"Students are not allowed to query the '{blocked}' table.");
+                    }
+                }
+                // Note: Students CAN see teacher names for their enrolled courses
+                // The @studentId filter through Enrollments scopes access appropriately
             }
 
             var parameters = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -628,6 +873,20 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
                         issues.Add("Teacher queries must include @teacherId filtering via CourseAssignments.TeacherId.");
                     }
                     parameters["@teacherId"] = actor.TeacherId.Value;
+
+                    // Extra check: if querying Teachers table directly, must filter by TeacherId
+                    if (tableMentions.Contains("teachers"))
+                    {
+                        // Must have teacherid = @teacherid pattern (teachers can only see their own record)
+                        var hasTeacherIdFilter = lowered.Contains("teacherid = @teacherid")
+                                                 || lowered.Contains("teacherid=@teacherid")
+                                                 || lowered.Contains("teachers.teacherid = @teacherid")
+                                                 || lowered.Contains("t.teacherid = @teacherid");
+                        if (!hasTeacherIdFilter)
+                        {
+                            issues.Add("When querying Teachers table, teachers must filter by TeacherId = @teacherId (can only see own record).");
+                        }
+                    }
                 }
             }
 
@@ -658,7 +917,7 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
             );
         }
 
-        private static HashSet<string> ExtractTableLikeTokens(string loweredSql)
+        public static HashSet<string> ExtractTableLikeTokens(string loweredSql)
         {
             // Naive extraction: look for FROM/JOIN <token>
             // This is intentionally strict and may reject complex queries; safe pilot tradeoff.
@@ -683,6 +942,29 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
                 }
             }
             return set;
+        }
+
+        /// <summary>
+        /// Extract CTE names from a WITH clause so we don't flag them as unknown tables.
+        /// Pattern: WITH CteName AS (...), AnotherCte AS (...)
+        /// </summary>
+        public static HashSet<string> ExtractCteNames(string loweredSql)
+        {
+            var ctes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // Match CTE definitions: "with name as" or ", name as"
+            var ctePattern = new Regex(@"(?:with|,)\s+([a-z_][a-z0-9_]*)\s+as\s*\(", RegexOptions.IgnoreCase);
+            var matches = ctePattern.Matches(loweredSql);
+
+            foreach (Match match in matches)
+            {
+                if (match.Groups.Count > 1)
+                {
+                    ctes.Add(match.Groups[1].Value);
+                }
+            }
+
+            return ctes;
         }
     }
 }
