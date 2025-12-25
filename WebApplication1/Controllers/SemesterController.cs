@@ -1,9 +1,9 @@
-﻿
-using AMS.Models;
+﻿using AMS.Data;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -19,7 +19,12 @@ namespace AMS.Controllers
         // GET: Semester/Semesters
         public async Task<IActionResult> Semesters(SemesterFilterViewModel filter)
         {
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
+
             var query = _context.Semesters
+                .AsNoTracking()
                 .AsQueryable();
 
             // Apply filters
@@ -34,9 +39,17 @@ namespace AMS.Controllers
                 query = query.Where(s => s.IsActive == isActive);
             }
 
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
+            {
+                filter.Page = filter.TotalPages;
+            }
+
             filter.Semesters = await query
                 .OrderByDescending(s => s.Year)
                 .ThenByDescending(s => s.StartDate)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
 
             // Load counts separately to avoid circular references
@@ -79,8 +92,7 @@ namespace AMS.Controllers
                 // Validate end date is after start date
                 if (model.EndDate <= model.StartDate)
                 {
-                    ModelState.AddModelError("EndDate", "End date must be after start date.");
-                    return View(model);
+                    return BadRequest(new { success = false, message = "End date must be after start date." });
                 }
 
                 // Check if semester name already exists for the same year
@@ -89,8 +101,7 @@ namespace AMS.Controllers
 
                 if (existingSemester != null)
                 {
-                    ModelState.AddModelError("SemesterName", "A semester with this name already exists for the selected year.");
-                    return View(model);
+                    return Conflict(new { success = false, message = "A semester with this name already exists for the selected year." });
                 }
 
                 var semester = new Semester
@@ -102,14 +113,29 @@ namespace AMS.Controllers
                     IsActive = model.IsActive
                 };
 
+                // If this semester is active, deactivate all others
+                if (model.IsActive)
+                {
+                    var activeSemesters = await _context.Semesters.Where(s => s.IsActive == true).ToListAsync();
+                    foreach (var s in activeSemesters)
+                    {
+                        s.IsActive = false;
+                    }
+                }
+
                 _context.Semesters.Add(semester);
                 await _context.SaveChangesAsync();
 
-                TempData["success"] = $"Semester '{model.SemesterName}' has been added successfully!";
-                return RedirectToAction(nameof(Semesters));
+                return Ok(new { success = true, message = $"Semester '{model.SemesterName}' has been added successfully!" });
             }
 
-            return View(model);
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
         }
 
         // GET: Semester/EditSemester/5
@@ -149,15 +175,13 @@ namespace AMS.Controllers
                 // Validate end date is after start date
                 if (model.EndDate <= model.StartDate)
                 {
-                    ModelState.AddModelError("EndDate", "End date must be after start date.");
-                    ViewBag.SemesterId = id;
-                    return View(model);
+                    return BadRequest(new { success = false, message = "End date must be after start date." });
                 }
 
                 var semester = await _context.Semesters.FindAsync(id);
                 if (semester == null)
                 {
-                    return NotFound();
+                    return NotFound(new { success = false, message = "Semester not found." });
                 }
 
                 // Check if semester name already exists for another semester with the same year
@@ -168,9 +192,7 @@ namespace AMS.Controllers
 
                 if (existingSemester != null)
                 {
-                    ModelState.AddModelError("SemesterName", "A semester with this name already exists for the selected year.");
-                    ViewBag.SemesterId = id;
-                    return View(model);
+                    return Conflict(new { success = false, message = "A semester with this name already exists for the selected year." });
                 }
 
                 semester.SemesterName = model.SemesterName;
@@ -179,14 +201,32 @@ namespace AMS.Controllers
                 semester.EndDate = model.EndDate;
                 semester.IsActive = model.IsActive;
 
+                // If this semester is active, deactivate all others
+                if (model.IsActive)
+                {
+                    var activeSemesters = await _context.Semesters
+                        .Where(s => s.IsActive == true && s.SemesterId != id)
+                        .ToListAsync();
+
+                    foreach (var s in activeSemesters)
+                    {
+                        s.IsActive = false;
+                    }
+                }
+
                 _context.Update(semester);
                 await _context.SaveChangesAsync();
 
-                TempData["success"] = $"Semester '{model.SemesterName}' has been updated successfully!";
-                return RedirectToAction(nameof(Semesters));
+                return Ok(new { success = true, message = $"Semester '{model.SemesterName}' has been updated successfully!" });
             }
 
-            return View(model);
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
         }
 
         // POST: Semester/DeleteSemester
@@ -201,29 +241,26 @@ namespace AMS.Controllers
 
             if (semester == null)
             {
-                TempData["error"] = "Semester not found.";
-                return RedirectToAction(nameof(Semesters));
+                return NotFound(new { success = false, message = "Semester not found." });
             }
 
             // Check if semester has course assignments
             if (semester.CourseAssignments.Any())
             {
-                TempData["error"] = $"Cannot delete semester '{semester.SemesterName}' because it has {semester.CourseAssignments.Count} course assignment(s).";
-                return RedirectToAction(nameof(Semesters));
+                return BadRequest(new { success = false, message = $"Cannot delete semester '{semester.SemesterName}' because it has {semester.CourseAssignments.Count} course assignment(s)." });
             }
 
             // Check if semester has enrollments
             if (semester.Enrollments.Any())
             {
-                TempData["error"] = $"Cannot delete semester '{semester.SemesterName}' because it has {semester.Enrollments.Count} student enrollment(s).";
-                return RedirectToAction(nameof(Semesters));
+                return BadRequest(new { success = false, message = $"Cannot delete semester '{semester.SemesterName}' because it has {semester.Enrollments.Count} student enrollment(s)." });
             }
 
+            var semesterName = semester.SemesterName;
             _context.Semesters.Remove(semester);
             await _context.SaveChangesAsync();
 
-            TempData["success"] = $"Semester '{semester.SemesterName}' has been deleted successfully!";
-            return RedirectToAction(nameof(Semesters));
+            return Ok(new { success = true, message = $"Semester '{semesterName}' has been deleted successfully!" });
         }
     }
 }

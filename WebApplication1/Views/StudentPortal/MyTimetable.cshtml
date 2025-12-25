@@ -1,32 +1,5 @@
-﻿@model List<AMS.Models.Entities.TimetableSlot>
-
-@{
+﻿@{
     ViewData["Title"] = "My Timetable";
-    var dayNames = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-
-    // Color palette for courses
-    var colorPalette = new[]
-    {
-        new { Bg = "bg-blue-100 dark:bg-blue-900/40", Border = "border-blue-300 dark:border-blue-700", Text = "text-blue-900 dark:text-blue-100", Subtext = "text-blue-700 dark:text-blue-300" },
-        new { Bg = "bg-purple-100 dark:bg-purple-900/40", Border = "border-purple-300 dark:border-purple-700", Text = "text-purple-900 dark:text-purple-100", Subtext = "text-purple-700 dark:text-purple-300" },
-        new { Bg = "bg-emerald-100 dark:bg-emerald-900/40", Border = "border-emerald-300 dark:border-emerald-700", Text = "text-emerald-900 dark:text-emerald-100", Subtext = "text-emerald-700 dark:text-emerald-300" },
-        new { Bg = "bg-amber-100 dark:bg-amber-900/40", Border = "border-amber-300 dark:border-amber-700", Text = "text-amber-900 dark:text-amber-100", Subtext = "text-amber-700 dark:text-amber-300" },
-        new { Bg = "bg-rose-100 dark:bg-rose-900/40", Border = "border-rose-300 dark:border-rose-700", Text = "text-rose-900 dark:text-rose-100", Subtext = "text-rose-700 dark:text-rose-300" },
-        new { Bg = "bg-cyan-100 dark:bg-cyan-900/40", Border = "border-cyan-300 dark:border-cyan-700", Text = "text-cyan-900 dark:text-cyan-100", Subtext = "text-cyan-700 dark:text-cyan-300" },
-        new { Bg = "bg-indigo-100 dark:bg-indigo-900/40", Border = "border-indigo-300 dark:border-indigo-700", Text = "text-indigo-900 dark:text-indigo-100", Subtext = "text-indigo-700 dark:text-indigo-300" },
-        new { Bg = "bg-pink-100 dark:bg-pink-900/40", Border = "border-pink-300 dark:border-pink-700", Text = "text-pink-900 dark:text-pink-100", Subtext = "text-pink-700 dark:text-pink-300" },
-    };
-
-    dynamic GetColor(string name)
-    {
-        if (string.IsNullOrEmpty(name)) return colorPalette[0];
-        int index = Math.Abs(name.GetHashCode()) % colorPalette.Length;
-        return colorPalette[index];
-    }
-
-    var todayDayOfWeek = (int)DateTime.Now.DayOfWeek;
-    var batchName = ViewBag.BatchName as string ?? "My Batch";
-    var semesterName = ViewBag.SemesterName as string ?? "Current Semester";
 }
 
 <style>
@@ -116,126 +89,264 @@
     }
 </style>
 
-<div class="p-4 sm:p-6 space-y-6">
-    <!-- Print Header -->
-    <div class="print-header">
-        <h1>Weekly Timetable</h1>
-        <p>@batchName &bull; @semesterName</p>
-        <p>Generated on @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+<div class="p-4 sm:p-6 space-y-6" x-data="timetableApp()" x-init="loadData()">
+    <div x-show="loading" class="flex items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
 
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Timetable</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Weekly schedule for current semester</p>
+    <div x-show="!loading" x-cloak>
+        <!-- Print Header -->
+        <div class="print-header">
+            <h1>Weekly Timetable</h1>
+            <p><span x-text="data.batchName || 'N/A'"></span> &bull; <span x-text="data.semesterName || 'N/A'"></span></p>
+            <p>Generated on <span x-text="generatedOn"></span></p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="@Url.Action("ExportMyTimetableToPdf")"
-               class="inline-flex items-center px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-                Download PDF
-            </a>
-            <button type="button" onclick="window.print()"
-                    class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                </svg>
-                Print
-            </button>
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Timetable</h1>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Weekly schedule for current semester</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="@Url.Action("ExportMyTimetableToPdf")"
+                   class="inline-flex items-center px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    Download PDF
+                </a>
+                <button type="button" @@click="loadData()"
+                        class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" :class="refreshing && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+                <button type="button" onclick="window.print()"
+                        class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Print
+                </button>
+            </div>
         </div>
-    </div>
 
-    @if (Model.Any())
-    {
-        <!-- Weekly Grid View -->
-        <div class="timetable-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4">
-            @for (int i = 0; i < 7; i++)
-            {
-                var dayIndex = i + 1; // 1=Monday, 2=Tuesday...7=Sunday
-                var dayOfWeekEnum = (DayOfWeek)(dayIndex % 7); // Convert to DayOfWeek enum
-                var daySlots = Model.Where(s => s.DayOfWeek == dayIndex).OrderBy(s => s.StartTime).ToList();
-                var isToday = DateTime.Now.DayOfWeek == dayOfWeekEnum;
-
-                // Skip Sunday if empty
-                if (i == 6 && !daySlots.Any()) continue;
-
-                <div class="day-card bg-white dark:bg-gray-800 rounded-2xl shadow-sm border @(isToday ? "border-brand-300 dark:border-brand-600 ring-2 ring-brand-100 dark:ring-brand-900/30" : "border-gray-200 dark:border-gray-700") overflow-hidden">
-                    <!-- Day Header -->
-                    <div class="day-header-print px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                        <h3 class="font-bold @(isToday ? "text-brand-600 dark:text-brand-400" : "text-gray-900 dark:text-white")">
-                            @dayNames[i]
-                        </h3>
-                        @if (isToday)
-                        {
-                            <span class="no-print px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">Today</span>
-                        }
-                    </div>
-
-                    <!-- Slots -->
-                    <div class="p-3 space-y-2 min-h-[120px]">
-                        @if (daySlots.Any())
-                        {
-                            @foreach (var slot in daySlots)
-                            {
-                                var color = GetColor(slot.CourseAssignment?.Course?.CourseName);
-                                <div class="slot-card p-3 rounded-xl border-l-4 @color.Bg @color.Border transition-all hover:scale-[1.02]">
-                                    <div class="slot-time flex items-center gap-1.5 text-xs font-semibold @color.Subtext mb-1">
-                                        <svg class="w-3.5 h-3.5 no-print" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        @slot.StartTime?.ToString("h:mm tt") - @slot.EndTime?.ToString("h:mm tt")
-                                    </div>
-                                    <h4 class="font-bold @color.Text text-sm leading-tight">
-                                        @slot.CourseAssignment?.Course?.CourseName
-                                    </h4>
-                                    <p class="text-xs @color.Subtext mt-1">
-                                        @slot.CourseAssignment?.Teacher?.FirstName @slot.CourseAssignment?.Teacher?.LastName
-                                    </p>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <div class="flex flex-col items-center justify-center h-24 text-gray-400 dark:text-gray-600">
-                                <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4" />
-                                </svg>
-                                <span class="text-xs">No classes</span>
+        <template x-if="(data.slots || []).length > 0">
+            <div>
+                <!-- Weekly Grid View -->
+                <div class="timetable-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4">
+                    <template x-for="day in days" :key="day.dayIndex">
+                        <div x-show="!(day.dayIndex === 7 && day.slots.length === 0)"
+                             class="day-card bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden"
+                             :class="day.isToday ? 'border-brand-300 dark:border-brand-600 ring-2 ring-brand-100 dark:ring-brand-900/30' : 'border-gray-200 dark:border-gray-700'">
+                            <div class="day-header-print px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                                <h3 class="font-bold" :class="day.isToday ? 'text-brand-600 dark:text-brand-400' : 'text-gray-900 dark:text-white'" x-text="day.dayName"></h3>
+                                <template x-if="day.isToday">
+                                    <span class="no-print px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">Today</span>
+                                </template>
                             </div>
-                        }
+
+                            <div class="p-3 space-y-2 min-h-[120px]">
+                                <template x-if="day.slots.length > 0">
+                                    <div>
+                                        <template x-for="slot in day.slots" :key="slot.slotId">
+                                            <div class="slot-card p-3 rounded-xl border-l-4 transition-all hover:scale-[1.02]"
+                                                 :class="getColor(slot.courseName).bg + ' ' + getColor(slot.courseName).border">
+                                                <div class="slot-time flex items-center gap-1.5 text-xs font-semibold mb-1"
+                                                     :class="getColor(slot.courseName).subtext">
+                                                    <svg class="w-3.5 h-3.5 no-print" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span x-text="formatTime(slot.startTime) + ' - ' + formatTime(slot.endTime)"></span>
+                                                </div>
+                                                <h4 class="font-bold text-sm leading-tight" :class="getColor(slot.courseName).text" x-text="slot.courseName"></h4>
+                                                <p class="text-xs mt-1" :class="getColor(slot.courseName).subtext" x-text="slot.teacherName"></p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template x-if="day.slots.length === 0">
+                                    <div class="flex flex-col items-center justify-center h-24 text-gray-400 dark:text-gray-600">
+                                        <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4" />
+                                        </svg>
+                                        <span class="text-xs">No classes</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Legend -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 no-print mt-6">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">My Courses</h4>
+                    <div class="flex flex-wrap gap-3">
+                        <template x-for="courseName in distinctCourseNames" :key="courseName">
+                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+                                 :class="getColor(courseName).bg + ' ' + getColor(courseName).border">
+                                <span class="w-2 h-2 rounded-full" :class="getColor(courseName).text" style="background-color: currentColor;"></span>
+                                <span class="text-sm font-medium" :class="getColor(courseName).text" x-text="courseName"></span>
+                            </div>
+                        </template>
                     </div>
                 </div>
-            }
-        </div>
+            </div>
+        </template>
 
-        <!-- Legend -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 no-print">
-            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">My Courses</h4>
-            <div class="flex flex-wrap gap-3">
-                @foreach (var course in Model.Select(s => s.CourseAssignment?.Course?.CourseName).Where(c => c != null).Distinct())
-                {
-                    var color = GetColor(course);
-                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg @color.Bg @color.Border border">
-                        <span class="w-2 h-2 rounded-full @color.Text" style="background-color: currentColor;"></span>
-                        <span class="text-sm font-medium @color.Text">@course</span>
-                    </div>
-                }
+        <template x-if="(data.slots || []).length === 0">
+            <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 mb-6">
+                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Timetable Found</h3>
+                <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Your timetable hasn't been created yet. Please contact your administrator.</p>
             </div>
-        </div>
-    }
-    else
-    {
-        <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 mb-6">
-                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Timetable Found</h3>
-            <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Your timetable hasn't been created yet. Please contact your administrator.</p>
-        </div>
-    }
+        </template>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+function timetableApp() {
+    const colorPalette = [
+        { bg: 'bg-blue-100 dark:bg-blue-900/40', border: 'border-blue-300 dark:border-blue-700', text: 'text-blue-900 dark:text-blue-100', subtext: 'text-blue-700 dark:text-blue-300' },
+        { bg: 'bg-purple-100 dark:bg-purple-900/40', border: 'border-purple-300 dark:border-purple-700', text: 'text-purple-900 dark:text-purple-100', subtext: 'text-purple-700 dark:text-purple-300' },
+        { bg: 'bg-emerald-100 dark:bg-emerald-900/40', border: 'border-emerald-300 dark:border-emerald-700', text: 'text-emerald-900 dark:text-emerald-100', subtext: 'text-emerald-700 dark:text-emerald-300' },
+        { bg: 'bg-amber-100 dark:bg-amber-900/40', border: 'border-amber-300 dark:border-amber-700', text: 'text-amber-900 dark:text-amber-100', subtext: 'text-amber-700 dark:text-amber-300' },
+        { bg: 'bg-rose-100 dark:bg-rose-900/40', border: 'border-rose-300 dark:border-rose-700', text: 'text-rose-900 dark:text-rose-100', subtext: 'text-rose-700 dark:text-rose-300' },
+        { bg: 'bg-cyan-100 dark:bg-cyan-900/40', border: 'border-cyan-300 dark:border-cyan-700', text: 'text-cyan-900 dark:text-cyan-100', subtext: 'text-cyan-700 dark:text-cyan-300' },
+        { bg: 'bg-indigo-100 dark:bg-indigo-900/40', border: 'border-indigo-300 dark:border-indigo-700', text: 'text-indigo-900 dark:text-indigo-100', subtext: 'text-indigo-700 dark:text-indigo-300' },
+        { bg: 'bg-pink-100 dark:bg-pink-900/40', border: 'border-pink-300 dark:border-pink-700', text: 'text-pink-900 dark:text-pink-100', subtext: 'text-pink-700 dark:text-pink-300' },
+    ];
+
+    function hashString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash |= 0;
+        }
+        return Math.abs(hash);
+    }
+
+    function pad2(n) {
+        return n < 10 ? '0' + n : '' + n;
+    }
+
+    function formatTime(hhmm) {
+        if (!hhmm || typeof hhmm !== 'string') return '';
+        const parts = hhmm.split(':');
+        if (parts.length < 2) return hhmm;
+        const h = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        if (Number.isNaN(h) || Number.isNaN(m)) return hhmm;
+        const suffix = h >= 12 ? 'PM' : 'AM';
+        const hr = ((h + 11) % 12) + 1;
+        return hr + ':' + pad2(m) + ' ' + suffix;
+    }
+
+    const dayNames = [
+        { dayIndex: 1, dayName: 'Monday' },
+        { dayIndex: 2, dayName: 'Tuesday' },
+        { dayIndex: 3, dayName: 'Wednesday' },
+        { dayIndex: 4, dayName: 'Thursday' },
+        { dayIndex: 5, dayName: 'Friday' },
+        { dayIndex: 6, dayName: 'Saturday' },
+        { dayIndex: 7, dayName: 'Sunday' },
+    ];
+
+    const jsDow = new Date().getDay();
+    const todayIndex = jsDow === 0 ? 7 : jsDow;
+
+    return {
+        loading: true,
+        refreshing: false,
+        data: { slots: [] },
+        _loadingInProgress: false,
+        generatedOn: new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: '2-digit' }),
+
+        get days() {
+            const slots = Array.isArray(this.data.slots) ? this.data.slots : [];
+            return dayNames.map(d => {
+                const daySlots = slots
+                    .filter(s => s.dayOfWeek === d.dayIndex)
+                    .slice()
+                    .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+                return {
+                    dayIndex: d.dayIndex,
+                    dayName: d.dayName,
+                    isToday: d.dayIndex === todayIndex,
+                    slots: daySlots
+                };
+            });
+        },
+
+        get distinctCourseNames() {
+            const slots = Array.isArray(this.data.slots) ? this.data.slots : [];
+            const set = new Set();
+            for (const s of slots) {
+                if (s && s.courseName) set.add(s.courseName);
+            }
+            return Array.from(set).sort((a, b) => a.localeCompare(b));
+        },
+
+        getColor(name) {
+            if (!name) return colorPalette[0];
+            const idx = hashString(name) % colorPalette.length;
+            return colorPalette[idx];
+        },
+
+        formatTime,
+
+        async loadData() {
+            if (this._loadingInProgress) {
+                console.warn('[Timetable] Load already in progress, skipping duplicate call');
+                return;
+            }
+            this._loadingInProgress = true;
+            this.refreshing = true;
+            console.log('[Timetable] Starting data load...');
+            try {
+                const response = await fetch('@Url.Action("GetMyTimetableJson")', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const result = await response.json();
+                console.log('[Timetable] Received', result.slots?.length || 0, 'slots from API');
+                if (result && result.success) {
+                    const rawSlots = Array.isArray(result.slots) ? result.slots : [];
+                    this.data = {
+                        batchName: result.batchName,
+                        semesterName: result.semesterName,
+                        slots: rawSlots.map(s => ({
+                            slotId: s.slotId,
+                            dayOfWeek: s.dayOfWeek,
+                            dayName: s.dayName,
+                            startTime: s.startTime,
+                            endTime: s.endTime,
+                            courseCode: s.courseCode,
+                            courseName: s.courseName,
+                            teacherName: s.teacherName
+                        }))
+                    };
+                } else {
+                    this.data = { slots: [] };
+                }
+            } catch (e) {
+                console.error('Failed to load timetable:', e);
+                this.data = { slots: [] };
+            } finally {
+                this.loading = false;
+                this.refreshing = false;
+                this._loadingInProgress = false;
+                console.log('[Timetable] Load complete. Total slots in data:', this.data.slots?.length || 0);
+            }
+        }
+    }
+}
+    </script>
+}

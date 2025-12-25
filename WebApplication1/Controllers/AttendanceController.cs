@@ -1,4 +1,4 @@
-﻿using AMS.Models;
+﻿using AMS.Data;
 using AMS.Helpers;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
@@ -12,6 +12,7 @@ using System.Linq;
 using ClosedXML.Excel;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -90,6 +91,34 @@ namespace AMS.Controllers
                     int daysDiff = (int)today.DayOfWeek - (slot.DayOfWeek ?? 0);
                     if (daysDiff < 0) daysDiff += 7;
                     targetDate = today.AddDays(-daysDiff);
+                }
+            }
+
+            // Teacher rule: cannot mark attendance for previous days or missed slots.
+            // Only allow marking during the class time window for TODAY.
+            if (User.IsInRole("Teacher"))
+            {
+                if (targetDate != today)
+                {
+                    TempData["error"] = "You cannot mark attendance for previous days. Please contact an admin to mark late attendance.";
+                    return RedirectToAction("Dashboard", "TeacherPortal");
+                }
+
+                if (!slot.StartTime.HasValue || !slot.EndTime.HasValue)
+                {
+                    TempData["error"] = "Cannot mark attendance: slot time is not configured.";
+                    return RedirectToAction("Dashboard", "TeacherPortal");
+                }
+
+                var nowTime = TimeOnly.FromDateTime(DateTime.Now);
+                var startTime = slot.StartTime.Value;
+                var endTime = slot.EndTime.Value;
+
+                // If the class time has passed (or not started), block marking.
+                if (nowTime < startTime || nowTime > endTime)
+                {
+                    TempData["error"] = "Attendance can only be marked during the scheduled class time. If you missed it, please contact an admin.";
+                    return RedirectToAction("Dashboard", "TeacherPortal");
                 }
             }
 
@@ -248,6 +277,47 @@ namespace AMS.Controllers
                 if (teacher == null || assignment == null || assignment.TeacherId != teacher.TeacherId)
                 {
                     return Forbid();
+                }
+
+                // Teacher rule: only allow saving during the scheduled slot window for TODAY.
+                var today = DateOnly.FromDateTime(DateTime.Now);
+                if (model.Date != today)
+                {
+                    TempData["error"] = "You cannot mark attendance for previous days. Please contact an admin to mark late attendance.";
+                    return RedirectToAction("Dashboard", "TeacherPortal");
+                }
+
+                var slot = await _context.TimetableSlots
+                    .AsNoTracking()
+                    .Include(ts => ts.CourseAssignment)
+                    .Include(ts => ts.Timetable)
+                    .FirstOrDefaultAsync(ts => ts.SlotId == model.SlotId);
+
+                if (slot == null || slot.Timetable?.IsActive != true || slot.CourseAssignment == null)
+                {
+                    TempData["error"] = "Slot not found or inactive.";
+                    return RedirectToAction("Dashboard", "TeacherPortal");
+                }
+
+                if (slot.CourseAssignment.TeacherId != teacher.TeacherId)
+                {
+                    return Forbid();
+                }
+
+                if (!slot.StartTime.HasValue || !slot.EndTime.HasValue)
+                {
+                    TempData["error"] = "Cannot mark attendance: slot time is not configured.";
+                    return RedirectToAction("Dashboard", "TeacherPortal");
+                }
+
+                var nowTime = TimeOnly.FromDateTime(DateTime.Now);
+                var startTime = slot.StartTime.Value;
+                var endTime = slot.EndTime.Value;
+
+                if (nowTime < startTime || nowTime > endTime)
+                {
+                    TempData["error"] = "Attendance can only be marked during the scheduled class time. If you missed it, please contact an admin.";
+                    return RedirectToAction("Dashboard", "TeacherPortal");
                 }
             }
 

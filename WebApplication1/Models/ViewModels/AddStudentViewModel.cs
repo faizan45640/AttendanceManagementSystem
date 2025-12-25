@@ -74,7 +74,7 @@ namespace AMS.Models.ViewModels
 
         public bool IsActive { get; set; } = true;
     }
-    public class StudentFilterViewModel
+    public class StudentFilterViewModel : PagedViewModel
     {
 
         [Display(Name = "Name")]

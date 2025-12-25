@@ -48,6 +48,8 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
         <div class="p-4 sm:p-6">
             <form method="get" asp-action="Enrollments">
+                <input type="hidden" name="Page" value="1" />
+                <input type="hidden" name="PageSize" value="@Model.PageSize" />
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <!-- Student Filter -->
                     <div>
@@ -339,6 +341,29 @@
                 </div>
             </div>
         }
+
+        @{
+            var routeValues = new Dictionary<string, string?>
+            {
+                ["StudentId"] = Model.StudentId?.ToString(),
+                ["CourseId"] = Model.CourseId?.ToString(),
+                ["SemesterId"] = Model.SemesterId?.ToString(),
+                ["BatchId"] = Model.BatchId?.ToString(),
+                ["Status"] = Model.Status,
+                ["PageSize"] = Model.PageSize.ToString()
+            };
+        }
+
+        @await Html.PartialAsync("_Pagination", new AMS.Models.ViewModels.PaginationUiViewModel
+        {
+            Action = "Enrollments",
+            Controller = "Enrollment",
+            Page = Model.Page,
+            PageSize = Model.PageSize,
+            TotalCount = Model.TotalCount,
+            PageSizeOptions = Model.PageSizeOptions,
+            RouteValues = routeValues
+        })
     </div>
 </div>
 

@@ -1,4 +1,4 @@
-﻿@model List<AMS.Models.Entities.Batch>
+﻿@model AMS.Models.ViewModels.BatchFilterViewModel
 @{
     ViewData["Title"] = "Batches";
 }
@@ -102,9 +102,9 @@
             </thead>
 
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                @if (Model != null && Model.Any())
+                @if (Model.Batches != null && Model.Batches.Any())
                 {
-                    @foreach (var batch in Model)
+                    @foreach (var batch in Model.Batches)
                     {
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                             <td class="py-3 px-2">
@@ -126,7 +126,7 @@
                             <td class="py-3">
                                 <div class="flex items-center">
                                     <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                        @batch.Students.Count
+                                        @batch.StudentCount
                                     </p>
                                 </div>
                             </td>
@@ -162,7 +162,7 @@
 
                                     <!-- Delete Button -->
                                     <button type="button"
-                                            onclick="confirmDelete(@batch.BatchId, '@batch.BatchName', @batch.Students.Count)"
+                                            onclick="confirmDelete(@batch.BatchId, '@batch.BatchName', @batch.StudentCount)"
                                             class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-error-600 hover:bg-error-50 dark:text-gray-400 dark:hover:text-error-500 dark:hover:bg-error-500/10 rounded-lg transition-colors"
                                             title="Delete Batch">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +172,7 @@
 
                                     <!-- View Button -->
                                     <button type="button"
-                                            onclick="openViewModal('@batch.BatchId', '@batch.BatchName', '@batch.Year', '@batch.Students.Count', '@(batch.IsActive ? "Active" : "Inactive")')"
+                                            onclick="openViewModal('@batch.BatchId', '@batch.BatchName', '@batch.Year', '@batch.StudentCount', '@(batch.IsActive ? "Active" : "Inactive")')"
                                             class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand-600 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-500 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
                                             title="View Details">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,6 +201,17 @@
             </tbody>
         </table>
     </div>
+
+    @await Html.PartialAsync("_Pagination", new AMS.Models.ViewModels.PaginationUiViewModel
+    {
+        Action = "Batches",
+        Controller = "Batch",
+        Page = Model.Page,
+        PageSize = Model.PageSize,
+        TotalCount = Model.TotalCount,
+        PageSizeOptions = Model.PageSizeOptions,
+        RouteValues = new Dictionary<string, string?> { ["PageSize"] = Model.PageSize.ToString() }
+    })
 </div>
 
 <!-- View Batch Modal -->

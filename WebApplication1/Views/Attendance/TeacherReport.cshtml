@@ -128,6 +128,7 @@
                 <div class="space-y-8">
                     @foreach (var batch in Model.Batches)
                     {
+                        var todayDate = DateOnly.FromDateTime(DateTime.Now);
                         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                             <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
                                 <div class="flex items-center justify-between">
@@ -155,53 +156,101 @@
                                 }
                                 else
                                 {
-                                    @foreach (var session in batch.Sessions)
-                                    {
-                                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                            <div class="flex items-center gap-4">
-                                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                                                    <span class="font-bold">@session.Date.Day</span>
-                                                    <span class="text-[10px] uppercase">@session.Date.ToString("MMM")</span>
-                                                </div>
-                                                <div>
-                                                    <h4 class="font-medium text-gray-900 dark:text-white">@session.CourseName</h4>
-                                                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                                        <span>@session.Date.ToString("dddd")</span>
-                                                        <span>&bull;</span>
-                                                        <span>@session.StartTime.ToString("HH:mm") - @session.EndTime.ToString("HH:mm")</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    var courseGroups = batch.Sessions
+                                        .GroupBy(s => s.CourseName)
+                                        .OrderBy(g => g.Key)
+                                        .ToList();
 
-                                            <div class="flex items-center gap-4">
-                                                @if (session.Status == "Marked")
-                                                {
-                                                    <div class="hidden text-right sm:block">
-                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                            @session.PresentCount / @session.TotalStudents Present
-                                                        </div>
-                                                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                            @((double)session.PresentCount / (session.TotalStudents == 0 ? 1 : session.TotalStudents) * 100)% Attendance
+                                    <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                                        @foreach (var courseGroup in courseGroups)
+                                        {
+                                            var markedCount = courseGroup.Count(s => s.Status == "Marked");
+                                            var pendingCount = courseGroup.Count(s => s.Status == "Pending");
+                                            var presentSum = courseGroup.Where(s => s.Status == "Marked").Sum(s => s.PresentCount);
+                                            var totalSum = courseGroup.Where(s => s.Status == "Marked").Sum(s => s.TotalStudents);
+                                            var courseAttendance = totalSum > 0 ? Math.Round(presentSum * 100.0 / totalSum, 1) : 0;
+
+                                            <details class="group">
+                                                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                    <div class="min-w-0">
+                                                        <div class="font-medium text-gray-900 dark:text-white truncate">@courseGroup.Key</div>
+                                                        <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                            <span>@markedCount Marked</span>
+                                                            <span>&bull;</span>
+                                                            <span>@pendingCount Pending</span>
+                                                            @if (markedCount > 0)
+                                                            {
+                                                                <span>&bull;</span>
+                                                                <span>@courseAttendance% Attendance</span>
+                                                            }
                                                         </div>
                                                     </div>
-                                                    <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString("yyyy-MM-dd")"
-                                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
-                                                        <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+
+                                                    <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                                        <svg class="h-5 w-5 transition-transform duration-200 group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                         </svg>
-                                                        Edit
-                                                    </a>
-                                                }
-                                                else
-                                                {
-                                                    <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString("yyyy-MM-dd")"
-                                                       class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-400">
-                                                        Mark Attendance
-                                                    </a>
-                                                }
-                                            </div>
-                                        </div>
-                                    }
+                                                    </div>
+                                                </summary>
+
+                                                <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                                                    @foreach (var session in courseGroup.OrderByDescending(s => s.Date).ThenByDescending(s => s.StartTime))
+                                                    {
+                                                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                            <div class="flex items-center gap-4">
+                                                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                                                    <span class="font-bold">@session.Date.Day</span>
+                                                                    <span class="text-[10px] uppercase">@session.Date.ToString("MMM")</span>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                                                        <span>@session.Date.ToString("dddd")</span>
+                                                                        <span>&bull;</span>
+                                                                        <span>@session.StartTime.ToString("HH:mm") - @session.EndTime.ToString("HH:mm")</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="flex items-center gap-4">
+                                                                @if (session.Status == "Marked")
+                                                                {
+                                                                    <div class="hidden text-right sm:block">
+                                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            @session.PresentCount / @session.TotalStudents Present
+                                                                        </div>
+                                                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                                            @((double)session.PresentCount / (session.TotalStudents == 0 ? 1 : session.TotalStudents) * 100)% Attendance
+                                                                        </div>
+                                                                    </div>
+                                                                    <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString("yyyy-MM-dd")"
+                                                                       class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
+                                                                        <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                                        </svg>
+                                                                        Edit
+                                                                    </a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (User.IsInRole("Teacher") && session.Date != todayDate)
+                                                                    {
+                                                                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Pending • Contact admin</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <a asp-action="Mark" asp-route-slotId="@session.SlotId" asp-route-date="@session.Date.ToString("yyyy-MM-dd")"
+                                                                           class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                                                                            Mark Attendance
+                                                                        </a>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </details>
+                                        }
+                                    </div>
                                 }
                             </div>
                         </div>

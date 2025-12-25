@@ -1,4 +1,4 @@
-﻿using AMS.Models;
+﻿using AMS.Data;
 using AMS.Helpers;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -20,12 +21,14 @@ namespace AMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IInstitutionService _institutionService;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ILogger<StudentPortalController> _logger;
 
-        public StudentPortalController(ApplicationDbContext context, IInstitutionService institutionService, IWebHostEnvironment webHostEnvironment)
+        public StudentPortalController(ApplicationDbContext context, IInstitutionService institutionService, IWebHostEnvironment webHostEnvironment, ILogger<StudentPortalController> logger)
         {
             _context = context;
             _institutionService = institutionService;
             _webHostEnvironment = webHostEnvironment;
+            _logger = logger;
         }
 
         private async Task<Student?> GetCurrentStudentAsync()
@@ -190,140 +193,15 @@ namespace AMS.Controllers
 
         public async Task<IActionResult> MyAttendance(int? semesterId)
         {
-            var student = await GetCurrentStudentAsync();
-            if (student == null) return RedirectToAction("Login", "Auth");
-
-            // Reuse the logic from AttendanceController.StudentReport but restricted to current student
-            // We can redirect to that controller action if we want, but better to have a dedicated view for students
-            // Or we can instantiate the AttendanceController? No, that's bad practice.
-            // Let's copy the relevant logic or refactor into a service. For now, copy-paste-modify is safer to avoid breaking existing code.
-
-            var model = new StudentAttendanceReportViewModel
-            {
-                SelectedStudentId = student.StudentId,
-                StudentName = $"{student.FirstName} {student.LastName}",
-                RollNumber = student.RollNumber,
-                BatchName = student.Batch?.BatchName,
-                SelectedSemesterId = semesterId
-            };
-
-            // Load Semesters for dropdown
-            model.SemesterList = await _context.Semesters
-                .Select(s => new SelectListItem { Value = s.SemesterId.ToString(), Text = s.SemesterName + " (" + s.Year + ")", Selected = s.SemesterId == semesterId })
-                .ToListAsync();
-
-            // Get Attendance
-            var attendanceQuery = _context.Attendances
-                .Include(a => a.Session)
-                .ThenInclude(s => s.CourseAssignment)
-                .ThenInclude(ca => ca.Course)
-                .Include(a => a.Session)
-                .ThenInclude(s => s.CourseAssignment)
-                .ThenInclude(ca => ca.Semester)
-                .Include(a => a.Session)
-                .ThenInclude(s => s.CourseAssignment)
-                .ThenInclude(ca => ca.Teacher)
-                .Where(a => a.StudentId == student.StudentId && a.Session.CourseAssignment.Course != null);
-
-            if (semesterId.HasValue)
-            {
-                attendanceQuery = attendanceQuery.Where(a => a.Session.CourseAssignment.SemesterId == semesterId);
-            }
-
-            var attendances = await attendanceQuery
-                .OrderByDescending(a => a.Session.SessionDate)
-                .ToListAsync();
-
-            // Group by Course with AssignmentId
-            model.Courses = attendances.GroupBy(a => new
-            {
-                a.Session.CourseAssignmentId,
-                a.Session.CourseAssignment.CourseId,
-                a.Session.CourseAssignment.Course.CourseName,
-                a.Session.CourseAssignment.Semester.SemesterName,
-                a.Session.CourseAssignment.Semester.Year,
-                a.Session.CourseAssignment.Teacher.FirstName,
-                a.Session.CourseAssignment.Teacher.LastName
-            })
-            .Select(g => new StudentCourseAttendanceViewModel
-            {
-                CourseId = g.Key.CourseId ?? 0,
-                AssignmentId = g.Key.CourseAssignmentId ?? 0,
-                CourseName = g.Key.CourseName,
-                SemesterName = $"{g.Key.SemesterName} ({g.Key.Year})",
-                TeacherName = $"{g.Key.FirstName} {g.Key.LastName}",
-                TotalSessions = g.Count(),
-                PresentSessions = g.Count(a => a.Status == "Present"),
-                LateSessions = g.Count(a => a.Status == "Late"),
-                ExcusedSessions = g.Count(a => a.Status == "Excused"),
-                AbsentSessions = g.Count(a => a.Status == "Absent"),
-                // Percentage: Present + Late + Excused count as attended
-                Percentage = g.Count() > 0 ? (double)(g.Count(a => a.Status == "Present") + g.Count(a => a.Status == "Late") + g.Count(a => a.Status == "Excused")) / g.Count() * 100 : 0,
-                History = g.Select(a => new AttendanceRecordViewModel
-                {
-                    Date = a.Session.SessionDate,
-                    Status = a.Status,
-                    StartTime = a.Session.StartTime,
-                    EndTime = a.Session.EndTime
-                }).OrderByDescending(h => h.Date).ToList()
-            }).ToList();
-
-            return View(model);
+            // Client-side page; data loads from GetMyAttendanceJson
+            ViewBag.InitialSemesterId = semesterId;
+            return View();
         }
 
         public async Task<IActionResult> MyTimetable()
         {
-            var student = await GetCurrentStudentAsync();
-            if (student == null) return RedirectToAction("Login", "Auth");
-
-            // Get Active Timetable
-            // Logic: Get Student's Batch Timetable + Any Cross-Batch Course Slots
-
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            var currentSemester = await _context.Semesters
-                .FirstOrDefaultAsync(s => s.StartDate <= today && s.EndDate >= today && s.IsActive == true);
-
-            var batch = await _context.Batches.FindAsync(student.BatchId);
-            ViewBag.BatchName = batch?.BatchName ?? "N/A";
-            ViewBag.SemesterName = currentSemester != null ? $"{currentSemester.SemesterName} ({currentSemester.Year})" : "N/A";
-
-            if (currentSemester == null)
-            {
-                return View(new List<TimetableSlot>()); // Empty view
-            }
-
-            var slots = await _context.TimetableSlots
-                .Include(ts => ts.CourseAssignment)
-                .ThenInclude(ca => ca.Course)
-                .Include(ts => ts.CourseAssignment)
-                .ThenInclude(ca => ca.Teacher)
-                .Where(ts => ts.Timetable.BatchId == student.BatchId &&
-                             ts.Timetable.SemesterId == currentSemester.SemesterId &&
-                             ts.Timetable.IsActive == true)
-                .ToListAsync();
-
-            // Add Cross-Batch Slots
-            var enrollments = await _context.Enrollments
-                .Where(e => e.StudentId == student.StudentId && e.Status == "Active" && e.BatchId.HasValue && e.BatchId != student.BatchId)
-                .ToListAsync();
-
-            foreach (var enrollment in enrollments)
-            {
-                var crossSlots = await _context.TimetableSlots
-                    .Include(ts => ts.CourseAssignment)
-                    .ThenInclude(ca => ca.Course)
-                    .Include(ts => ts.CourseAssignment)
-                    .ThenInclude(ca => ca.Teacher)
-                    .Where(ts => ts.Timetable.BatchId == enrollment.BatchId &&
-                                 ts.Timetable.SemesterId == currentSemester.SemesterId &&
-                                 ts.Timetable.IsActive == true &&
-                                 ts.CourseAssignment.CourseId == enrollment.CourseId)
-                    .ToListAsync();
-
-                slots.AddRange(crossSlots);
-            }
-
-            return View(slots.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime).ToList());
+            // Client-side page; data loads from GetMyTimetableJson
+            return View();
         }
 
         // NOTE: MyCourses is implemented in the Student Self-Enrollment section below.
@@ -997,41 +875,85 @@ namespace AMS.Controllers
 
             var batch = await _context.Batches.FindAsync(student.BatchId);
 
+            _logger.LogInformation("[TIMETABLE] Student: {StudentId}, Batch: {BatchId}, Semester: {SemesterId}",
+                student.StudentId, student.BatchId, currentSemester?.SemesterId);
+
             var slots = new List<object>();
             if (currentSemester != null)
             {
-                var enrollments = await _context.Enrollments
-                    .Include(e => e.Course)
-                    .Where(e => e.StudentId == student.StudentId && e.Status == "Active")
+                // Only consider enrollments relevant to the CURRENT semester timetable.
+                var enrolledCourseIds = await _context.Enrollments
+                    .AsNoTracking()
+                    .Where(e => e.StudentId == student.StudentId &&
+                                e.Status == "Active" &&
+                                e.SemesterId == currentSemester.SemesterId &&
+                                e.CourseId != null)
+                    .Select(e => e.CourseId!.Value)
+                    .Distinct()
                     .ToListAsync();
 
-                foreach (var enrollment in enrollments)
+                _logger.LogInformation("[TIMETABLE] Enrolled course IDs: {CourseIds}", string.Join(", ", enrolledCourseIds));
+
+                if (enrolledCourseIds.Count > 0)
                 {
-                    var targetBatchId = enrollment.BatchId ?? student.BatchId;
-                    var crossSlots = await _context.TimetableSlots
-                        .Include(ts => ts.CourseAssignment)
-                        .ThenInclude(ca => ca.Course)
-                        .Include(ts => ts.CourseAssignment)
-                        .ThenInclude(ca => ca.Teacher)
-                        .Where(ts => ts.Timetable.BatchId == targetBatchId &&
-                                     ts.Timetable.SemesterId == currentSemester.SemesterId &&
-                                     ts.Timetable.IsActive == true &&
-                                     ts.CourseAssignment.CourseId == enrollment.CourseId)
-                        .Select(ts => new
-                        {
-                            ts.SlotId,
-                            ts.DayOfWeek,
-                            DayName = GetDayName(ts.DayOfWeek ?? 0),
-                            StartTime = ts.StartTime.Value.ToString(@"hh\:mm"),
-                            EndTime = ts.EndTime.Value.ToString(@"hh\:mm"),
-                            CourseCode = ts.CourseAssignment.Course.CourseCode,
-                            CourseName = ts.CourseAssignment.Course.CourseName,
-                            TeacherName = ts.CourseAssignment.Teacher != null
-                                ? ts.CourseAssignment.Teacher.FirstName + " " + ts.CourseAssignment.Teacher.LastName
-                                : "N/A"
-                        })
+                    // CRITICAL FIX: Find the SINGLE most recent active timetable for this batch+semester
+                    // to prevent join multiplication when multiple active timetables exist.
+                    var allActiveTimetables = await _context.Timetables
+                        .AsNoTracking()
+                        .Where(t => t.BatchId == student.BatchId &&
+                                   t.SemesterId == currentSemester.SemesterId &&
+                                   t.IsActive == true)
+                        .Select(t => new { t.TimetableId, t.BatchId, t.SemesterId })
                         .ToListAsync();
-                    slots.AddRange(crossSlots);
+
+                    _logger.LogWarning("[TIMETABLE] Found {Count} active timetables for Batch {BatchId}, Semester {SemesterId}: {TimetableIds}",
+                        allActiveTimetables.Count, student.BatchId, currentSemester.SemesterId,
+                        string.Join(", ", allActiveTimetables.Select(t => t.TimetableId)));
+
+                    var activeTimetableId = allActiveTimetables
+                        .OrderByDescending(t => t.TimetableId)
+                        .Select(t => t.TimetableId)
+                        .FirstOrDefault();
+
+                    _logger.LogInformation("[TIMETABLE] Using timetable ID: {TimetableId}", activeTimetableId);
+
+                    if (activeTimetableId > 0)
+                    {
+                        // Fetch slots from the SINGLE active timetable only
+                        var rawSlots = await _context.TimetableSlots
+                            .AsNoTracking()
+                            .Where(ts => ts.TimetableId == activeTimetableId &&
+                                         ts.CourseAssignment != null &&
+                                         ts.CourseAssignment.IsActive == true &&
+                                         ts.CourseAssignment.CourseId != null &&
+                                         enrolledCourseIds.Contains(ts.CourseAssignment.CourseId.Value) &&
+                                         ts.StartTime != null &&
+                                         ts.EndTime != null)
+                            .Select(ts => new
+                            {
+                                ts.SlotId,
+                                ts.DayOfWeek,
+                                DayName = GetDayName(ts.DayOfWeek ?? 0),
+                                StartTime = ts.StartTime!.Value.ToString(@"hh\:mm"),
+                                EndTime = ts.EndTime!.Value.ToString(@"hh\:mm"),
+                                CourseCode = ts.CourseAssignment!.Course != null ? ts.CourseAssignment.Course.CourseCode : "",
+                                CourseName = ts.CourseAssignment!.Course != null ? ts.CourseAssignment.Course.CourseName : "",
+                                TeacherName = ts.CourseAssignment!.Teacher != null
+                                    ? (ts.CourseAssignment.Teacher.FirstName + " " + ts.CourseAssignment.Teacher.LastName).Trim()
+                                    : "N/A"
+                            })
+                            .ToListAsync();
+
+                        _logger.LogInformation("[TIMETABLE] Retrieved {Count} raw slots from DB", rawSlots.Count);
+
+                        // Final dedupe by natural key in case there are still duplicate slot records
+                        slots = rawSlots
+                            .GroupBy(s => new { s.DayOfWeek, s.StartTime, s.EndTime, s.CourseName })
+                            .Select(g => (object)g.First())
+                            .ToList();
+
+                        _logger.LogInformation("[TIMETABLE] After dedupe: {Count} unique slots", slots.Count);
+                    }
                 }
             }
 
@@ -1051,83 +973,128 @@ namespace AMS.Controllers
             var student = await GetCurrentStudentAsync();
             if (student == null) return Unauthorized();
 
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            Semester currentSemester;
+            _logger.LogInformation("[ATTENDANCE] Student: {StudentId}, Requested Semester: {SemesterId}",
+                student.StudentId, semesterId);
+
+            // If semesterId is not provided, return attendance across ALL semesters (matches the old server-rendered view).
+            var batch = await _context.Batches.FindAsync(student.BatchId);
+
+            var attendanceQuery = _context.Attendances
+                .AsNoTracking()
+                .Where(a => a.StudentId == student.StudentId && a.Session.CourseAssignment != null);
 
             if (semesterId.HasValue)
             {
-                currentSemester = await _context.Semesters.FindAsync(semesterId.Value);
-            }
-            else
-            {
-                currentSemester = await _context.Semesters
-                    .FirstOrDefaultAsync(s => s.StartDate <= today && s.EndDate >= today && s.IsActive == true);
+                attendanceQuery = attendanceQuery.Where(a => a.Session.CourseAssignment.SemesterId == semesterId.Value);
             }
 
-            var batch = await _context.Batches.FindAsync(student.BatchId);
-            var courses = new List<object>();
-
-            if (currentSemester != null)
-            {
-                var enrollments = await _context.Enrollments
-                    .Include(e => e.Course)
-                    .Where(e => e.StudentId == student.StudentId && e.Status == "Active")
-                    .ToListAsync();
-
-                foreach (var enrollment in enrollments)
+            var rows = await attendanceQuery
+                .OrderByDescending(a => a.Session.SessionDate)
+                .ThenByDescending(a => a.Session.StartTime)
+                .Select(a => new
                 {
-                    var targetBatchId = enrollment.BatchId ?? student.BatchId;
-                    var assignment = await _context.CourseAssignments
-                        .Include(ca => ca.Teacher)
-                        .FirstOrDefaultAsync(ca => ca.CourseId == enrollment.CourseId &&
-                                                   ca.BatchId == targetBatchId &&
-                                                   ca.SemesterId == currentSemester.SemesterId);
+                    attendanceId = a.AttendanceId,
+                    sessionId = a.SessionId,
+                    status = a.Status,
+                    sessionDate = a.Session.SessionDate,
+                    startTime = a.Session.StartTime,
+                    courseAssignmentId = a.Session.CourseAssignmentId,
+                    courseId = a.Session.CourseAssignment.CourseId,
+                    courseCode = a.Session.CourseAssignment.Course.CourseCode,
+                    courseName = a.Session.CourseAssignment.Course.CourseName,
+                    semesterId = a.Session.CourseAssignment.SemesterId,
+                    semesterName = a.Session.CourseAssignment.Semester.SemesterName,
+                    semesterYear = a.Session.CourseAssignment.Semester.Year,
+                    teacherFirst = a.Session.CourseAssignment.Teacher != null ? a.Session.CourseAssignment.Teacher.FirstName : "",
+                    teacherLast = a.Session.CourseAssignment.Teacher != null ? a.Session.CourseAssignment.Teacher.LastName : ""
+                })
+                .ToListAsync();
 
-                    if (assignment != null)
-                    {
-                        var attendances = await _context.Attendances
-                            .Include(a => a.Session)
-                            .Where(a => a.StudentId == student.StudentId &&
-                                        a.Session.CourseAssignmentId == assignment.AssignmentId)
-                            .OrderByDescending(a => a.Session.SessionDate)
-                            .ThenByDescending(a => a.Session.StartTime)
-                            .ToListAsync();
+            _logger.LogInformation("[ATTENDANCE] Retrieved {Count} raw attendance rows from DB", rows.Count);
 
-                        var total = attendances.Count;
-                        var present = attendances.Count(a => a.Status == "Present");
-                        var late = attendances.Count(a => a.Status == "Late");
-                        var excused = attendances.Count(a => a.Status == "Excused");
-                        var absent = attendances.Count(a => a.Status == "Absent");
-                        var effectivePresent = present + late + excused;
-                        var percentage = total > 0 ? (double)effectivePresent / total * 100 : 0;
+            // Defensive: if attendance rows were inserted twice for the same student+session,
+            // keep the latest record per session.
+            var duplicateSessions = rows
+                .GroupBy(r => r.sessionId)
+                .Where(g => g.Count() > 1)
+                .ToList();
 
-                        courses.Add(new
-                        {
-                            courseId = enrollment.CourseId,
-                            assignmentId = assignment.AssignmentId,
-                            courseCode = enrollment.Course.CourseCode,
-                            courseName = enrollment.Course.CourseName,
-                            teacherName = assignment.Teacher != null
-                                ? $"{assignment.Teacher.FirstName} {assignment.Teacher.LastName}"
-                                : "N/A",
-                            total,
-                            present,
-                            late,
-                            excused,
-                            absent,
-                            effectivePresent,
-                            percentage = Math.Round(percentage, 1),
-                            isLow = percentage < 75,
-                            history = attendances.Take(10).Select(a => new
-                            {
-                                date = a.Session.SessionDate.ToString("MMM dd, yyyy"),
-                                time = a.Session.StartTime.ToString(@"hh\:mm"),
-                                status = a.Status
-                            }).ToList()
-                        });
-                    }
-                }
+            if (duplicateSessions.Any())
+            {
+                _logger.LogWarning("[ATTENDANCE] Found {Count} duplicate session IDs: {SessionIds}",
+                    duplicateSessions.Count,
+                    string.Join(", ", duplicateSessions.Select(g => $"{g.Key} (x{g.Count()})").Take(10)));
             }
+
+            rows = rows
+                .GroupBy(r => r.sessionId)
+                .Select(g => g.OrderByDescending(x => x.attendanceId).First())
+                .ToList();
+
+            _logger.LogInformation("[ATTENDANCE] After session dedupe: {Count} unique rows", rows.Count);
+
+            // Group by courseId + semesterId ONLY (not by assignmentId/teacher)
+            // so that if a student has multiple sections/teachers for the same course,
+            // they see ONE unified attendance record (not duplicates).
+            var courses = rows
+                .GroupBy(r => new
+                {
+                    r.courseId,
+                    r.courseCode,
+                    r.courseName,
+                    r.semesterId,
+                    r.semesterName,
+                    r.semesterYear
+                })
+                .Select(g =>
+                {
+                    var total = g.Count();
+                    var present = g.Count(a => a.status == "Present");
+                    var late = g.Count(a => a.status == "Late");
+                    var excused = g.Count(a => a.status == "Excused");
+                    var absent = g.Count(a => a.status == "Absent");
+                    var effectivePresent = present + late + excused;
+                    var percentage = total > 0 ? (double)effectivePresent / total * 100 : 0;
+
+                    // Pick the most common teacher for display (in case of multiple sections)
+                    var primaryTeacher = g
+                        .GroupBy(x => new { x.teacherFirst, x.teacherLast })
+                        .OrderByDescending(tg => tg.Count())
+                        .Select(tg => (tg.Key.teacherFirst + " " + tg.Key.teacherLast).Trim())
+                        .FirstOrDefault() ?? "N/A";
+
+                    // Use the first assignment ID for PDF export link
+                    var primaryAssignmentId = g.Select(x => x.courseAssignmentId).FirstOrDefault();
+
+                    return new
+                    {
+                        courseId = g.Key.courseId,
+                        assignmentId = primaryAssignmentId,
+                        courseCode = g.Key.courseCode,
+                        courseName = g.Key.courseName,
+                        teacherName = primaryTeacher,
+                        semesterId = g.Key.semesterId,
+                        semesterName = $"{g.Key.semesterName} ({g.Key.semesterYear})",
+                        total,
+                        present,
+                        late,
+                        excused,
+                        absent,
+                        effectivePresent,
+                        percentage = Math.Round(percentage, 1),
+                        isLow = percentage < 75,
+                        history = g.OrderByDescending(a => a.sessionDate).ThenByDescending(a => a.startTime).Take(10).Select(a => new
+                        {
+                            date = a.sessionDate.ToString("MMM dd, yyyy"),
+                            time = a.startTime.ToString(@"hh\:mm"),
+                            status = a.status
+                        }).ToList()
+                    };
+                })
+                .OrderBy(c => c.percentage)
+                .ToList<object>();
+
+            _logger.LogInformation("[ATTENDANCE] After course grouping: {Count} unique courses", courses.Count);
 
             // Calculate overall stats
             int overallTotal = courses.Sum(c => (int)((dynamic)c).total);
@@ -1145,14 +1112,27 @@ namespace AMS.Controllers
                 .Select(s => new { s.SemesterId, SemesterName = s.SemesterName + " (" + s.Year + ")" })
                 .ToListAsync();
 
+            string semesterNameLabel;
+            int? currentSemesterId = null;
+            if (semesterId.HasValue)
+            {
+                var sem = await _context.Semesters.FindAsync(semesterId.Value);
+                currentSemesterId = sem?.SemesterId;
+                semesterNameLabel = sem != null ? $"{sem.SemesterName} ({sem.Year})" : "N/A";
+            }
+            else
+            {
+                semesterNameLabel = "All Semesters";
+            }
+
             return Json(new
             {
                 success = true,
                 studentName = $"{student.FirstName} {student.LastName}",
                 rollNumber = student.RollNumber,
                 batchName = batch?.BatchName ?? "N/A",
-                currentSemesterId = currentSemester?.SemesterId,
-                semesterName = currentSemester != null ? $"{currentSemester.SemesterName} ({currentSemester.Year})" : "N/A",
+                currentSemesterId,
+                semesterName = semesterNameLabel,
                 overall = new
                 {
                     total = overallTotal,
@@ -1420,17 +1400,32 @@ namespace AMS.Controllers
 
             // Get enrolled courses
             var enrollments = await _context.Enrollments
+                .AsNoTracking()
                 .Include(e => e.Course)
                 .Include(e => e.Semester)
                 .Where(e => e.StudentId == student.StudentId &&
+                           e.Status == "Active" &&
                            (selectedSemesterId == null || e.SemesterId == selectedSemesterId))
                 .ToListAsync();
+
+            // Defensive: dedupe in case enrollment rows exist multiple times for the same
+            // course+semester. If the DB contains duplicates (often differing only by BatchId
+            // null vs student's batch), the UI will otherwise render repeated cards.
+            var studentBatchId = student.BatchId;
+            enrollments = enrollments
+                .GroupBy(e => new { e.CourseId, e.SemesterId })
+                .Select(g => g
+                    .OrderByDescending(e => e.BatchId == null || e.BatchId == studentBatchId)
+                    .ThenByDescending(e => e.EnrollmentId)
+                    .First())
+                .ToList();
 
             var enrolledCourses = new List<object>();
             foreach (var enrollment in enrollments)
             {
                 var targetBatchId = enrollment.BatchId ?? student.BatchId;
                 var assignment = await _context.CourseAssignments
+                    .AsNoTracking()
                     .Include(ca => ca.Teacher)
                     .Include(ca => ca.Batch)
                     .Include(ca => ca.TimetableSlots)
@@ -1440,17 +1435,26 @@ namespace AMS.Controllers
                                               ca.IsActive == true);
 
                 var attendanceQuery = await _context.Attendances
+                    .AsNoTracking()
                     .Include(a => a.Session)
                     .ThenInclude(s => s.CourseAssignment)
                     .Where(a => a.StudentId == student.StudentId &&
                                a.Session.CourseAssignment.CourseId == enrollment.CourseId &&
                                a.Session.CourseAssignment.SemesterId == enrollment.SemesterId)
+                    .Select(a => new { a.AttendanceId, a.SessionId, a.Status })
                     .ToListAsync();
 
-                var totalSessions = attendanceQuery.Count;
-                var presentSessions = attendanceQuery.Count(a => a.Status == "Present" || a.Status == "Late" || a.Status == "Excused");
+                // Defensive: if duplicate attendance rows exist for the same session, keep the latest.
+                var distinctAttendanceBySession = attendanceQuery
+                    .Where(a => a.SessionId != null)
+                    .GroupBy(a => a.SessionId)
+                    .Select(g => g.OrderByDescending(x => x.AttendanceId).First())
+                    .ToList();
 
-                var semester = await _context.Semesters.FindAsync(enrollment.SemesterId);
+                var totalSessions = distinctAttendanceBySession.Count;
+                var presentSessions = distinctAttendanceBySession.Count(a => a.Status == "Present" || a.Status == "Late" || a.Status == "Excused");
+
+                var semester = enrollment.Semester;
                 bool canUnenroll = totalSessions == 0 && (semester == null || semester.EndDate >= today);
                 string unenrollBlockedReason = totalSessions > 0
                     ? $"Cannot unenroll: {totalSessions} attendance record(s) exist"
@@ -1485,6 +1489,8 @@ namespace AMS.Controllers
                                 startTime = ts.StartTime?.ToString("h:mm tt") ?? "",
                                 endTime = ts.EndTime?.ToString("h:mm tt") ?? ""
                             })
+                            .GroupBy(s => new { s.dayOfWeek, s.startTime, s.endTime })
+                            .Select(g => g.First())
                             .OrderBy(s => s.dayOfWeek)
                             .Select(s => (object)s)
                             .ToList()

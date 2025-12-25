@@ -250,45 +250,93 @@ namespace AMS.Controllers
                 .ToListAsync();
 
             // Teacher Performance
-            viewModel.TeacherPerformances = await _context.Teachers
+            const int topTeacherCount = 5;
+
+            var activeTeachers = await _context.Teachers
+                .AsNoTracking()
                 .Where(t => t.IsActive == true)
-                .Include(t => t.CourseAssignments)
-                    .ThenInclude(ca => ca.Sessions)
-                        .ThenInclude(s => s.Attendances)
-                .Include(t => t.CourseAssignments)
-                    .ThenInclude(ca => ca.Batch)
-                        .ThenInclude(b => b!.Students)
-                .Select(t => new TeacherPerformanceViewModel
+                .Select(t => new
                 {
-                    TeacherId = t.TeacherId,
-                    TeacherName = (t.FirstName ?? "") + " " + (t.LastName ?? ""),
-                    TotalCourses = t.CourseAssignments.Count(ca => ca.IsActive == true),
-                    TotalSessions = t.CourseAssignments.SelectMany(ca => ca.Sessions).Count(),
-                    TotalStudents = t.CourseAssignments
-                        .Where(ca => ca.Batch != null)
-                        .SelectMany(ca => ca.Batch!.Students)
-                        .Where(s => s.IsActive == true)
-                        .Select(s => s.StudentId)
-                        .Distinct()
-                        .Count(),
-                    AverageAttendance = t.CourseAssignments
-                        .SelectMany(ca => ca.Sessions)
-                        .SelectMany(s => s.Attendances)
-                        .Count() > 0
-                        ? Math.Round(
-                            (double)t.CourseAssignments
-                                .SelectMany(ca => ca.Sessions)
-                                .SelectMany(s => s.Attendances)
-                                .Count(a => a.Status == "Present" || a.Status == "Late")
-                            / t.CourseAssignments
-                                .SelectMany(ca => ca.Sessions)
-                                .SelectMany(s => s.Attendances)
-                                .Count() * 100, 1)
-                        : 0
+                    t.TeacherId,
+                    TeacherName = (t.FirstName ?? "") + " " + (t.LastName ?? "")
                 })
-                .OrderByDescending(t => t.AverageAttendance)
-                .Take(5)
                 .ToListAsync();
+
+            var totalCoursesByTeacher = await _context.CourseAssignments
+                .AsNoTracking()
+                .Where(ca => ca.IsActive == true)
+                .GroupBy(ca => ca.TeacherId)
+                .Select(g => new { TeacherId = g.Key, TotalCourses = g.Count() })
+                .ToListAsync();
+
+            var totalSessionsByTeacher = await (
+                from ca in _context.CourseAssignments.AsNoTracking()
+                join s in _context.Sessions.AsNoTracking() on ca.AssignmentId equals s.CourseAssignmentId
+                group s by ca.TeacherId
+                into g
+                select new { TeacherId = g.Key, TotalSessions = g.Count() }
+            ).ToListAsync();
+
+            var totalStudentsByTeacher = await (
+                from ca in _context.CourseAssignments.AsNoTracking()
+                where ca.BatchId != null
+                join st in _context.Students.AsNoTracking().Where(s => s.IsActive == true)
+                    on ca.BatchId equals st.BatchId
+                group st by ca.TeacherId
+                into g
+                select new
+                {
+                    TeacherId = g.Key,
+                    TotalStudents = g.Select(x => x.StudentId).Distinct().Count()
+                }
+            ).ToListAsync();
+
+            var attendanceByTeacher = await (
+                from ca in _context.CourseAssignments.AsNoTracking()
+                join s in _context.Sessions.AsNoTracking() on ca.AssignmentId equals s.CourseAssignmentId
+                join a in _context.Attendances.AsNoTracking() on s.SessionId equals a.SessionId
+                group a by ca.TeacherId
+                into g
+                select new
+                {
+                    TeacherId = g.Key,
+                    TotalAttendances = g.Count(),
+                    PresentAttendances = g.Count(x => x.Status == "Present" || x.Status == "Late")
+                }
+            ).ToListAsync();
+
+            var totalCoursesMap = totalCoursesByTeacher.ToDictionary(x => x.TeacherId, x => x.TotalCourses);
+            var totalSessionsMap = totalSessionsByTeacher.ToDictionary(x => x.TeacherId, x => x.TotalSessions);
+            var totalStudentsMap = totalStudentsByTeacher.ToDictionary(x => x.TeacherId, x => x.TotalStudents);
+            var attendanceMap = attendanceByTeacher.ToDictionary(x => x.TeacherId, x => x);
+
+            viewModel.TeacherPerformances = activeTeachers
+                .Select(t =>
+                {
+                    totalCoursesMap.TryGetValue(t.TeacherId, out var courses);
+                    totalSessionsMap.TryGetValue(t.TeacherId, out var sessions);
+                    totalStudentsMap.TryGetValue(t.TeacherId, out var students);
+                    attendanceMap.TryGetValue(t.TeacherId, out var att);
+
+                    var totalAttendances = att?.TotalAttendances ?? 0;
+                    var presentAttendances = att?.PresentAttendances ?? 0;
+                    var avgAttendance = totalAttendances > 0
+                        ? Math.Round(presentAttendances * 100.0 / totalAttendances, 1)
+                        : 0;
+
+                    return new TeacherPerformanceViewModel
+                    {
+                        TeacherId = t.TeacherId,
+                        TeacherName = t.TeacherName,
+                        TotalCourses = courses,
+                        TotalSessions = sessions,
+                        TotalStudents = students,
+                        AverageAttendance = avgAttendance
+                    };
+                })
+                .OrderByDescending(x => x.AverageAttendance)
+                .Take(topTeacherCount)
+                .ToList();
 
             return View(viewModel);
         }
@@ -302,35 +350,40 @@ namespace AMS.Controllers
 
         //=======================================Manage Admin Controllers ========================================//
         //see admins
-        public async Task<IActionResult> Admins(DateTime? fromDate, DateTime? toDate, string? status, string? search)
+        public async Task<IActionResult> Admins(AdminFilterViewModel filter)
         {
+
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
 
             var query = _context.Admins
         .Include(a => a.User)
+        .AsNoTracking()
         .AsQueryable();
 
             // Apply date filter
-            if (fromDate.HasValue)
+            if (filter.FromDate.HasValue)
             {
-                query = query.Where(a => a.User.CreatedAt >= fromDate.Value);
+                query = query.Where(a => a.User.CreatedAt >= filter.FromDate.Value);
             }
 
-            if (toDate.HasValue)
+            if (filter.ToDate.HasValue)
             {
                 // Include the entire day
-                var endDate = toDate.Value.AddDays(1);
+                var endDate = filter.ToDate.Value.AddDays(1);
                 query = query.Where(a => a.User.CreatedAt < endDate);
             }
-            if (!string.IsNullOrEmpty(status))
+            if (!string.IsNullOrEmpty(filter.Status))
             {
-                bool isActive = status.ToLower() == "active";
+                bool isActive = filter.Status.ToLower() == "active";
                 query = query.Where(a => a.User.IsActive == isActive);
             }
 
             // Apply search filter for username, email, first name, or last name
-            if (!string.IsNullOrEmpty(search))
+            if (!string.IsNullOrEmpty(filter.Search))
             {
-                search = search.ToLower();
+                var search = filter.Search.ToLower();
                 query = query.Where(a =>
                     a.User.Username.ToLower().Contains(search) ||
                     a.User.Email.ToLower().Contains(search) ||
@@ -339,18 +392,19 @@ namespace AMS.Controllers
                 );
             }
 
-            var admins = await query.OrderByDescending(a => a.User.CreatedAt).ToListAsync();
-
-            var viewModel = new AdminFilterViewModel
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
             {
-                FromDate = fromDate,
-                ToDate = toDate,
-                Status = status,
-                Search = search,
-                Admins = admins
-            };
+                filter.Page = filter.TotalPages;
+            }
 
-            return View(viewModel);
+            filter.Admins = await query
+                .OrderByDescending(a => a.User.CreatedAt)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return View(filter);
             // Apply status filter
 
         }

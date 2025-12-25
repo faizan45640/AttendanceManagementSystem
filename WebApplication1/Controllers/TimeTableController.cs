@@ -1,4 +1,4 @@
-﻿using AMS.Models;
+﻿using AMS.Data;
 using AMS.Helpers;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
@@ -10,6 +10,7 @@ using System.Security.Claims;
 using ClosedXML.Excel;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -29,9 +30,14 @@ namespace AMS.Controllers
         // GET: Timetable
         public async Task<IActionResult> Index(TimetableFilterViewModel filter)
         {
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
+
             var query = _context.Timetables
                 .Include(t => t.Batch)
                 .Include(t => t.Semester)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (filter.SemesterId.HasValue)
@@ -50,7 +56,18 @@ namespace AMS.Controllers
                 query = query.Where(t => t.IsActive == isActive);
             }
 
-            filter.Timetables = await query.ToListAsync();
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
+            {
+                filter.Page = filter.TotalPages;
+            }
+
+            filter.Timetables = await query
+                .OrderByDescending(t => t.IsActive)
+                .ThenByDescending(t => t.TimetableId)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
 
             // Get semesters with formatted display name (SemesterName Year)
             var semesters = await _context.Semesters

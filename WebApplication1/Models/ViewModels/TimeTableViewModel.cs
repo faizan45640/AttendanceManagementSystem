@@ -83,7 +83,7 @@ namespace AMS.Models.ViewModels
         [Display(Name = "End Time")]
         public TimeOnly EndTime { get; set; }
     }
-    public class TimetableFilterViewModel
+    public class TimetableFilterViewModel : PagedViewModel
     {
 
         public List<Timetable> Timetables { get; set; } = new List<Timetable>();

@@ -7,7 +7,7 @@ namespace AMS.Models.ViewModels
     public class EnrollmentViewModel
     {
     }
-    public class EnrollmentFilterViewModel
+    public class EnrollmentFilterViewModel : PagedViewModel
     {
         // Filter Properties
         public int? StudentId { get; set; }

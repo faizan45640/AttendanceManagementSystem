@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AMS.Models.ViewModels
 {
-    public class AdminFilterViewModel
+    public class AdminFilterViewModel : PagedViewModel
     {
         [Display(Name = "Search")]
         public string? Search { get; set; }

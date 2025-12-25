@@ -56,7 +56,7 @@ namespace AMS.Models.ViewModels
         public bool IsActive { get; set; } = true;
     }
 
-    public class TeacherFilterViewModel
+    public class TeacherFilterViewModel : PagedViewModel
     {
         public List<Teacher> Teachers { get; set; } = new List<Teacher>();
         public DateTime? FromDate { get; set; }

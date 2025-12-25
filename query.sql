@@ -1,0 +1,1 @@
+﻿SELECT TimetableId, DayOfWeek, StartTime, EndTime, CourseAssignmentId, COUNT(*) FROM TimetableSlots GROUP BY TimetableId, DayOfWeek, StartTime, EndTime, CourseAssignmentId HAVING COUNT(*) > 1

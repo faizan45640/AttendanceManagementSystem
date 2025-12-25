@@ -23,7 +23,7 @@ namespace AMS.Models.ViewModels
         public bool IsActive { get; set; } = true;
     }
 
-    public class CourseFilterViewModel
+    public class CourseFilterViewModel : PagedViewModel
     {
         public IEnumerable<Course> Courses { get; set; } = new List<Course>();
         public string? CourseCode { get; set; }

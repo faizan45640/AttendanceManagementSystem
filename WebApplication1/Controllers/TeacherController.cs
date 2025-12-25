@@ -19,9 +19,14 @@ namespace AMS.Controllers
         // GET: Teacher/Teachers
         public async Task<IActionResult> Teachers(TeacherFilterViewModel filter)
         {
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
+
             var query = _context.Teachers
                 .Include(t => t.User)
                 .Include(t => t.CourseAssignments)
+                .AsNoTracking()
                 .AsQueryable();
 
             // Apply filters
@@ -41,8 +46,16 @@ namespace AMS.Controllers
                 query = query.Where(t => t.IsActive == isActive);
             }
 
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
+            {
+                filter.Page = filter.TotalPages;
+            }
+
             filter.Teachers = await query
                 .OrderByDescending(t => t.User!.CreatedAt)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
 
             return View(filter);

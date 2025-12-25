@@ -66,6 +66,8 @@
 <!-- Filter Card -->
 <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
     <form method="get" asp-action="Semesters" class="space-y-4">
+        <input type="hidden" name="Page" value="1" />
+        <input type="hidden" name="PageSize" value="@Model.PageSize" />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <!-- Year Filter -->
             <div>
@@ -120,7 +122,7 @@
         <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Semesters</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Total: @Model.Semesters.Count() semester(s)
+                Total: @Model.TotalCount semester(s)
             </p>
         </div>
         <a asp-controller="Semester" asp-action="AddSemester"
@@ -240,6 +242,26 @@
     </div>
 </div>
 
+@{
+    var routeValues = new Dictionary<string, string?>
+    {
+        ["Year"] = Model.Year?.ToString(),
+        ["Status"] = Model.Status,
+        ["PageSize"] = Model.PageSize.ToString()
+    };
+}
+
+@await Html.PartialAsync("_Pagination", new AMS.Models.ViewModels.PaginationUiViewModel
+{
+    Action = "Semesters",
+    Controller = "Semester",
+    Page = Model.Page,
+    PageSize = Model.PageSize,
+    TotalCount = Model.TotalCount,
+    PageSizeOptions = Model.PageSizeOptions,
+    RouteValues = routeValues
+})
+
 <!-- View Semester Modal -->
 <div id="viewModal" class="hidden fixed inset-0 z-[99999] flex items-center p-4 overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
     <div onclick="closeViewModal()" class="fixed inset-0 h-full w-full bg-gray-900/50 backdrop-blur-sm"></div>
@@ -330,7 +352,83 @@
 </div>
 
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
+        // Handle delete form submission via AJAX
+        $(document).ready(function() {
+            $('#deleteForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const $form = $(this);
+                const $submitBtn = $form.find('button[type="submit"]');
+                const originalBtnText = $submitBtn.html();
+
+                $submitBtn.prop('disabled', true).html(`
+                    <svg class="mr-2 h-4 w-4 animate-spin inline" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                `);
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            closeDeleteModal();
+                            showAlert('success', response.message);
+
+                            // Reload page after short delay
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showAlert('error', response.message || 'Failed to delete semester.');
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'An error occurred while deleting the semester.';
+
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+
+                        closeDeleteModal();
+                        showAlert('error', errorMessage);
+                    },
+                    complete: function() {
+                        $submitBtn.prop('disabled', false).html(originalBtnText);
+                    }
+                });
+            });
+        });
+
+        function showAlert(type, message) {
+            const isSuccess = type === 'success';
+            const alertHtml = `
+                <div class="mb-4 rounded-xl border ${isSuccess ? 'border-success-500 bg-success-50 dark:border-success-500/30 dark:bg-success-500/15' : 'border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15'} p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="-mt-0.5 ${isSuccess ? 'text-success-500' : 'text-error-500'}">
+                            <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24">
+                                ${isSuccess ? '<path fill-rule="evenodd" clip-rule="evenodd" d="M3.70186 12.0001C3.70186 7.41711 7.41711 3.70186 12.0001 3.70186C16.5831 3.70186 20.2984 7.41711 20.2984 12.0001C20.2984 16.5831 16.5831 20.2984 12.0001 20.2984C7.41711 20.2984 3.70186 16.5831 3.70186 12.0001ZM15.6197 10.7395C15.9712 10.388 15.9712 9.81819 15.6197 9.46672C15.2683 9.11525 14.6984 9.11525 14.347 9.46672L11.1894 12.6243L9.6533 11.0883C9.30183 10.7368 8.73198 10.7368 8.38051 11.0883C8.02904 11.4397 8.02904 12.0096 8.38051 12.3611L10.553 14.5335C10.7217 14.7023 10.9507 14.7971 11.1894 14.7971C11.428 14.7971 11.657 14.7023 11.8257 14.5335L15.6197 10.7395Z"></path>' : '<path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.70186C7.41711 3.70186 3.70186 7.41711 3.70186 12C3.70186 16.5829 7.41711 20.2981 12 20.2981C16.5829 20.2981 20.2981 16.5829 20.2981 12C20.2981 7.41711 16.5829 3.70186 12 3.70186ZM12 7.40186C12.4971 7.40186 12.9 7.80476 12.9 8.30186V12.6019C12.9 13.099 12.4971 13.5019 12 13.5019C11.5029 13.5019 11.1 13.099 11.1 12.6019V8.30186C11.1 7.80476 11.5029 7.40186 12 7.40186ZM12 17.1019C12.6627 17.1019 13.2 16.5646 13.2 15.9019C13.2 15.2392 12.6627 14.7019 12 14.7019C11.3373 14.7019 10.8 15.2392 10.8 15.9019C10.8 16.5646 11.3373 17.1019 12 17.1019Z"></path>'}
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">${isSuccess ? 'Success' : 'Error'}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('.overflow-hidden.rounded-2xl').first().before(alertHtml);
+            $('html, body').animate({ scrollTop: 0 }, 300);
+
+            if (isSuccess) {
+                setTimeout(() => $('.mb-4.rounded-xl').first().fadeOut(300), 3000);
+            }
+        }
+
         function viewSemester(id) {
             const semester = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Semesters));
             const data = semester.find(s => s.SemesterId === id);

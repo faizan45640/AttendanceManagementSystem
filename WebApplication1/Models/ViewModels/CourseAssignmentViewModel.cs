@@ -7,7 +7,7 @@ namespace AMS.Models.ViewModels
     public class CourseAssignmentViewModel
     {
     }
-    public class CourseAssignmentFilterViewModel
+    public class CourseAssignmentFilterViewModel : PagedViewModel
     {
         [Display(Name = "Teacher")]
         public int? TeacherId { get; set; }

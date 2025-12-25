@@ -1,88 +1,136 @@
-﻿@model IEnumerable<AMS.Models.Entities.CourseAssignment>
-
-@{
+﻿@{
     ViewData["Title"] = "My Courses";
 }
 
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
+<div x-data="coursesApp()" x-init="loadData()" class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">My Courses</h2>
-            <p class="text-gray-500 dark:text-gray-400">Manage your assigned courses and view details.</p>
+            <p class="text-gray-500 dark:text-gray-400">View all courses assigned to you</p>
         </div>
     </div>
 
-    @if (!Model.Any())
-    {
-        <div class="flex h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
-            <div class="rounded-full bg-gray-100 p-3 dark:bg-gray-800">
-                <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <!-- Loading State -->
+    <div x-show="loading" class="flex items-center justify-center py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+    </div>
+
+    <!-- Error State -->
+    <div x-show="error" x-cloak class="rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30">
+        <div class="flex items-center gap-3">
+            <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-sm font-medium text-red-700 dark:text-red-400" x-text="error"></p>
+        </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div x-show="!loading && courses" x-cloak>
+        <!-- Empty State -->
+        <div x-show="!courses || courses.length === 0" class="rounded-2xl border border-gray-200 bg-white p-12 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
             </div>
-            <h3 class="mt-4 text-sm font-medium text-gray-900 dark:text-white">No courses assigned</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You haven't been assigned to any courses yet.</p>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">No courses assigned</h3>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">You currently have no active course assignments.</p>
         </div>
-    }
-    else
-    {
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @foreach (var item in Model)
-            {
-                <div class="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
-                    <div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-                        <div class="flex items-center justify-between">
-                            <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                @item.Course.CourseCode
-                            </span>
-                            @if (item.IsActive == true)
-                            {
-                                <span class="flex h-2 w-2 rounded-full bg-green-500"></span>
-                            }
-                            else
-                            {
-                                <span class="flex h-2 w-2 rounded-full bg-gray-300"></span>
-                            }
+
+        <!-- Courses List -->
+        <div x-show="courses && courses.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <template x-for="course in courses" :key="course.assignmentId">
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-white/[0.03]">
+                    <!-- Course Header -->
+                    <div class="mb-4">
+                        <div class="mb-2 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                            <span x-text="course.courseCode"></span>
                         </div>
-                        <h3 class="mt-2 text-lg font-bold text-gray-900 dark:text-white">@item.Course.CourseName</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="course.courseName"></h3>
                     </div>
 
-                    <div class="flex flex-1 flex-col justify-between p-6">
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <span>@item.Batch.BatchName</span>
-                            </div>
-
-                            <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span>@item.Semester.SemesterName</span>
-                            </div>
-
-                            <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>@(item.Sessions?.Count ?? 0) Sessions Conducted</span>
-                            </div>
+                    <!-- Course Details -->
+                    <div class="mb-4 space-y-2 text-sm">
+                        <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <span x-text="course.batchName"></span>
                         </div>
 
-                        <div class="mt-6 flex gap-3">
-                            <a asp-controller="Attendance" asp-action="StudentReport"
-                               asp-route-courseId="@item.CourseId"
-                               asp-route-batchId="@item.BatchId"
-                               asp-route-semesterId="@item.SemesterId"
-                               class="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                                View Report
-                            </a>
+                        <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span x-text="`${course.semesterName} (${course.semesterYear})`"></span>
                         </div>
+
+                        <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            <span x-text="`${course.sessionsConducted} sessions conducted`"></span>
+                        </div>
+                    </div>
+
+                    <!-- Status Badge -->
+                    <div class="mb-4">
+                        <span x-show="course.isActive" class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                            <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                            Active
+                        </span>
+                        <span x-show="!course.isActive" class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-900/20 dark:text-gray-400">
+                            <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-gray-500"></span>
+                            Inactive
+                        </span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                        <a :href="`/Attendance/StudentReport?courseId=${course.courseId}&batchId=${course.batchId}&semesterId=${course.semesterId}`"
+                           class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                            View Report
+                        </a>
                     </div>
                 </div>
-            }
+            </template>
         </div>
-    }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        function coursesApp() {
+            return {
+                loading: true,
+                error: null,
+                courses: [],
+
+                async loadData() {
+                    console.log('[Courses] Starting data load...');
+                    this.loading = true;
+                    this.error = null;
+
+                    try {
+                        const response = await fetch('/TeacherPortal/GetMyCoursesJson');
+                        const result = await response.json();
+
+                        if (result.success) {
+                            this.courses = result.courses || [];
+                            console.log('[Courses] Loaded', this.courses.length, 'courses');
+                        } else {
+                            this.error = result.message || 'Failed to load courses';
+                        }
+                    } catch (err) {
+                        console.error('[Courses] Error:', err);
+                        this.error = 'Failed to load courses. Please refresh the page.';
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            };
+        }
+    </script>
+}

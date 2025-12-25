@@ -1,4 +1,4 @@
-﻿using AMS.Models;
+﻿using AMS.Data;
 using AMS.Helpers;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -28,6 +29,10 @@ namespace AMS.Controllers
         [HttpGet]
         public async Task<IActionResult> CourseAssignments(CourseAssignmentFilterViewModel filter)
         {
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
+
             var query = _context.CourseAssignments
                 .Include(ca => ca.Teacher).ThenInclude(t => t.User)
                 .Include(ca => ca.Course)
@@ -35,6 +40,7 @@ namespace AMS.Controllers
                 .Include(ca => ca.Semester)
                 .Include(ca => ca.Sessions)
                 .Include(ca => ca.TimetableSlots)
+                .AsNoTracking()
                 .AsQueryable();
 
             // Apply filters
@@ -64,10 +70,18 @@ namespace AMS.Controllers
                 query = query.Where(ca => ca.IsActive == isActive);
             }
 
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
+            {
+                filter.Page = filter.TotalPages;
+            }
+
             filter.CourseAssignments = await query
                 .OrderByDescending(ca => ca.IsActive)
                 .ThenBy(ca => ca.Teacher.FirstName)
                 .ThenBy(ca => ca.Course.CourseName)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
 
             // Load dropdowns

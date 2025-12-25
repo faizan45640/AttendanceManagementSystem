@@ -151,7 +151,7 @@
                                     <div class="mb-4">
                                         <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Schedule</p>
                                         <div class="flex flex-wrap gap-1.5">
-                                            <template x-for="slot in course.schedule" :key="slot.dayOfWeek">
+                                            <template x-for="slot in course.schedule" :key="slot.dayOfWeek + '-' + slot.startTime + '-' + slot.endTime">
                                                 <span class="px-2 py-1 text-xs rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300" x-text="slot.dayName.substring(0,3) + ' ' + slot.startTime"></span>
                                             </template>
                                         </div>
@@ -225,7 +225,7 @@
                                         <div class="mb-4">
                                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Schedule</p>
                                             <div class="flex flex-wrap gap-1.5">
-                                                <template x-for="slot in course.schedule" :key="slot.dayOfWeek">
+                                                <template x-for="slot in course.schedule" :key="slot.dayOfWeek + '-' + slot.startTime + '-' + slot.endTime">
                                                     <span class="px-2 py-1 text-xs rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300" x-text="slot.dayName.substring(0,3) + ' ' + slot.startTime + ' - ' + slot.endTime"></span>
                                                 </template>
                                             </div>
@@ -405,13 +405,28 @@ function enrollmentApp() {
             try {
                 const url = this.modalAction === 'enroll' ? '@Url.Action("EnrollInCourse")' : '@Url.Action("UnenrollFromCourse")';
                 const formData = new FormData();
-                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+                const tokenEl = document.querySelector('#__AjaxAntiForgeryForm input[name="__RequestVerificationToken"]');
+                const token = tokenEl ? tokenEl.value : '';
+                if (!token) {
+                    this.showToast('Security token missing. Refresh the page and try again.', 'error');
+                    return;
+                }
+                formData.append('__RequestVerificationToken', token);
 
                 if (this.modalAction === 'enroll') {
+                    if (!this.currentCourse || !this.currentCourse.courseId || !this.currentCourse.semesterId) {
+                        this.showToast('Invalid course selection. Please refresh and try again.', 'error');
+                        return;
+                    }
                     formData.append('courseId', this.currentCourse.courseId);
                     formData.append('semesterId', this.currentCourse.semesterId);
                     formData.append('batchId', this.currentCourse.batchId);
                 } else {
+                    if (!this.currentCourse || !this.currentCourse.enrollmentId) {
+                        this.showToast('Invalid enrollment selection. Please refresh and try again.', 'error');
+                        return;
+                    }
                     formData.append('enrollmentId', this.currentCourse.enrollmentId);
                 }
 

@@ -1,4 +1,4 @@
-﻿
+﻿using AMS.Data;
 using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
@@ -23,11 +23,16 @@ namespace AMS.Controllers
         [HttpGet]
         public async Task<IActionResult> Students(StudentFilterViewModel filter)
         {
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
+
             var query = _context.Students
                 .Include(s => s.Batch)
                 .Include(s => s.User)
                 .Include(s => s.Attendances)
                 .Include(s => s.Enrollments)
+                .AsNoTracking()
                 .AsQueryable();
 
             // Apply filters
@@ -55,8 +60,16 @@ namespace AMS.Controllers
                 query = query.Where(s => s.IsActive == isActive);
             }
 
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
+            {
+                filter.Page = filter.TotalPages;
+            }
+
             filter.Students = await query
                 .OrderBy(s => s.RollNumber)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
 
             // Load batches for dropdown

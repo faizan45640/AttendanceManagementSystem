@@ -2,32 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>@ViewData["Title"] - Attendance Management System</title>
-    <link rel="stylesheet" href="~/css/tailadmin.css" asp-append-version="true" />
-    <script src="//unpkg.com/alpinejs" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 </head>
-<body x-data="{ page: 'auth', 'loaded': true, 'darkMode': false }"
-      x-init="darkMode = JSON.parse(localStorage.getItem('darkMode')); $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
-      :class="{'dark bg-gray-900': darkMode === true}">
-    
-    <!-- ===== Preloader Start ===== -->
-    <div x-show="loaded"
-         x-init="window.addEventListener('DOMContentLoaded', () => {setTimeout(() => loaded = false, 500)})"
-         class="fixed left-0 top-0 z-999999 flex h-screen w-screen items-center justify-center bg-white dark:bg-black">
-        <div class="h-16 w-16 animate-spin rounded-full border-4 border-solid border-brand-500 border-t-transparent"></div>
-    </div>
-    <!-- ===== Preloader End ===== -->
-
-    <!-- ===== Page Wrapper Start ===== -->
-    <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
+<body class="bg-gray-50 dark:bg-gray-900">
+    <main>
         @RenderBody()
-    </div>
-    <!-- ===== Page Wrapper End ===== -->
+    </main>
 
-    <script src="~/js/tailadmin.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

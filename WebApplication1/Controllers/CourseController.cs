@@ -1,9 +1,9 @@
-﻿
-using AMS.Models;
+﻿using AMS.Data;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AMS.Models;
 
 namespace AMS.Controllers
 {
@@ -19,7 +19,12 @@ namespace AMS.Controllers
         // GET: Course/Courses
         public async Task<IActionResult> Courses(CourseFilterViewModel filter)
         {
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
+
             var query = _context.Courses
+                .AsNoTracking()
                 .AsQueryable();
 
             // Apply filters
@@ -39,8 +44,16 @@ namespace AMS.Controllers
                 query = query.Where(c => c.IsActive == isActive);
             }
 
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
+            {
+                filter.Page = filter.TotalPages;
+            }
+
             filter.Courses = await query
                 .OrderBy(c => c.CourseCode)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
 
             // Load counts separately to avoid circular references
@@ -83,8 +96,7 @@ namespace AMS.Controllers
 
                 if (existingCourse != null)
                 {
-                    ModelState.AddModelError("CourseCode", "A course with this code already exists.");
-                    return View(model);
+                    return Conflict(new { success = false, message = "A course with this code already exists." });
                 }
 
                 var course = new Course
@@ -98,11 +110,16 @@ namespace AMS.Controllers
                 _context.Courses.Add(course);
                 await _context.SaveChangesAsync();
 
-                TempData["success"] = $"Course '{model.CourseCode} - {model.CourseName}' has been added successfully!";
-                return RedirectToAction(nameof(Courses));
+                return Ok(new { success = true, message = $"Course '{model.CourseCode} - {model.CourseName}' has been added successfully!" });
             }
 
-            return View(model);
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
         }
 
         // GET: Course/EditCourse/5
@@ -141,7 +158,7 @@ namespace AMS.Controllers
                 var course = await _context.Courses.FindAsync(id);
                 if (course == null)
                 {
-                    return NotFound();
+                    return NotFound(new { success = false, message = "Course not found." });
                 }
 
                 // Check if course code already exists for another course
@@ -150,9 +167,7 @@ namespace AMS.Controllers
 
                 if (existingCourse != null)
                 {
-                    ModelState.AddModelError("CourseCode", "A course with this code already exists.");
-                    ViewBag.CourseId = id;
-                    return View(model);
+                    return Conflict(new { success = false, message = "A course with this code already exists." });
                 }
 
                 course.CourseCode = model.CourseCode;
@@ -163,12 +178,16 @@ namespace AMS.Controllers
                 _context.Update(course);
                 await _context.SaveChangesAsync();
 
-                TempData["success"] = $"Course '{model.CourseCode} - {model.CourseName}' has been updated successfully!";
-                return RedirectToAction(nameof(Courses));
+                return Ok(new { success = true, message = $"Course '{model.CourseCode} - {model.CourseName}' has been updated successfully!" });
             }
 
-            ViewBag.CourseId = id;
-            return View(model);
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
         }
 
         // POST: Course/DeleteCourse
@@ -183,29 +202,27 @@ namespace AMS.Controllers
 
             if (course == null)
             {
-                TempData["error"] = "Course not found.";
-                return RedirectToAction(nameof(Courses));
+                return NotFound(new { success = false, message = "Course not found." });
             }
 
             // Check if course has assignments
             if (course.CourseAssignments.Any())
             {
-                TempData["error"] = $"Cannot delete course '{course.CourseCode}' because it has {course.CourseAssignments.Count} course assignment(s).";
-                return RedirectToAction(nameof(Courses));
+                return BadRequest(new { success = false, message = $"Cannot delete course '{course.CourseCode}' because it has {course.CourseAssignments.Count} course assignment(s)." });
             }
 
             // Check if course has enrollments
             if (course.Enrollments.Any())
             {
-                TempData["error"] = $"Cannot delete course '{course.CourseCode}' because it has {course.Enrollments.Count} student enrollment(s).";
-                return RedirectToAction(nameof(Courses));
+                return BadRequest(new { success = false, message = $"Cannot delete course '{course.CourseCode}' because it has {course.Enrollments.Count} student enrollment(s)." });
             }
 
+            var courseCode = course.CourseCode;
+            var courseName = course.CourseName;
             _context.Courses.Remove(course);
             await _context.SaveChangesAsync();
 
-            TempData["success"] = $"Course '{course.CourseCode} - {course.CourseName}' has been deleted successfully!";
-            return RedirectToAction(nameof(Courses));
+            return Ok(new { success = true, message = $"Course '{courseCode} - {courseName}' has been deleted successfully!" });
         }
 
         // GET: Course/ExportToExcel

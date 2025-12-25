@@ -31,8 +31,11 @@
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Fill in the details to create a new course</p>
     </div>
 
+    <!-- Alert Container -->
+    <div id="alertContainer" class="px-6 pt-4"></div>
+
     <!-- Form -->
-    <form method="post" asp-action="AddCourse">
+    <form class="ajax-form" method="post" asp-action="AddCourse">
         @Html.AntiForgeryToken()
 
         <div class="space-y-6 p-6">
@@ -111,5 +114,8 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/forms-ajax-handler.js"></script>
 }

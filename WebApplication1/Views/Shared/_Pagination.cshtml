@@ -1,0 +1,79 @@
+﻿@model AMS.Models.ViewModels.PaginationUiViewModel
+@{
+    var totalPages = Model.TotalPages;
+    if (totalPages < 1) { totalPages = 1; }
+
+    var safePage = Model.Page;
+    if (safePage < 1) safePage = 1;
+    if (safePage > totalPages) safePage = totalPages;
+
+    var prevRoute = new Dictionary<string, string?>(Model.RouteValues)
+    {
+        ["Page"] = (safePage - 1).ToString(),
+        ["PageSize"] = Model.PageSize.ToString()
+    };
+
+    var nextRoute = new Dictionary<string, string?>(Model.RouteValues)
+    {
+        ["Page"] = (safePage + 1).ToString(),
+        ["PageSize"] = Model.PageSize.ToString()
+    };
+
+    var sizeFormRoute = new Dictionary<string, string?>(Model.RouteValues);
+    sizeFormRoute.Remove("Page");
+    sizeFormRoute.Remove("PageSize");
+}
+
+<div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="text-sm text-gray-500 dark:text-gray-400">
+        Total: <span class="font-medium text-gray-800 dark:text-white/90">@Model.TotalCount</span>
+        <span class="mx-2">•</span>
+        Page <span class="font-medium text-gray-800 dark:text-white/90">@safePage</span> of <span class="font-medium text-gray-800 dark:text-white/90">@totalPages</span>
+    </div>
+
+    <div class="flex items-center justify-between gap-3 sm:justify-end">
+        <form method="get" asp-action="@Model.Action" asp-controller="@Model.Controller" asp-all-route-data="sizeFormRoute" class="flex items-center gap-2">
+            <input type="hidden" name="Page" value="1" />
+            <label class="text-sm text-gray-500 dark:text-gray-400">Show</label>
+            <select name="PageSize" class="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white" onchange="this.form.submit()">
+                @foreach (var size in Model.PageSizeOptions)
+                {
+                    if (size == Model.PageSize)
+                    {
+                        <option value="@size" selected>@size</option>
+                    }
+                    else
+                    {
+                        <option value="@size">@size</option>
+                    }
+                }
+            </select>
+        </form>
+
+        <div class="flex items-center gap-2">
+            @if (safePage > 1)
+            {
+                <a asp-action="@Model.Action" asp-controller="@Model.Controller" asp-all-route-data="prevRoute"
+                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/[0.03]">
+                    Prev
+                </a>
+            }
+            else
+            {
+                <span class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-500">Prev</span>
+            }
+
+            @if (safePage < totalPages)
+            {
+                <a asp-action="@Model.Action" asp-controller="@Model.Controller" asp-all-route-data="nextRoute"
+                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/[0.03]">
+                    Next
+                </a>
+            }
+            else
+            {
+                <span class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-500">Next</span>
+            }
+        </div>
+    </div>
+</div>

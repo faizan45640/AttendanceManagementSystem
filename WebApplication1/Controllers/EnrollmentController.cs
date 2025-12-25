@@ -1,6 +1,6 @@
-﻿
-using AMS.Helpers;
+﻿using AMS.Data;
 using AMS.Models;
+using AMS.Helpers;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using AMS.Services;
@@ -29,11 +29,16 @@ namespace AMS.Controllers
         [HttpGet]
         public async Task<IActionResult> Enrollments(EnrollmentFilterViewModel filter)
         {
+            filter.Page = filter.Page < 1 ? 1 : filter.Page;
+            filter.PageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+            filter.PageSize = Math.Clamp(filter.PageSize, 10, 100);
+
             var query = _context.Enrollments
                 .Include(e => e.Student)
                 .Include(e => e.Student).ThenInclude(s => s.Batch)
                 .Include(e => e.Course)
                 .Include(e => e.Semester)
+                .AsNoTracking()
                 .AsQueryable();
 
             // Apply filters
@@ -62,10 +67,18 @@ namespace AMS.Controllers
                 query = query.Where(e => e.Status == filter.Status);
             }
 
+            filter.TotalCount = await query.CountAsync();
+            if (filter.TotalPages > 0 && filter.Page > filter.TotalPages)
+            {
+                filter.Page = filter.TotalPages;
+            }
+
             filter.Enrollments = await query
                 .OrderByDescending(e => e.Status == "Active")
                 .ThenBy(e => e.Student.FirstName)
                 .ThenBy(e => e.Course.CourseName)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
 
             // Load dropdowns

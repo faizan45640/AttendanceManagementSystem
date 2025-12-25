@@ -1,114 +1,140 @@
-﻿@model AMS.Models.ViewModels.TeacherDashboardViewModel
-
-@{
+﻿@{
     ViewData["Title"] = "Teacher Dashboard";
 }
 
-<div class="space-y-8">
-    <!-- Welcome Section -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Welcome back, @Model.TeacherName</h2>
-            <p class="text-gray-500 dark:text-gray-400">Here's your schedule for today, @Model.TodayDate.ToString("dddd, MMMM dd").</p>
-        </div>
-        <div class="flex gap-3">
-            <a asp-controller="TeacherPortal" asp-action="MyReport" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                View My Report
-            </a>
+<div x-data="dashboardApp()" x-init="loadData()" class="space-y-8">
+    <!-- Loading State -->
+    <div x-show="loading" class="flex items-center justify-center py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+    </div>
+
+    <!-- Error State -->
+    <div x-show="error" x-cloak class="rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30">
+        <div class="flex items-center gap-3">
+            <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-sm font-medium text-red-700 dark:text-red-400" x-text="error"></p>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- Total Students -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
+    <!-- Success Messages from TempData -->
+    @if (TempData["success"] != null)
+    {
+        <div class="rounded-lg border border-green-300 bg-green-50 p-4 dark:border-green-700 dark:bg-green-900/30">
+            <div class="flex items-center gap-3">
+                <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-sm font-medium text-green-700 dark:text-green-400">@TempData["success"]</p>
+            </div>
+        </div>
+    }
+
+    <!-- Content -->
+    <div x-show="!loading && data" x-cloak>
+        <!-- Welcome Section -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white" x-text="'Welcome back, ' + data.teacherName"></h2>
+                <p class="text-gray-500 dark:text-gray-400" x-text="'Here\'s your schedule for today, ' + data.todayDate"></p>
+            </div>
+            <div class="flex gap-3">
+                <a asp-controller="TeacherPortal" asp-action="MyReport" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                    View My Report
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Total Students -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="data.stats?.totalStudents || 0"></p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">@Model.TotalStudents</p>
+            </div>
+
+            <!-- Active Courses -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Courses</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="data.stats?.totalCourses || 0"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes Today -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Classes Today</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="data.stats?.classesToday || 0"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Rate -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Attendance</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="(data.stats?.attendanceRate || 0) + '%'"></p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Active Courses -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+        <!-- Charts Section -->
+        <div class="grid gap-6 lg:grid-cols-2">
+            <!-- Attendance Trend -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Attendance Trend (Last 7 Days)</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="attendanceTrendChart"></canvas>
                 </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Courses</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">@Model.TotalActiveCourses</p>
+            </div>
+
+            <!-- Attendance by Course -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Attendance by Course</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="courseAttendanceChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Classes Today -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Classes Today</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">@Model.TotalClassesToday</p>
-                </div>
+        <!-- Today's Schedule -->
+        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+                <h3 class="font-semibold text-gray-900 dark:text-white">Today's Classes</h3>
             </div>
-        </div>
 
-        <!-- Attendance Rate -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Attendance</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">@Model.OverallAttendanceRate%</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Section -->
-    <div class="grid gap-6 lg:grid-cols-2">
-        <!-- Attendance Trend -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Attendance Trend (Last 7 Days)</h3>
-            <div class="relative h-64 w-full">
-                <canvas id="attendanceTrendChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Attendance by Course -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Attendance by Course</h3>
-            <div class="relative h-64 w-full">
-                <canvas id="courseAttendanceChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Today's Schedule -->
-    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
-            <h3 class="font-semibold text-gray-900 dark:text-white">Today's Classes</h3>
-        </div>
-
-        @if (!Model.TodayClasses.Any())
-        {
-            <div class="p-8 text-center">
+            <div x-show="!data.todayClasses || data.todayClasses.length === 0" class="p-8 text-center">
                 <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
                     <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -117,122 +143,161 @@
                 <h3 class="text-sm font-medium text-gray-900 dark:text-white">No classes today</h3>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enjoy your free time!</p>
             </div>
-        }
-        else
-        {
-            <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                @foreach (var item in Model.TodayClasses)
-                {
+
+            <div x-show="data.todayClasses && data.todayClasses.length > 0" class="divide-y divide-gray-200 dark:divide-gray-800">
+                <template x-for="item in data.todayClasses" :key="item.slotId">
                     <div class="flex items-center justify-between p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                         <div class="flex items-center gap-4">
                             <div class="flex h-12 w-12 flex-col items-center justify-center rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                                <span class="text-xs font-bold">@item.StartTime.ToString("HH:mm")</span>
+                                <span class="text-xs font-bold" x-text="item.startTime.substring(0, 5)"></span>
                             </div>
                             <div>
-                                <h4 class="font-medium text-gray-900 dark:text-white">@item.CourseName</h4>
+                                <h4 class="font-medium text-gray-900 dark:text-white" x-text="item.courseName"></h4>
                                 <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                                     <span class="flex items-center gap-1">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                        @item.BatchName
+                                        <span x-text="item.batchName"></span>
                                     </span>
-                                    @if (!string.IsNullOrEmpty(item.Room))
-                                    {
-                                        <span class="flex items-center gap-1">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                                            @item.Room
-                                        </span>
-                                    }
+                                    <span x-show="item.room" class="flex items-center gap-1">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                        <span x-text="item.room"></span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            @if (item.IsMarked)
-                            {
-                                <a asp-controller="Attendance" asp-action="Mark" asp-route-slotId="@item.SlotId" asp-route-date="@Model.TodayDate.ToString("yyyy-MM-dd")"
-                                   class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                                    <svg class="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                    Edit Attendance
-                                </a>
-                            }
-                            else
-                            {
-                                <a asp-controller="Attendance" asp-action="Mark" asp-route-slotId="@item.SlotId" asp-route-date="@Model.TodayDate.ToString("yyyy-MM-dd")"
-                                   class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                                    Mark Attendance
-                                </a>
-                            }
+                            <a :href="`/Attendance/Mark?slotId=${item.slotId}&date=${new Date().toISOString().split('T')[0]}`"
+                               x-show="item.isMarked"
+                               class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                                <svg class="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Edit Attendance
+                            </a>
+                            <a :href="`/Attendance/Mark?slotId=${item.slotId}&date=${new Date().toISOString().split('T')[0]}`"
+                               x-show="!item.isMarked"
+                               class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                                Mark Attendance
+                            </a>
                         </div>
                     </div>
-                }
+                </template>
             </div>
-        }
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Chart Configuration
-        const chartConfig = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    grid: {
-                        color: 'rgba(156, 163, 175, 0.1)'
+        function dashboardApp() {
+            return {
+                loading: true,
+                error: null,
+                data: null,
+                trendChart: null,
+                courseChart: null,
+
+                async loadData() {
+                    console.log('[Dashboard] Starting data load...');
+                    this.loading = true;
+                    this.error = null;
+
+                    try {
+                        const response = await fetch('/TeacherPortal/GetDashboardJson');
+                        const result = await response.json();
+
+                        if (result.success) {
+                            this.data = result;
+                            console.log('[Dashboard] Loaded:', result);
+
+                            // Wait for DOM to render then initialize charts
+                            this.$nextTick(() => {
+                                this.initCharts();
+                            });
+                        } else {
+                            this.error = result.message || 'Failed to load dashboard data';
+                        }
+                    } catch (err) {
+                        console.error('[Dashboard] Error:', err);
+                        this.error = 'Failed to load dashboard. Please refresh the page.';
+                    } finally {
+                        this.loading = false;
                     }
                 },
-                x: {
-                    grid: {
-                        display: false
+
+                initCharts() {
+                    if (!this.data?.charts) return;
+
+                    const chartConfig = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(156, 163, 175, 0.1)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    };
+
+                    // Attendance Trend Chart
+                    const trendCtx = document.getElementById('attendanceTrendChart')?.getContext('2d');
+                    if (trendCtx) {
+                        if (this.trendChart) this.trendChart.destroy();
+                        this.trendChart = new Chart(trendCtx, {
+                            type: 'line',
+                            data: {
+                                labels: this.data.charts.attendanceLabels || [],
+                                datasets: [{
+                                    label: 'Attendance %',
+                                    data: this.data.charts.attendanceValues || [],
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.4
+                                }]
+                            },
+                            options: chartConfig
+                        });
                     }
+
+                    // Course Attendance Chart
+                    const courseCtx = document.getElementById('courseAttendanceChart')?.getContext('2d');
+                    if (courseCtx) {
+                        if (this.courseChart) this.courseChart.destroy();
+                        this.courseChart = new Chart(courseCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: this.data.charts.courseLabels || [],
+                                datasets: [{
+                                    label: 'Attendance %',
+                                    data: this.data.charts.courseValues || [],
+                                    backgroundColor: '#8b5cf6',
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: chartConfig
+                        });
+                    }
+
+                    console.log('[Dashboard] Charts initialized');
                 }
-            }
-        };
-
-        // Attendance Trend Chart
-        const trendCtx = document.getElementById('attendanceTrendChart').getContext('2d');
-        new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: @Json.Serialize(Model.AttendanceLabels),
-                datasets: [{
-                    label: 'Attendance %',
-                    data: @Json.Serialize(Model.AttendanceValues),
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: chartConfig
-        });
-
-        // Course Attendance Chart
-        const courseCtx = document.getElementById('courseAttendanceChart').getContext('2d');
-        new Chart(courseCtx, {
-            type: 'bar',
-            data: {
-                labels: @Json.Serialize(Model.CourseLabels),
-                datasets: [{
-                    label: 'Attendance %',
-                    data: @Json.Serialize(Model.CourseAttendanceValues),
-                    backgroundColor: '#8b5cf6',
-                    borderRadius: 4
-                }]
-            },
-            options: chartConfig
-        });
+            };
+        }
     </script>
 }

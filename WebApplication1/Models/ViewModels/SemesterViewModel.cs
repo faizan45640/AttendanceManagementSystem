@@ -31,7 +31,7 @@ namespace AMS.Models.ViewModels
         [Display(Name = "Active Status")]
         public bool IsActive { get; set; } = true;
     }
-    public class SemesterFilterViewModel
+    public class SemesterFilterViewModel : PagedViewModel
     {
         public List<Semester> Semesters { get; set; } = new List<Semester>();
         public int? Year { get; set; }

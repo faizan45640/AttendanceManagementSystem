@@ -66,6 +66,8 @@
 <!-- Filter Card -->
 <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
     <form method="get" asp-action="Courses" class="space-y-4">
+        <input type="hidden" name="Page" value="1" />
+        <input type="hidden" name="PageSize" value="@Model.PageSize" />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <!-- Course Code Filter -->
             <div>
@@ -129,7 +131,7 @@
         <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Courses</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Total: @Model.Courses.Count() course(s)
+                Total: @Model.TotalCount course(s)
             </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -307,6 +309,27 @@
         </table>
     </div>
 </div>
+
+@{
+    var routeValues = new Dictionary<string, string?>
+    {
+        ["CourseCode"] = Model.CourseCode,
+        ["CourseName"] = Model.CourseName,
+        ["Status"] = Model.Status,
+        ["PageSize"] = Model.PageSize.ToString()
+    };
+}
+
+@await Html.PartialAsync("_Pagination", new AMS.Models.ViewModels.PaginationUiViewModel
+{
+    Action = "Courses",
+    Controller = "Course",
+    Page = Model.Page,
+    PageSize = Model.PageSize,
+    TotalCount = Model.TotalCount,
+    PageSizeOptions = Model.PageSizeOptions,
+    RouteValues = routeValues
+})
 
 <!-- View Course Modal -->
 <div id="viewModal" class="hidden fixed inset-0 z-[99999] flex items-center p-4 overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">

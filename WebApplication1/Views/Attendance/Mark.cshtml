@@ -367,5 +367,52 @@
             const radios = document.querySelectorAll(`input[type="radio"][value="${status}"]`);
             radios.forEach(radio => radio.checked = true);
         }
+
+        // Frontend validation before form submission
+        document.querySelector('form[action*="Save"]').addEventListener('submit', function (e) {
+            const rows = document.querySelectorAll('#attendanceTable tbody tr');
+            let markedCount = 0;
+            let unmarkedStudents = [];
+
+            rows.forEach(row => {
+                const studentName = row.querySelector('td:nth-child(2)').textContent.trim();
+                const checkedRadio = row.querySelector('input[type="radio"]:checked');
+
+                if (checkedRadio) {
+                    markedCount++;
+                } else {
+                    unmarkedStudents.push(studentName);
+                }
+            });
+
+            // Validation: At least one student must be marked
+            if (markedCount === 0) {
+                e.preventDefault();
+                alert('❌ Please mark attendance for at least one student before submitting.');
+                return false;
+            }
+
+            // Warning if some students are unmarked
+            if (unmarkedStudents.length > 0) {
+                const confirmMsg = `⚠️ Warning: ${unmarkedStudents.length} student(s) have no attendance status marked:\n\n` +
+                    unmarkedStudents.slice(0, 5).join('\n') +
+                    (unmarkedStudents.length > 5 ? `\n... and ${unmarkedStudents.length - 5} more` : '') +
+                    '\n\nDo you want to continue?';
+
+                if (!confirm(confirmMsg)) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
+            // Confirmation before submitting
+            const confirmSubmit = confirm(`✓ You are about to save attendance for ${markedCount} student(s).\n\nContinue?`);
+            if (!confirmSubmit) {
+                e.preventDefault();
+                return false;
+            }
+
+            return true;
+        });
     </script>
 }

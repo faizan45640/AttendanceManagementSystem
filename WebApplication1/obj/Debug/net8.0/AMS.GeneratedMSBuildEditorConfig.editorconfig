@@ -1,0 +1,303 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = AMS
+build_property.RootNamespace = AMS
+build_property.ProjectDir = C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\AKAM\Documents\University\Semester 5\EAD\Attendance Management System\WebApplication1
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Account/AccessDenied.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxBY2Nlc3NEZW5pZWQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Admin/AddAdmin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQWRkQWRtaW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Admin/AddTeacher.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQWRkVGVhY2hlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Admin/AddUser.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQWRkVXNlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Admin/Admins.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQWRtaW5zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Admin/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGFzaGJvYXJkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Admin/EditAdmin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdEFkbWluLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Admin/Users.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVXNlcnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/AiAgent/Chat.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlBZ2VudFxDaGF0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/Mark.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxNYXJrLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/MyAttendance.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxNeUF0dGVuZGFuY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/MyTeacherReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxNeVRlYWNoZXJSZXBvcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/StudentReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxTdHVkZW50UmVwb3J0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Attendance/TeacherReport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXR0ZW5kYW5jZVxUZWFjaGVyUmVwb3J0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Auth/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Batch/AddBatch.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmF0Y2hcQWRkQmF0Y2guY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Batch/Batches.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmF0Y2hcQmF0Y2hlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Batch/EditBatch.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmF0Y2hcRWRpdEJhdGNoLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/CourseAssignment/AddCourseAssignment.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlQXNzaWdubWVudFxBZGRDb3Vyc2VBc3NpZ25tZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/CourseAssignment/CourseAssignments.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlQXNzaWdubWVudFxDb3Vyc2VBc3NpZ25tZW50cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/CourseAssignment/EditCourseAssignment.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlQXNzaWdubWVudFxFZGl0Q291cnNlQXNzaWdubWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Course/AddCourse.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlXEFkZENvdXJzZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Course/Courses.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlXENvdXJzZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Course/EditCourse.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlXEVkaXRDb3Vyc2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Enrollment/AddEnrollment.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5yb2xsbWVudFxBZGRFbnJvbGxtZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Enrollment/BulkEnroll.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5yb2xsbWVudFxCdWxrRW5yb2xsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Enrollment/EditEnrollment.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5yb2xsbWVudFxFZGl0RW5yb2xsbWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Enrollment/Enrollments.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW5yb2xsbWVudFxFbnJvbGxtZW50cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Home/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Semester/AddSemester.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VtZXN0ZXJcQWRkU2VtZXN0ZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Semester/EditSemester.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VtZXN0ZXJcRWRpdFNlbWVzdGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Semester/Semesters.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VtZXN0ZXJcU2VtZXN0ZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Settings/ChangePassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcQ2hhbmdlUGFzc3dvcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Settings/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Settings/Institution.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcSW5zdGl0dXRpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/Components/InstitutionInfo/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcSW5zdGl0dXRpb25JbmZvXERlZmF1bHQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_Footer.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Gb290ZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_Header.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9IZWFkZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_LayoutAdmin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXRBZG1pbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_LayoutAuth.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXRBdXRoLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_Pagination.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QYWdpbmF0aW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_Sidebar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9TaWRlYmFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/StudentPortal/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFBvcnRhbFxEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/StudentPortal/MyAttendance.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFBvcnRhbFxNeUF0dGVuZGFuY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/StudentPortal/MyCourses.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFBvcnRhbFxNeUNvdXJzZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/StudentPortal/MyTimetable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFBvcnRhbFxNeVRpbWV0YWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Student/AddStudent.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxBZGRTdHVkZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Student/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Student/EditStudent.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxFZGl0U3R1ZGVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Student/Students.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxTdHVkZW50cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TeacherPortal/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclBvcnRhbFxEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TeacherPortal/MyCourses.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclBvcnRhbFxNeUNvdXJzZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Teacher/AddTeacher.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxBZGRUZWFjaGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Teacher/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Teacher/EditTeacher.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxFZGl0VGVhY2hlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Teacher/Teachers.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxUZWFjaGVycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TimeTable/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZVRhYmxlXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TimeTable/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZVRhYmxlXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TimeTable/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZVRhYmxlXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TimeTable/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZVRhYmxlXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TimeTable/SelectTimeTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZVRhYmxlXFNlbGVjdFRpbWVUYWJsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/TimeTable/TimeTableView.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGltZVRhYmxlXFRpbWVUYWJsZVZpZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/AKAM/Documents/University/Semester 5/EAD/Attendance Management System/WebApplication1/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-sn3oiia3e6

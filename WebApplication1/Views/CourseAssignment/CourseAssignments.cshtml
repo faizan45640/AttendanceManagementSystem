@@ -66,6 +66,8 @@
 <!-- Filter Card -->
 <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
     <form method="get" asp-action="CourseAssignments" class="space-y-4">
+        <input type="hidden" name="Page" value="1" />
+        <input type="hidden" name="PageSize" value="@Model.PageSize" />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <!-- Teacher Filter -->
             <div>
@@ -163,7 +165,7 @@
         <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Course Assignments</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Total: @Model.CourseAssignments.Count() assignment(s)
+                Total: @Model.TotalCount assignment(s)
             </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -305,6 +307,29 @@
         </table>
     </div>
 </div>
+
+@{
+    var routeValues = new Dictionary<string, string?>
+    {
+        ["TeacherId"] = Model.TeacherId?.ToString(),
+        ["CourseId"] = Model.CourseId?.ToString(),
+        ["BatchId"] = Model.BatchId?.ToString(),
+        ["SemesterId"] = Model.SemesterId?.ToString(),
+        ["Status"] = Model.Status,
+        ["PageSize"] = Model.PageSize.ToString()
+    };
+}
+
+@await Html.PartialAsync("_Pagination", new AMS.Models.ViewModels.PaginationUiViewModel
+{
+    Action = "CourseAssignments",
+    Controller = "CourseAssignment",
+    Page = Model.Page,
+    PageSize = Model.PageSize,
+    TotalCount = Model.TotalCount,
+    PageSizeOptions = Model.PageSizeOptions,
+    RouteValues = routeValues
+})
 
 <!-- View Assignment Modal -->
 <div id="viewModal" onclick="closeViewModal()" class="hidden fixed inset-0 z-[99999] items-center bg-gray-900/50 backdrop-blur-sm overflow-y-auto" style="justify-content: center; padding-left: calc(16px + 5%);">
