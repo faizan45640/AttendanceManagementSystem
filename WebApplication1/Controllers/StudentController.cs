@@ -103,8 +103,18 @@ namespace AMS.Controllers
         // POST: Student/AddStudent
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddStudent(Student model)
+        public async Task<IActionResult> AddStudent(Student model, string Email, string Username)
         {
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                ModelState.AddModelError("Email", "Email is required.");
+            }
+            if (string.IsNullOrWhiteSpace(Username))
+            {
+                ModelState.AddModelError("Username", "Username is required.");
+            }
+
             if (ModelState.IsValid)
             {
                 // Check if roll number already exists
@@ -116,11 +126,45 @@ namespace AMS.Controllers
                     return Conflict(new { success = false, message = "A student with this roll number already exists." });
                 }
 
+                // Check if email already exists
+                var existingUserByEmail = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == Email);
+
+                if (existingUserByEmail != null)
+                {
+                    return Conflict(new { success = false, message = "A user with this email already exists." });
+                }
+
+                // Check if username already exists
+                var existingUserByUsername = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == Username);
+
+                if (existingUserByUsername != null)
+                {
+                    return Conflict(new { success = false, message = "A user with this username already exists." });
+                }
+
+                // Create User record first
+                var user = new User
+                {
+                    Username = Username,
+                    Email = Email,
+                    Role = "Student",
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    PasswordHash = ("Student@123") // Default password
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                // Create Student record with UserId
+                model.UserId = user.UserId;
                 model.IsActive = model.IsActive ?? true;
                 _context.Students.Add(model);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { success = true, message = $"Student '{model.FirstName} {model.LastName}' has been added successfully!" });
+                return Ok(new { success = true, message = $"Student '{model.FirstName} {model.LastName}' has been added successfully! Default password is 'Student@123'." });
             }
 
             var errors = ModelState

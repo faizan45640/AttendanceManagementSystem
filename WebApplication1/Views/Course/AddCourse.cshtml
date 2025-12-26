@@ -35,7 +35,7 @@
     <div id="alertContainer" class="px-6 pt-4"></div>
 
     <!-- Form -->
-    <form class="ajax-form" method="post" asp-action="AddCourse">
+    <form class="ajax-form" method="post" asp-action="AddCourse" data-redirect-url="@Url.Action("Courses", "Course")">
         @Html.AntiForgeryToken()
 
         <div class="space-y-6 p-6">

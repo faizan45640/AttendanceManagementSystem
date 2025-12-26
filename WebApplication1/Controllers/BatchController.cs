@@ -15,6 +15,21 @@ namespace AMS.Controllers
             _context = context;
         }
 
+        private bool IsAjaxRequest()
+        {
+            return string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private object GetModelStateErrors()
+        {
+            return ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                );
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -72,38 +87,54 @@ namespace AMS.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddBatch(AddBatchViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // Check if batch name already exists for the same year
-                var existingBatch = await _context.Batches
-                    .FirstOrDefaultAsync(b => b.BatchName == model.BatchName && b.Year == model.Year);
+                if (IsAjaxRequest())
+                {
+                    var errors = GetModelStateErrors();
+                    return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+                }
 
-                if (existingBatch != null)
+                return View(model);
+            }
+
+            // Check if batch name already exists for the same year
+            var existingBatch = await _context.Batches
+                .FirstOrDefaultAsync(b => b.BatchName == model.BatchName && b.Year == model.Year);
+
+            if (existingBatch != null)
+            {
+                if (IsAjaxRequest())
                 {
                     return Conflict(new { success = false, message = "A batch with this name already exists for the selected year." });
                 }
 
-                var batch = new Batch
-                {
-                    BatchName = model.BatchName,
-                    Year = model.Year,
-                    IsActive = model.IsActive
-                };
-
-                _context.Batches.Add(batch);
-                await _context.SaveChangesAsync();
-                return Ok(new { success = true, message = $"Batch '{model.BatchName}' has been added successfully!" });
+                ModelState.AddModelError(nameof(AddBatchViewModel.BatchName), "A batch with this name already exists for the selected year.");
+                return View(model);
             }
 
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
-            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+            var batch = new Batch
+            {
+                BatchName = model.BatchName,
+                Year = model.Year,
+                IsActive = model.IsActive
+            };
+
+            _context.Batches.Add(batch);
+            await _context.SaveChangesAsync();
+
+            var successMessage = $"Batch '{model.BatchName}' has been added successfully!";
+            if (IsAjaxRequest())
+            {
+                return Ok(new { success = true, message = successMessage });
+            }
+
+            TempData["success"] = successMessage;
+            TempData["Success"] = successMessage;
+            return RedirectToAction(nameof(Batches));
         }
 
 
@@ -129,45 +160,71 @@ namespace AMS.Controllers
                 IsActive = batch.IsActive
             };
 
+            ViewBag.BatchId = id;
             return View(model);
         }
         [Authorize(Roles = "Admin")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditBatch(int id, AddBatchViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var batch = await _context.Batches.FindAsync(id);
-                if (batch == null)
+                if (IsAjaxRequest())
+                {
+                    var errors = GetModelStateErrors();
+                    return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+                }
+
+                ViewBag.BatchId = id;
+                return View(model);
+            }
+
+            var batch = await _context.Batches.FindAsync(id);
+            if (batch == null)
+            {
+                if (IsAjaxRequest())
                 {
                     return NotFound(new { success = false, message = "Batch not found." });
                 }
 
-                // Check for duplicate batch name and year
-                var existingBatch = await _context.Batches
-                    .FirstOrDefaultAsync(b => b.BatchName == model.BatchName && b.Year == model.Year && b.BatchId != id);
+                TempData["error"] = "Batch not found.";
+                TempData["Error"] = "Batch not found.";
+                return RedirectToAction(nameof(Batches));
+            }
 
-                if (existingBatch != null)
+            // Check for duplicate batch name and year
+            var existingBatch = await _context.Batches
+                .FirstOrDefaultAsync(b => b.BatchName == model.BatchName && b.Year == model.Year && b.BatchId != id);
+
+            if (existingBatch != null)
+            {
+                if (IsAjaxRequest())
                 {
                     return Conflict(new { success = false, message = "A batch with this name already exists for the selected year." });
                 }
 
-                batch.BatchName = model.BatchName;
-                batch.Year = model.Year;
-                batch.IsActive = model.IsActive;
-
-                _context.Batches.Update(batch);
-                await _context.SaveChangesAsync();
-                return Ok(new { success = true, message = $"Batch '{model.BatchName}' has been updated successfully!" });
+                ModelState.AddModelError(nameof(AddBatchViewModel.BatchName), "A batch with this name already exists for the selected year.");
+                ViewBag.BatchId = id;
+                return View(model);
             }
 
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
-            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+            batch.BatchName = model.BatchName;
+            batch.Year = model.Year;
+            batch.IsActive = model.IsActive;
+
+            _context.Batches.Update(batch);
+            await _context.SaveChangesAsync();
+
+            var successMessage = $"Batch '{model.BatchName}' has been updated successfully!";
+            if (IsAjaxRequest())
+            {
+                return Ok(new { success = true, message = successMessage });
+            }
+
+            TempData["success"] = successMessage;
+            TempData["Success"] = successMessage;
+            return RedirectToAction(nameof(Batches));
         }
 
         // POST: Batch/DeleteBatch
@@ -183,26 +240,57 @@ namespace AMS.Controllers
 
             if (batch == null)
             {
-                return NotFound(new { success = false, message = "Batch not found." });
+                if (IsAjaxRequest())
+                {
+                    return NotFound(new { success = false, message = "Batch not found." });
+                }
+
+                TempData["error"] = "Batch not found.";
+                TempData["Error"] = "Batch not found.";
+                return RedirectToAction(nameof(Batches));
             }
 
             // Check if batch has students
             if (batch.Students.Any())
             {
-                return BadRequest(new { success = false, message = $"Cannot delete batch '{batch.BatchName}' because it has {batch.Students.Count} student(s)." });
+                var message = $"Cannot delete batch '{batch.BatchName}' because it has {batch.Students.Count} student(s).";
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new { success = false, message });
+                }
+
+                TempData["error"] = message;
+                TempData["Error"] = message;
+                return RedirectToAction(nameof(Batches));
             }
 
             // Check if batch has course assignments
             if (batch.CourseAssignments.Any())
             {
-                return BadRequest(new { success = false, message = $"Cannot delete batch '{batch.BatchName}' because it has {batch.CourseAssignments.Count} course assignment(s)." });
+                var message = $"Cannot delete batch '{batch.BatchName}' because it has {batch.CourseAssignments.Count} course assignment(s).";
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new { success = false, message });
+                }
+
+                TempData["error"] = message;
+                TempData["Error"] = message;
+                return RedirectToAction(nameof(Batches));
             }
 
             var batchName = batch.BatchName;
             _context.Batches.Remove(batch);
             await _context.SaveChangesAsync();
 
-            return Ok(new { success = true, message = $"Batch '{batchName}' has been deleted successfully!" });
+            var successMessage = $"Batch '{batchName}' has been deleted successfully!";
+            if (IsAjaxRequest())
+            {
+                return Ok(new { success = true, message = successMessage });
+            }
+
+            TempData["success"] = successMessage;
+            TempData["Success"] = successMessage;
+            return RedirectToAction(nameof(Batches));
         }
     }
 }

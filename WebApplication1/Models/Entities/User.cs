@@ -7,6 +7,10 @@ namespace AMS.Models.Entities
     {
         public int UserId { get; set; }
 
+        public string? PasswordResetToken { get; set; }
+
+        public DateTime? PasswordResetTokenExpiry { get; set; }
+
         public string? Username { get; set; }
 
         public string? Email { get; set; }

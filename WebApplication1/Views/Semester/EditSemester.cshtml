@@ -1,12 +1,12 @@
 ﻿@model AMS.Models.ViewModels.AddSemesterViewModel
 @{
-    ViewData["Title"] = "Add Semester";
+    ViewData["Title"] = "Edit Semester";
 }
 
 <!-- Breadcrumb -->
 <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-title-md2 font-bold text-gray-900 dark:text-white">
-        Add New Semester
+        Edit Semester
     </h2>
     <nav>
         <ol class="flex items-center gap-2">
@@ -18,7 +18,7 @@
                 <a asp-controller="Semester" asp-action="Semesters" class="text-sm font-medium text-gray-500 hover:text-brand-500 dark:text-gray-400">Semesters</a>
             </li>
             <li class="text-sm font-medium text-gray-500 dark:text-gray-400">/</li>
-            <li class="text-sm font-medium text-brand-500">Add</li>
+            <li class="text-sm font-medium text-brand-500">Edit</li>
         </ol>
     </nav>
 </div>
@@ -28,14 +28,14 @@
     <!-- Card Header -->
     <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Semester Information</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Fill in the details to create a new semester</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update the semester details</p>
     </div>
 
     <!-- Alert Container -->
     <div id="alertContainer" class="px-6 pt-4"></div>
 
     <!-- Form -->
-    <form id="addSemesterForm" method="post" asp-action="AddSemester">
+    <form class="ajax-form" method="post" asp-action="EditSemester" asp-route-id="@ViewBag.SemesterId" data-redirect-url="@Url.Action("Semesters", "Semester")" data-clear-on-success="false">
         @Html.AntiForgeryToken()
 
         <div class="space-y-6 p-6">
@@ -116,9 +116,9 @@
             <button type="submit"
                     class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                 <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                Add Semester
+                Update Semester
             </button>
         </div>
     </form>
@@ -128,98 +128,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            $('#addSemesterForm').on('submit', function(e) {
-                e.preventDefault();
-
-                if (!$(this).valid()) {
-                    return false;
-                }
-
-                const $form = $(this);
-                const $submitBtn = $form.find('button[type="submit"]');
-                const originalBtnText = $submitBtn.html();
-
-                $submitBtn.prop('disabled', true).html(`
-                    <svg class="mr-2 h-5 w-5 animate-spin inline" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Adding...
-                `);
-
-                $.ajax({
-                    url: $form.attr('action'),
-                    type: 'POST',
-                    data: $form.serialize(),
-                    success: function(response) {
-                        if (response.success) {
-                            showAlert('success', response.message);
-                            $form[0].reset();
-                        } else {
-                            showAlert('error', response.message || 'An unexpected error occurred.');
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMessage = 'An error occurred while adding the semester.';
-
-                        if (xhr.responseJSON) {
-                            if (xhr.responseJSON.message) {
-                                errorMessage = xhr.responseJSON.message;
-                            }
-
-                            if (xhr.responseJSON.errors) {
-                                const errors = xhr.responseJSON.errors;
-                                for (const field in errors) {
-                                    if (errors.hasOwnProperty(field)) {
-                                        const $input = $(`input[name="${field}"], select[name="${field}"]`);
-                                        const $errorSpan = $input.siblings('span[data-valmsg-for]');
-                                        if ($errorSpan.length && errors[field].length > 0) {
-                                            $errorSpan.text(errors[field][0]);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        showAlert('error', errorMessage);
-                    },
-                    complete: function() {
-                        $submitBtn.prop('disabled', false).html(originalBtnText);
-                    }
-                });
-            });
-
-            function showAlert(type, message) {
-                const isSuccess = type === 'success';
-                const alertHtml = `
-                    <div class="mb-4 rounded-xl border ${isSuccess ? 'border-success-500 bg-success-50 dark:border-success-500/30 dark:bg-success-500/15' : 'border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15'} p-4">
-                        <div class="flex items-start gap-3">
-                            <div class="-mt-0.5 ${isSuccess ? 'text-success-500' : 'text-error-500'}">
-                                <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24">
-                                    ${isSuccess ?
-                                        '<path fill-rule="evenodd" clip-rule="evenodd" d="M3.70186 12.0001C3.70186 7.41711 7.41711 3.70186 12.0001 3.70186C16.5831 3.70186 20.2984 7.41711 20.2984 12.0001C20.2984 16.5831 16.5831 20.2984 12.0001 20.2984C7.41711 20.2984 3.70186 16.5831 3.70186 12.0001ZM15.6197 10.7395C15.9712 10.388 15.9712 9.81819 15.6197 9.46672C15.2683 9.11525 14.6984 9.11525 14.347 9.46672L11.1894 12.6243L9.6533 11.0883C9.30183 10.7368 8.73198 10.7368 8.38051 11.0883C8.02904 11.4397 8.02904 12.0096 8.38051 12.3611L10.553 14.5335C10.7217 14.7023 10.9507 14.7971 11.1894 14.7971C11.428 14.7971 11.657 14.7023 11.8257 14.5335L15.6197 10.7395Z" fill=""></path>' :
-                                        '<path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.70186C7.41711 3.70186 3.70186 7.41711 3.70186 12C3.70186 16.5829 7.41711 20.2981 12 20.2981C16.5829 20.2981 20.2981 16.5829 20.2981 12C20.2981 7.41711 16.5829 3.70186 12 3.70186ZM12 7.40186C12.4971 7.40186 12.9 7.80476 12.9 8.30186V12.6019C12.9 13.099 12.4971 13.5019 12 13.5019C11.5029 13.5019 11.1 13.099 11.1 12.6019V8.30186C11.1 7.80476 11.5029 7.40186 12 7.40186ZM12 17.1019C12.6627 17.1019 13.2 16.5646 13.2 15.9019C13.2 15.2392 12.6627 14.7019 12 14.7019C11.3373 14.7019 10.8 15.2392 10.8 15.9019C10.8 16.5646 11.3373 17.1019 12 17.1019Z" fill=""></path>'
-                                    }
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">${isSuccess ? 'Success' : 'Error'}</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">${message}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                $('#alertContainer').html(alertHtml);
-                $('html, body').animate({ scrollTop: 0 }, 300);
-
-                if (isSuccess) {
-                    setTimeout(() => $('#alertContainer').html(''), 5000);
-                }
-            }
-        });
-    </script>
+    <script src="~/js/forms-ajax-handler.js"></script>
 }
+

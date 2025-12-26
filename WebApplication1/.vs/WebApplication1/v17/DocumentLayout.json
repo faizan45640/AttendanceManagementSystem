@@ -1,0 +1,105 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|solutionrelative:models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\appssettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|solutionrelative:appssettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\models\\applicationdbcontextfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|solutionrelative:models\\applicationdbcontextfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|c:\\users\\akam\\documents\\university\\semester 5\\ead\\attendance management system\\webapplication1\\models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{804F3E66-42F2-7564-CC8B-A39DCD608676}|AMS.csproj|solutionrelative:models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Models\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Models\\ApplicationDbContext.cs",
+              "ViewState": "AQIAAC4AAAAAAAAAAAAQwDEAAAAEAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-25T15:32:07.646Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAIAAABhAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-25T13:57:57.107Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appssettings.production.json",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\appssettings.production.json",
+              "RelativeDocumentMoniker": "appssettings.production.json",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\appssettings.production.json",
+              "RelativeToolTip": "appssettings.production.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAABhAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-25T12:10:45.894Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ApplicationDbContextFactory.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ApplicationDbContextFactory.cs",
+              "RelativeDocumentMoniker": "Models\\ApplicationDbContextFactory.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ApplicationDbContextFactory.cs",
+              "RelativeToolTip": "Models\\ApplicationDbContextFactory.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAUAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-25T13:18:33.626Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ErrorViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ErrorViewModel.cs",
+              "RelativeDocumentMoniker": "Models\\ErrorViewModel.cs",
+              "ToolTip": "C:\\Users\\AKAM\\Documents\\University\\Semester 5\\EAD\\Attendance Management System\\WebApplication1\\Models\\ErrorViewModel.cs",
+              "RelativeToolTip": "Models\\ErrorViewModel.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-25T13:18:30.357Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

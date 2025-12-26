@@ -108,6 +108,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddScoped<IInstitutionService, InstitutionService>();
 builder.Services.AddScoped<IAttendanceHybridService, AttendanceHybridService>();
+builder.Services.AddScoped<IEmailService, GmailApiService>();
 
 var app = builder.Build();
 

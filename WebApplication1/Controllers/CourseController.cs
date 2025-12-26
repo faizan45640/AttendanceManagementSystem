@@ -1,15 +1,30 @@
 ﻿using AMS.Data;
+using AMS.Models;
 using AMS.Models.Entities;
 using AMS.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AMS.Models;
 
 namespace AMS.Controllers
 {
     public class CourseController : Controller
     {
         private readonly ApplicationDbContext _context;
+
+        private bool IsAjaxRequest()
+        {
+            return string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private object GetModelStateErrors()
+        {
+            return ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                );
+        }
 
         public CourseController(ApplicationDbContext context)
         {
@@ -88,38 +103,51 @@ namespace AMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddCourse(AddCourseViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // Check if course code already exists
-                var existingCourse = await _context.Courses
-                    .FirstOrDefaultAsync(c => c.CourseCode == model.CourseCode);
+                if (IsAjaxRequest())
+                {
+                    var errors = GetModelStateErrors();
+                    return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+                }
 
-                if (existingCourse != null)
+                return View(model);
+            }
+
+            // Check if course code already exists
+            var existingCourse = await _context.Courses
+                .FirstOrDefaultAsync(c => c.CourseCode == model.CourseCode);
+
+            if (existingCourse != null)
+            {
+                if (IsAjaxRequest())
                 {
                     return Conflict(new { success = false, message = "A course with this code already exists." });
                 }
 
-                var course = new Course
-                {
-                    CourseCode = model.CourseCode,
-                    CourseName = model.CourseName,
-                    CreditHours = model.CreditHours,
-                    IsActive = model.IsActive
-                };
-
-                _context.Courses.Add(course);
-                await _context.SaveChangesAsync();
-
-                return Ok(new { success = true, message = $"Course '{model.CourseCode} - {model.CourseName}' has been added successfully!" });
+                ModelState.AddModelError(nameof(AddCourseViewModel.CourseCode), "A course with this code already exists.");
+                return View(model);
             }
 
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
-            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+            var course = new Course
+            {
+                CourseCode = model.CourseCode,
+                CourseName = model.CourseName,
+                CreditHours = model.CreditHours,
+                IsActive = model.IsActive
+            };
+
+            _context.Courses.Add(course);
+            await _context.SaveChangesAsync();
+
+            var successMessage = $"Course '{model.CourseCode} - {model.CourseName}' has been added successfully!";
+            if (IsAjaxRequest())
+            {
+                return Ok(new { success = true, message = successMessage });
+            }
+
+            TempData["success"] = successMessage;
+            return RedirectToAction(nameof(Courses));
         }
 
         // GET: Course/EditCourse/5
@@ -153,41 +181,62 @@ namespace AMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditCourse(int id, AddCourseViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var course = await _context.Courses.FindAsync(id);
-                if (course == null)
+                if (IsAjaxRequest())
+                {
+                    var errors = GetModelStateErrors();
+                    return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+                }
+
+                ViewBag.CourseId = id;
+                return View(model);
+            }
+
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null)
+            {
+                if (IsAjaxRequest())
                 {
                     return NotFound(new { success = false, message = "Course not found." });
                 }
 
-                // Check if course code already exists for another course
-                var existingCourse = await _context.Courses
-                    .FirstOrDefaultAsync(c => c.CourseCode == model.CourseCode && c.CourseId != id);
+                TempData["error"] = "Course not found.";
+                return RedirectToAction(nameof(Courses));
+            }
 
-                if (existingCourse != null)
+            // Check if course code already exists for another course
+            var existingCourse = await _context.Courses
+                .FirstOrDefaultAsync(c => c.CourseCode == model.CourseCode && c.CourseId != id);
+
+            if (existingCourse != null)
+            {
+                if (IsAjaxRequest())
                 {
                     return Conflict(new { success = false, message = "A course with this code already exists." });
                 }
 
-                course.CourseCode = model.CourseCode;
-                course.CourseName = model.CourseName;
-                course.CreditHours = model.CreditHours;
-                course.IsActive = model.IsActive;
-
-                _context.Update(course);
-                await _context.SaveChangesAsync();
-
-                return Ok(new { success = true, message = $"Course '{model.CourseCode} - {model.CourseName}' has been updated successfully!" });
+                ModelState.AddModelError(nameof(AddCourseViewModel.CourseCode), "A course with this code already exists.");
+                ViewBag.CourseId = id;
+                return View(model);
             }
 
-            var errors = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
-            return BadRequest(new { success = false, message = "Invalid data submitted.", errors });
+            course.CourseCode = model.CourseCode;
+            course.CourseName = model.CourseName;
+            course.CreditHours = model.CreditHours;
+            course.IsActive = model.IsActive;
+
+            _context.Update(course);
+            await _context.SaveChangesAsync();
+
+            var successMessage = $"Course '{model.CourseCode} - {model.CourseName}' has been updated successfully!";
+            if (IsAjaxRequest())
+            {
+                return Ok(new { success = true, message = successMessage });
+            }
+
+            TempData["success"] = successMessage;
+            return RedirectToAction(nameof(Courses));
         }
 
         // POST: Course/DeleteCourse
@@ -202,19 +251,39 @@ namespace AMS.Controllers
 
             if (course == null)
             {
-                return NotFound(new { success = false, message = "Course not found." });
+                if (IsAjaxRequest())
+                {
+                    return NotFound(new { success = false, message = "Course not found." });
+                }
+
+                TempData["error"] = "Course not found.";
+                return RedirectToAction(nameof(Courses));
             }
 
             // Check if course has assignments
             if (course.CourseAssignments.Any())
             {
-                return BadRequest(new { success = false, message = $"Cannot delete course '{course.CourseCode}' because it has {course.CourseAssignments.Count} course assignment(s)." });
+                var message = $"Cannot delete course '{course.CourseCode}' because it has {course.CourseAssignments.Count} course assignment(s).";
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new { success = false, message });
+                }
+
+                TempData["error"] = message;
+                return RedirectToAction(nameof(Courses));
             }
 
             // Check if course has enrollments
             if (course.Enrollments.Any())
             {
-                return BadRequest(new { success = false, message = $"Cannot delete course '{course.CourseCode}' because it has {course.Enrollments.Count} student enrollment(s)." });
+                var message = $"Cannot delete course '{course.CourseCode}' because it has {course.Enrollments.Count} student enrollment(s).";
+                if (IsAjaxRequest())
+                {
+                    return BadRequest(new { success = false, message });
+                }
+
+                TempData["error"] = message;
+                return RedirectToAction(nameof(Courses));
             }
 
             var courseCode = course.CourseCode;
@@ -222,7 +291,14 @@ namespace AMS.Controllers
             _context.Courses.Remove(course);
             await _context.SaveChangesAsync();
 
-            return Ok(new { success = true, message = $"Course '{courseCode} - {courseName}' has been deleted successfully!" });
+            var successMessage = $"Course '{courseCode} - {courseName}' has been deleted successfully!";
+            if (IsAjaxRequest())
+            {
+                return Ok(new { success = true, message = successMessage });
+            }
+
+            TempData["success"] = successMessage;
+            return RedirectToAction(nameof(Courses));
         }
 
         // GET: Course/ExportToExcel
