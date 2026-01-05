@@ -14,6 +14,9 @@
         <link rel="icon" type="image/png" href="@institution.Logo" />
     }
     <!-- Add this to _Layout.cshtml head -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -42,12 +45,12 @@
     <script src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 </head>
 <body x-data="{ page: 'dashboard', 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
-      x-init="darkMode = JSON.parse(localStorage.getItem('darkMode')); $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+      x-init="darkMode = JSON.parse(localStorage.getItem('darkMode')); $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value))); sidebarToggle = false"
       :class="{'dark bg-gray-900': darkMode === true}">
 
     <!-- ===== Preloader Start ===== -->
     <div id="preloader"
-         class="fixed left-0 top-0 z-999999 flex h-screen w-screen items-center justify-center bg-white dark:bg-black">
+         class="fixed left-0 top-0 z-[99999] flex h-screen w-screen items-center justify-center bg-white dark:bg-black">
         <div class="h-16 w-16 animate-spin rounded-full border-4 border-solid border-brand-500 border-t-transparent"></div>
     </div>
     <!-- ===== Preloader End ===== -->
@@ -61,7 +64,7 @@
             <!-- Small Device Overlay Start -->
             <div @@click="sidebarToggle = false"
                  :class="sidebarToggle ? 'block lg:hidden' : 'hidden'"
-                 class="fixed w-full h-screen z-9 bg-gray-900/50"></div>
+                 class="hidden fixed w-full h-screen z-9 bg-gray-900/50"></div>
             <!-- Small Device Overlay End -->
             <!-- ===== Header Start ===== -->
             @await Html.PartialAsync("_Header")

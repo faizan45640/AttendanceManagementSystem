@@ -3,7 +3,7 @@
     var institution = await InstitutionService.GetInstitutionInfoAsync();
 }
 <header x-data="{menuToggle: false}"
-        class="sticky top-0 z-99999 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
+        class="sticky top-0 z-[999] flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
     <div class="flex grow flex-col items-center justify-between lg:flex-row lg:px-6">
         <div class="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800">
             <!-- Hamburger Toggle BTN -->
@@ -49,7 +49,7 @@
                         <span class="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-sm font-semibold text-indigo-600 dark:text-indigo-300">@userInitial</span>
                         <span class="hidden text-sm font-medium lg:block">@userName</span>
                     </button>
-                    <div x-show="dropdownOpen" class="absolute -right-0 mt-2.5 flex w-56 flex-col rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900">
+                    <div x-show="dropdownOpen" x-cloak class="absolute -right-0 mt-2.5 flex w-56 flex-col rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900">
                         <ul class="flex flex-col gap-1 p-2">
                             <li><a asp-controller="Settings" asp-action="Index" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">Settings</a></li>
                             <li>

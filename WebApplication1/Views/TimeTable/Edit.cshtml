@@ -1,8 +1,12 @@
 ﻿@model AMS.Models.ViewModels.EditTimetableViewModel
 @{
     ViewData["Title"] = "Edit Timetable";
-    var days = Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>().Where(d => d != DayOfWeek.Sunday).OrderBy(d => (int)d).ToList();
-    days.Add(DayOfWeek.Sunday); // Move Sunday to end
+    // Filter out Saturday (6) and Sunday (0)
+    var days = Enum.GetValues(typeof(DayOfWeek))
+                   .Cast<DayOfWeek>()
+                   .Where(d => d != DayOfWeek.Saturday && d != DayOfWeek.Sunday)
+                   .OrderBy(d => (int)d)
+                   .ToList();
 }
 
 <div class="p-4 sm:p-6">

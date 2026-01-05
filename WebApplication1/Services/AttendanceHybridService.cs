@@ -209,6 +209,12 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         }
         catch (Exception ex)
         {
+            if (IsRateLimitError(ex))
+            {
+                _logger.LogWarning("AI rate limit reached (429).");
+                return new AttendanceHybridChatResponse(false, "Your free AI limit has been reached for today. Please try again tomorrow.");
+            }
+
             _logger.LogError(ex, "AI small-talk flow failed.");
             return new AttendanceHybridChatResponse(true, "OK", AssistantMessage: "Hi! How can I help you with attendance or courses?");
         }
@@ -247,8 +253,14 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         }
         catch (Exception ex)
         {
+            if (IsRateLimitError(ex))
+            {
+                _logger.LogWarning("AI rate limit reached (429).");
+                return new AttendanceHybridChatResponse(false, "Your free AI limit has been reached for today. Please try again tomorrow.");
+            }
+
             _logger.LogError(ex, "AI write flow failed.");
-            return new AttendanceHybridChatResponse(false, "AI write flow failed.");
+            return new AttendanceHybridChatResponse(false, "I encountered an issue while processing the attendance update. Please try again.");
         }
     }
 
@@ -256,56 +268,106 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
     {
         try
         {
-            // Agent 1: SQL Writer (SELECT-only)
-            var sql = await GenerateSelectSqlAsync(actor, request, cancellationToken);
-            if (string.IsNullOrWhiteSpace(sql))
+            // Retry loop for self-correction
+            int maxRetries = 2;
+            string? lastError = null;
+
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
             {
-                return new AttendanceHybridChatResponse(false, "SQL generation failed.");
+                // Agent 1: SQL Writer (SELECT-only)
+                var sql = await GenerateSelectSqlAsync(actor, request, lastError, cancellationToken);
+                if (string.IsNullOrWhiteSpace(sql))
+                {
+                    return new AttendanceHybridChatResponse(false, "SQL generation failed.");
+                }
+
+                // Agent 2: Auditor (hard rules + optional LLM review)
+                var audit = await AuditSqlAsync(actor, sql, cancellationToken);
+                if (audit.Approved)
+                {
+                    // Success path
+                    var rows = await ExecuteReadOnlySqlAsync(audit.ProposedSql!, audit.Parameters, cancellationToken);
+                    var summary = await SummarizeResultsAsync(actor, request, audit.ProposedSql!, rows, cancellationToken);
+
+                    return new AttendanceHybridChatResponse(
+                        true,
+                        "OK",
+                        AssistantMessage: summary,
+                        AuditDecision: audit.Decision,
+                        ProposedSql: audit.ProposedSql,
+                        RowsPreview: rows.Take(20).ToList()
+                    );
+                }
+
+                // If blocked, capture error for next iteration
+                lastError = $"The previous SQL was rejected by safety policy: {audit.UserFacingMessage}\nRejected SQL: {sql}";
+                
+                // If this was the last attempt, fail
+                if (attempt == maxRetries)
+                {
+                    return new AttendanceHybridChatResponse(
+                        true,
+                        "Blocked by SQL safety policy.",
+                        AssistantMessage: audit.UserFacingMessage,
+                        AuditDecision: audit.Decision,
+                        ProposedSql: audit.ProposedSql
+                    );
+                }
             }
 
-            // Agent 2: Auditor (hard rules + optional LLM review)
-            var audit = await AuditSqlAsync(actor, sql, cancellationToken);
-            if (!audit.Approved)
-            {
-                return new AttendanceHybridChatResponse(
-                    true,
-                    "Blocked by SQL safety policy.",
-                    AssistantMessage: audit.UserFacingMessage,
-                    AuditDecision: audit.Decision,
-                    ProposedSql: audit.ProposedSql
-                );
-            }
-
-            // Execute (read-only)
-            var rows = await ExecuteReadOnlySqlAsync(audit.ProposedSql!, audit.Parameters, cancellationToken);
-
-            // Summarize results (optional, but keeps UX usable)
-            var summary = await SummarizeResultsAsync(actor, request, audit.ProposedSql!, rows, cancellationToken);
-
-            return new AttendanceHybridChatResponse(
-                true,
-                "OK",
-                AssistantMessage: summary,
-                AuditDecision: audit.Decision,
-                ProposedSql: audit.ProposedSql,
-                RowsPreview: rows.Take(20).ToList()
-            );
+            return new AttendanceHybridChatResponse(false, "AI read flow failed after retries.");
         }
         catch (Exception ex)
         {
+            if (IsRateLimitError(ex))
+            {
+                _logger.LogWarning("AI rate limit reached (429).");
+                return new AttendanceHybridChatResponse(false, "Your free AI limit has been reached for today. Please try again tomorrow.");
+            }
+
             _logger.LogError(ex, "AI read flow failed.");
-            return new AttendanceHybridChatResponse(false, "AI read flow failed.");
+            return new AttendanceHybridChatResponse(false, "I encountered an issue while retrieving the information. Please try again.");
         }
     }
 
+    private static bool IsRateLimitError(Exception ex)
+    {
+        // Check for HttpOperationException from Semantic Kernel
+        if (ex is HttpOperationException httpEx && (int)httpEx.StatusCode == 429)
+        {
+            return true;
+        }
+
+        // Check for standard HttpRequestException
+        if (ex is System.Net.Http.HttpRequestException reqEx && reqEx.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+        {
+            return true;
+        }
+
+        // Fallback: check message string
+        var msg = ex.Message.ToLowerInvariant();
+        if (msg.Contains("429") || msg.Contains("too many requests") || msg.Contains("quota exceeded"))
+        {
+            return true;
+        }
+
+        if (ex.InnerException != null)
+        {
+            return IsRateLimitError(ex.InnerException);
+        }
+
+        return false;
+    }
+
     // Requirement #2: Define SqlWriterAgent instructions.
-    private async Task<string> GenerateSelectSqlAsync(ActorContext actor, AttendanceHybridChatRequest request, CancellationToken cancellationToken)
+    private async Task<string> GenerateSelectSqlAsync(ActorContext actor, AttendanceHybridChatRequest request, string? lastError, CancellationToken cancellationToken)
     {
         var kernel = CreateKernel(includeWritePlugin: false);
         var chat = kernel.GetRequiredService<IChatCompletionService>();
 
         var schema = GetAttendanceSchemaSummary(actor);
         var requiredFilters = GetRequiredSqlFilters(actor);
+        var fewShotExamples = GetFewShotExamples(actor);
 
         // Tell the LLM who is asking
         var roleLabel = actor.IsStudent ? "STUDENT"
@@ -325,14 +387,53 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
             "- Only use attendance-domain tables listed below.\n" +
             $"- MUST satisfy these mandatory filters: {requiredFilters}\n" +
             "Allowed schema:\n" +
-            schema
+            schema + "\n\n" +
+            "EXAMPLES (Follow these patterns):\n" +
+            fewShotExamples
         );
 
         history.AddUserMessage(request.Message);
 
+        if (!string.IsNullOrEmpty(lastError))
+        {
+            history.AddUserMessage($"FIX ERROR: {lastError}\n\nGenerate corrected SQL now:");
+        }
+
         var settings = new PromptExecutionSettings();
         var assistant = await chat.GetChatMessageContentAsync(history, settings, kernel, cancellationToken);
         return ExtractSql(assistant.Content);
+    }
+
+    private static string GetFewShotExamples(ActorContext actor)
+    {
+        var sb = new StringBuilder();
+
+        if (actor.IsStudent)
+        {
+            sb.AppendLine("User: \"Show my attendance for Web Engineering\"");
+            sb.AppendLine("SQL: SELECT TOP (200) a.Status, s.SessionDate, c.CourseName FROM Attendance a JOIN Sessions s ON s.SessionId = a.SessionId JOIN CourseAssignments ca ON ca.AssignmentId = s.CourseAssignmentId JOIN Courses c ON c.CourseId = ca.CourseId WHERE a.StudentId = @studentId AND c.CourseName LIKE '%Web Engineering%' ORDER BY s.SessionDate DESC");
+            sb.AppendLine();
+            sb.AppendLine("User: \"Who is teaching Data Structures?\"");
+            sb.AppendLine("SQL: SELECT TOP (200) t.FirstName, t.LastName, c.CourseName FROM Enrollments e JOIN CourseAssignments ca ON ca.CourseId = e.CourseId AND ca.BatchId = e.BatchId AND ca.SemesterId = e.SemesterId JOIN Teachers t ON t.TeacherId = ca.TeacherId JOIN Courses c ON c.CourseId = ca.CourseId WHERE e.StudentId = @studentId AND c.CourseName LIKE '%Data Structures%'");
+        }
+        else if (actor.IsTeacher)
+        {
+            sb.AppendLine("User: \"List my courses\"");
+            sb.AppendLine("SQL: SELECT TOP (200) c.CourseName, c.CourseCode FROM CourseAssignments ca JOIN Courses c ON c.CourseId = ca.CourseId WHERE ca.TeacherId = @teacherId AND ca.IsActive = 1");
+            sb.AppendLine();
+            sb.AppendLine("User: \"Show students in Web Engineering\"");
+            sb.AppendLine("SQL: SELECT TOP (200) s.FirstName, s.LastName, s.RollNumber FROM CourseAssignments ca JOIN Enrollments e ON e.CourseId = ca.CourseId AND e.BatchId = ca.BatchId AND e.SemesterId = ca.SemesterId JOIN Students s ON s.StudentId = e.StudentId JOIN Courses c ON c.CourseId = ca.CourseId WHERE ca.TeacherId = @teacherId AND c.CourseName LIKE '%Web Engineering%'");
+        }
+        else
+        {
+            sb.AppendLine("User: \"Count total students\"");
+            sb.AppendLine("SQL: SELECT TOP (1) COUNT(*) as TotalStudents FROM Students WHERE IsActive = 1");
+            sb.AppendLine();
+            sb.AppendLine("User: \"Show recent attendance\"");
+            sb.AppendLine("SQL: SELECT TOP (20) a.Status, s.SessionDate, st.FirstName, st.LastName FROM Attendance a JOIN Sessions s ON s.SessionId = a.SessionId JOIN Students st ON st.StudentId = a.StudentId ORDER BY s.SessionDate DESC");
+        }
+
+        return sb.ToString();
     }
 
     // Requirement #2: Define AuditorAgent instructions.
@@ -344,7 +445,7 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
         {
             // Per pilot requirement: decision should be machine-checkable (SAFE / NOT_SAFE).
             // Keep a user-friendly explanation, but do not require LLM to produce it.
-            var explanation = "NOT_SAFE\n" + string.Join("\n", hard.Issues.Select(i => "- " + i));
+            var explanation = "I cannot process this request because it violates safety policies (e.g., unauthorized access or disallowed operations). Please ask differently.";
             return hard with { UserFacingMessage = explanation };
         }
 
@@ -534,9 +635,13 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
             sb.AppendLine("  JOIN Sessions s ON s.SessionId=a.SessionId");
             sb.AppendLine("  JOIN CourseAssignments ca ON ca.AssignmentId=s.CourseAssignmentId");
             sb.AppendLine("  JOIN Courses c ON c.CourseId=ca.CourseId");
+            sb.AppendLine("- Your timetable: TimetableSlots ts");
+            sb.AppendLine("  JOIN CourseAssignments ca ON ca.AssignmentId=ts.CourseAssignmentId");
+            sb.AppendLine("  JOIN Enrollments e ON e.CourseId=ca.CourseId AND e.BatchId=ca.BatchId AND e.SemesterId=ca.SemesterId");
+            sb.AppendLine("  WHERE e.StudentId=@studentId");
             sb.AppendLine();
             sb.AppendLine("COMMON CALCULATIONS:");
-            sb.AppendLine("- Attendance % per course: SUM(CASE WHEN a.Status='Present' THEN 1 ELSE 0 END) / COUNT(*)");
+            sb.AppendLine("- Attendance % per course: SUM(CASE WHEN a.Status='Present' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*), 0)");
             sb.AppendLine("- Remaining sessions (future): COUNT(*) WHERE s.SessionDate > CAST(GETDATE() AS date)");
         }
         else if (actor.IsTeacher)
@@ -552,6 +657,9 @@ public sealed class AttendanceHybridService : IAttendanceHybridService
             sb.AppendLine("  JOIN Students s ON s.StudentId=e.StudentId");
             sb.AppendLine("- Attendance for your sessions: Attendance a JOIN Sessions se ON se.SessionId=a.SessionId");
             sb.AppendLine("  JOIN CourseAssignments ca ON ca.AssignmentId=se.CourseAssignmentId WHERE ca.TeacherId=@teacherId");
+            sb.AppendLine("- Your timetable: TimetableSlots ts");
+            sb.AppendLine("  JOIN CourseAssignments ca ON ca.AssignmentId=ts.CourseAssignmentId");
+            sb.AppendLine("  WHERE ca.TeacherId=@teacherId");
         }
         else
         {
